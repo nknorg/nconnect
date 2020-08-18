@@ -12,6 +12,7 @@ const methods = {
   setAddrs: { method: 'setAddrs' },
   addAddrs: { method: 'addAddrs' },
   removeAddrs: { method: 'removeAddrs' },
+  getLocalIP: { method: 'getLocalIP' },
 }
 
 var rpc = {};
@@ -89,4 +90,8 @@ export async function removeAddrs(acceptAddrs, adminAddrs) {
     params.adminAddrs = adminAddrs;
   }
   return rpc.removeAddrs(rpcAddr, params);
+}
+
+export async function getLocalIP() {
+  return rpc.getLocalIP(rpcAddr);
 }

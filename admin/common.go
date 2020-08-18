@@ -1,6 +1,8 @@
 package admin
 
 import (
+	"net"
+
 	"github.com/nknorg/nkn-sdk-go"
 	"github.com/nknorg/nkn-socks/config"
 	"github.com/nknorg/nkn-socks/util"
@@ -28,6 +30,10 @@ type addrsJSON struct {
 type adminTokenJSON struct {
 	Addr  string `json:"addr"`
 	Token *Token `json:"token"`
+}
+
+type localIPJSON struct {
+	Ipv4 []string `json:"ipv4"`
 }
 
 func handleRequest(req *rpcReq, conf *config.Config, tun *tunnel.Tunnel) *rpcResp {
@@ -76,10 +82,27 @@ func handleRequest(req *rpcReq, conf *config.Config, tun *tunnel.Tunnel) *rpcRes
 			break
 		}
 		resp.Result = getAddrs(conf)
+	case "getLocalIP":
+		localIP, err := getLocalIP()
+		if err != nil {
+			resp.Error = err.Error()
+			break
+		}
+		resp.Result = localIP
 	default:
 		resp.Error = "unknown method"
 	}
 	return resp
+}
+
+func getAdminToken() *adminTokenJSON {
+	if len(clientAddr) == 0 {
+		return nil
+	}
+	return &adminTokenJSON{
+		Addr:  clientAddr,
+		Token: tokenStore.GetCurrentToken(),
+	}
 }
 
 func getAddrs(conf *config.Config) *addrsJSON {
@@ -117,4 +140,42 @@ func removeAddrs(conf *config.Config, addrs *addrsJSON, tun *tunnel.Tunnel) erro
 		conf.RemoveAdminAddrs(addrs.AdminAddrs)
 	}
 	return tun.SetAcceptAddrs(nkn.NewStringArray(conf.GetAcceptAddrs()...))
+}
+
+func getLocalIP() (*localIPJSON, error) {
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		return nil, err
+	}
+	ipv4 := make([]string, 0, len(ifaces))
+	for _, iface := range ifaces {
+		if iface.Flags&net.FlagUp == 0 {
+			continue
+		}
+		if iface.Flags&net.FlagLoopback != 0 {
+			continue
+		}
+		addrs, err := iface.Addrs()
+		if err != nil {
+			return nil, err
+		}
+		for _, addr := range addrs {
+			var ip net.IP
+			switch v := addr.(type) {
+			case *net.IPNet:
+				ip = v.IP
+			case *net.IPAddr:
+				ip = v.IP
+			}
+			if ip == nil || ip.IsLoopback() {
+				continue
+			}
+			ip = ip.To4()
+			if ip == nil {
+				continue
+			}
+			ipv4 = append(ipv4, ip.String())
+		}
+	}
+	return &localIPJSON{Ipv4: ipv4}, nil
 }

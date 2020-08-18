@@ -53,13 +53,3 @@ func StartClient(account *nkn.Account, identifier string, clientConfig *nkn.Clie
 		}
 	}
 }
-
-func getAdminToken() *adminTokenJSON {
-	if len(clientAddr) == 0 {
-		return nil
-	}
-	return &adminTokenJSON{
-		Addr:  clientAddr,
-		Token: tokenStore.GetCurrentToken(),
-	}
-}

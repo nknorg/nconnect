@@ -15,6 +15,7 @@ class App extends React.Component {
       adminTokenQRCode: null,
       acceptAddrs: '',
       adminAddrs: '',
+      localIP: [],
     };
     this.handleAcceptAddrsChange = this.handleAcceptAddrsChange.bind(this);
     this.handleAdminAddrsChange = this.handleAdminAddrsChange.bind(this);
@@ -31,61 +32,71 @@ class App extends React.Component {
 
   async handleSubmit(event) {
     event.preventDefault();
-
     try {
       let addrs = await rpc.setAddrs(strToAddrs(this.state.acceptAddrs), strToAddrs(this.state.adminAddrs));
       this.setState({
         acceptAddrs: addrsToStr(addrs.acceptAddrs),
         adminAddrs: addrsToStr(addrs.adminAddrs),
       });
+      alert('Save success!');
     } catch (e) {
       console.error(e);
       alert(e);
-      return;
     }
-
-    alert('Save success!');
   }
 
   componentDidMount() {
-    (async () => {
-      try {
-        let adminToken = await rpc.getAdminToken();
-        if (adminToken) {
-          let url = await QRCode.toDataURL(JSON.stringify(adminToken));
-          this.setState({
-            adminTokenQRCode: url,
-          });
-        }
-      } catch (e) {
-        console.error(e);
-        alert(e);
-        return;
+    rpc.getAdminToken().then((adminToken) => {
+      if (adminToken) {
+        return QRCode.toDataURL(JSON.stringify(adminToken))
       }
-    })();
-
-    (async () => {
-      try {
-        let addrs = await rpc.getAddrs();
+    }).then((url) => {
+      if (url) {
         this.setState({
-          acceptAddrs: addrsToStr(addrs.acceptAddrs),
-          adminAddrs: addrsToStr(addrs.adminAddrs),
+          adminTokenQRCode: url,
         });
-      } catch (e) {
-        console.error(e);
-        alert(e);
-        return;
       }
-    })();
+    }).catch((e) => {
+      console.error(e);
+      alert(e);
+    });
+
+    rpc.getAddrs().then((addrs) => {
+      this.setState({
+        acceptAddrs: addrsToStr(addrs.acceptAddrs),
+        adminAddrs: addrsToStr(addrs.adminAddrs),
+      });
+    }).catch((e) => {
+      console.error(e);
+      alert(e);
+    });
+
+    rpc.getLocalIP().then((localIP) => {
+      this.setState({
+        localIP: localIP.ipv4,
+      });
+    }).catch((e) => {
+      console.error(e);
+    });
   }
 
   render() {
     return (
       <div className="App">
         <Container>
-          <img
-            src={this.state.adminTokenQRCode}
-            />
+          <div>
+            <img
+              src={this.state.adminTokenQRCode}
+              />
+          </div>
+          <div>
+            <TextField
+              disabled
+              multiline
+              label="Local IP address"
+              value={this.state.localIP.join('\n')}
+              />
+          </div>
           <div>
             <TextField
               multiline
