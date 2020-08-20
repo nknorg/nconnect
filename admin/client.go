@@ -35,6 +35,7 @@ func StartClient(account *nkn.Account, identifier string, clientConfig *nkn.Clie
 		}
 
 		if !util.MatchRegex(conf.GetAdminAddrs(), msg.Src) && !tokenStore.IsValid(req.Token) {
+			log.Println("Ignore authorized message from", msg.Src)
 			continue
 		}
 

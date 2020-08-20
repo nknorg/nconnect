@@ -36,6 +36,11 @@ type localIPJSON struct {
 	Ipv4 []string `json:"ipv4"`
 }
 
+type getInfoJSON struct {
+	Addr    string       `json:"addr"`
+	LocalIP *localIPJSON `json:"localIP"`
+}
+
 func handleRequest(req *rpcReq, conf *config.Config, tun *tunnel.Tunnel) *rpcResp {
 	resp := &rpcResp{}
 	switch req.Method {
@@ -89,6 +94,13 @@ func handleRequest(req *rpcReq, conf *config.Config, tun *tunnel.Tunnel) *rpcRes
 			break
 		}
 		resp.Result = localIP
+	case "getInfo":
+		info, err := getInfo(tun)
+		if err != nil {
+			resp.Error = err.Error()
+			break
+		}
+		resp.Result = info
 	default:
 		resp.Error = "unknown method"
 	}
@@ -178,4 +190,16 @@ func getLocalIP() (*localIPJSON, error) {
 		}
 	}
 	return &localIPJSON{Ipv4: ipv4}, nil
+}
+
+func getInfo(tun *tunnel.Tunnel) (*getInfoJSON, error) {
+	localIP, err := getLocalIP()
+	if err != nil {
+		return nil, err
+	}
+	info := &getInfoJSON{
+		Addr:    tun.FromAddr(),
+		LocalIP: localIP,
+	}
+	return info, nil
 }
