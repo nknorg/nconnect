@@ -12,7 +12,8 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      adminTokenQRCode: null,
+      adminTokenStr: '',
+      adminTokenQRCode: '',
       acceptAddrs: '',
       adminAddrs: '',
       localIP: [],
@@ -20,6 +21,7 @@ class App extends React.Component {
     this.handleAcceptAddrsChange = this.handleAcceptAddrsChange.bind(this);
     this.handleAdminAddrsChange = this.handleAdminAddrsChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.updateAdminToken = this.updateAdminToken.bind(this);
   }
 
   handleAcceptAddrsChange(event) {
@@ -45,21 +47,25 @@ class App extends React.Component {
     }
   }
 
-  componentDidMount() {
-    rpc.getAdminToken().then((adminToken) => {
+  async updateAdminToken() {
+    try {
+      let adminToken = await rpc.getAdminToken();
       if (adminToken) {
-        return QRCode.toDataURL(JSON.stringify(adminToken))
-      }
-    }).then((url) => {
-      if (url) {
+        let adminTokenStr = JSON.stringify(adminToken);
+        let adminTokenQRCode = await QRCode.toDataURL(adminTokenStr);
         this.setState({
-          adminTokenQRCode: url,
+          adminTokenStr,
+          adminTokenQRCode,
         });
       }
-    }).catch((e) => {
+    } catch (e) {
       console.error(e);
-      alert(e);
-    });
+    }
+  }
+
+  componentDidMount() {
+    this.updateAdminToken();
+    setInterval(this.updateAdminToken, 5 * 60 * 1000);
 
     rpc.getAddrs().then((addrs) => {
       this.setState({
@@ -99,6 +105,15 @@ class App extends React.Component {
           </div>
           <div>
             <TextField
+              disabled
+              multiline
+              label="Access key (expires in 5 minutes)"
+              value={this.state.adminTokenStr}
+              style={{width: '100%'}}
+              />
+          </div>
+          <div>
+            <TextField
               multiline
               variant="filled"
               label="Accept addresses"
@@ -111,7 +126,7 @@ class App extends React.Component {
             <TextField
               multiline
               variant="filled"
-              label="Admin addresses"
+              label="Admins"
               value={this.state.adminAddrs}
               onChange={this.handleAdminAddrsChange}
               style={{width: '100%'}}
