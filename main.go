@@ -10,11 +10,11 @@ import (
 	"syscall"
 
 	"github.com/jessevdk/go-flags"
+	"github.com/nknorg/nconnect/admin"
+	"github.com/nknorg/nconnect/config"
+	"github.com/nknorg/nconnect/ss"
+	"github.com/nknorg/nconnect/util"
 	"github.com/nknorg/nkn-sdk-go"
-	"github.com/nknorg/nkn-socks/admin"
-	"github.com/nknorg/nkn-socks/config"
-	"github.com/nknorg/nkn-socks/ss"
-	"github.com/nknorg/nkn-socks/util"
 	ts "github.com/nknorg/nkn-tuna-session"
 	tunnel "github.com/nknorg/nkn-tunnel"
 )

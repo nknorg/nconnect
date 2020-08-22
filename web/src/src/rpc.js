@@ -31,7 +31,7 @@ async function rpcCall(addr, method, params = {}) {
     method: 'POST',
     timeout: 10000,
     data: {
-      id: 'nkn-socks-web',
+      id: 'nConnect-web',
       jsonrpc: '2.0',
       method: method,
       params: params,

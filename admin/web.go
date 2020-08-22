@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nknorg/nkn-socks/config"
+	"github.com/nknorg/nconnect/config"
 	tunnel "github.com/nknorg/nkn-tunnel"
 )
 

@@ -5,8 +5,8 @@ import (
 	"log"
 
 	"github.com/nknorg/nkn-sdk-go"
-	"github.com/nknorg/nkn-socks/config"
-	"github.com/nknorg/nkn-socks/util"
+	"github.com/nknorg/nconnect/config"
+	"github.com/nknorg/nconnect/util"
 	tunnel "github.com/nknorg/nkn-tunnel"
 )
 

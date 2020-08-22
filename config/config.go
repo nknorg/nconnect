@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nknorg/nkn-socks/util"
+	"github.com/nknorg/nconnect/util"
 )
 
 const (

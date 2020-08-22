@@ -1,4 +1,4 @@
-module github.com/nknorg/nkn-socks
+module github.com/nknorg/nconnect
 
 go 1.13
 
