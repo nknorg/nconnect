@@ -24,11 +24,19 @@ func init() {
 type Config struct {
 	path string
 
-	Identifier        string   `json:"identifier"`
-	Password          string   `json:"password"`
-	Seed              string   `json:"seed"`
-	SeedRPCServerAddr []string `json:"seedRPCServerAddr,omitempty"`
-	TunaMaxPrice      string   `json:"tunaMaxPrice,omitempty"`
+	Identifier        string   `json:"identifier" long:"identifier" description:"NKN client identifier. A random one will be generated and saved to config.json if not provided"`
+	Seed              string   `json:"seed" long:"seed" description:"NKN client secret seed. A random one will be generated and saved to config.json if not provided"`
+	SeedRPCServerAddr []string `json:"seedRPCServerAddr,omitempty" long:"rpc" description:"Seed RPC server address"`
+
+	Tuna            bool     `json:"tuna,omitempty" long:"tuna" description:"enable tuna sessions"`
+	TunaMaxPrice    string   `json:"tunaMaxPrice,omitempty" long:"tuna-max-price" description:"Tuna max price in unit of NKN/MB"`
+	TunaCountry     []string `json:"tunaCountry,omitempty" long:"tuna-country" description:"Tuna service node allowed country code, e.g. US. All countries will be allowed if not provided"`
+	TunaServiceName string   `json:"tunaServiceName,omitempty" long:"tuna-service-name" description:"Tuna reverse service name"`
+
+	Password string `json:"password,omitempty" long:"password" description:"Socks proxy password"`
+
+	AdminHTTPAddr   string `json:"adminHttpAddr,omitempty" long:"admin-http" description:"Admin web GUI listen address (e.g. 127.0.0.1:8000)"`
+	AdminIdentifier string `json:"adminIdentifier,omitempty" long:"admin-identifier" description:"Admin NKN client identifier prefix"`
 
 	lock        sync.RWMutex
 	AcceptAddrs []string `json:"acceptAddrs"`
@@ -37,7 +45,6 @@ type Config struct {
 
 func NewConfig() *Config {
 	return &Config{
-		Identifier:  randomIdentifier(6),
 		AcceptAddrs: make([]string, 0),
 		AdminAddrs:  make([]string, 0),
 	}
@@ -49,6 +56,7 @@ func LoadOrNewConfig(path string) (*Config, error) {
 		if os.IsNotExist(err) {
 			c := NewConfig()
 			c.path = path
+			c.save()
 			return c, nil
 		}
 		return nil, err
@@ -120,6 +128,12 @@ func (c *Config) RemoveAdminAddrs(adminAddrs []string) error {
 	return c.save()
 }
 
+func (c *Config) Save() error {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	return c.save()
+}
+
 func (c *Config) save() error {
 	b, err := json.MarshalIndent(c, "", " ")
 	if err != nil {
@@ -134,14 +148,8 @@ func (c *Config) save() error {
 	return nil
 }
 
-func (c *Config) Save() error {
-	c.lock.Lock()
-	defer c.lock.Unlock()
-	return c.save()
-}
-
-func randomIdentifier(length int) string {
-	b := make([]byte, length)
+func RandomIdentifier() string {
+	b := make([]byte, RandomIdentifierLength)
 	for i := range b {
 		b[i] = RandomIdentifierChars[rand.Intn(len(RandomIdentifierChars))]
 	}

@@ -7,8 +7,10 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 
+	"github.com/imdario/mergo"
 	"github.com/jessevdk/go-flags"
 	"github.com/nknorg/nconnect/admin"
 	"github.com/nknorg/nconnect/config"
@@ -17,13 +19,13 @@ import (
 	"github.com/nknorg/nkn-sdk-go"
 	ts "github.com/nknorg/nkn-tuna-session"
 	tunnel "github.com/nknorg/nkn-tunnel"
+	"github.com/nknorg/tuna"
 )
 
 var opts struct {
-	AdminHTTPAddr   string `long:"admin-http" description:"Admin web GUI listen address (e.g. 127.0.0.1:8000)"`
-	AdminIdentifier string `long:"admin-identifier" description:"Admin NKN client identifier prefix"`
-	ConfigFile      string `short:"c" long:"config-file" default:"config.json" description:"Config file path"`
-	Version         bool   `short:"v" long:"version" description:"Print version"`
+	config.Config
+	ConfigFile string `short:"c" long:"config-file" default:"config.json" description:"Config file path"`
+	Version    bool   `short:"v" long:"version" description:"Print version"`
 }
 
 var (
@@ -55,7 +57,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	seed, err := hex.DecodeString(conf.Seed)
+	err = mergo.Merge(&opts.Config, conf, mergo.WithOverride)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	seed, err := hex.DecodeString(opts.Seed)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -65,8 +72,19 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if conf.Seed != hex.EncodeToString(account.Seed()) {
+	shouldSave := false
+	if len(opts.Seed) == 0 {
 		conf.Seed = hex.EncodeToString(account.Seed())
+		shouldSave = true
+	}
+
+	if len(opts.Identifier) == 0 {
+		conf.Identifier = config.RandomIdentifier()
+		opts.Identifier = conf.Identifier
+		shouldSave = true
+	}
+
+	if shouldSave {
 		err = conf.Save()
 		if err != nil {
 			log.Fatal(err)
@@ -74,13 +92,18 @@ func main() {
 	}
 
 	var seedRPCServerAddr *nkn.StringArray
-	if len(conf.SeedRPCServerAddr) > 0 {
-		seedRPCServerAddr = nkn.NewStringArray(conf.SeedRPCServerAddr...)
+	if len(opts.SeedRPCServerAddr) > 0 {
+		seedRPCServerAddr = nkn.NewStringArray(opts.SeedRPCServerAddr...)
 	}
 
-	tunaMaxPrice := conf.TunaMaxPrice
+	tunaMaxPrice := opts.TunaMaxPrice
 	if len(tunaMaxPrice) == 0 {
 		tunaMaxPrice = config.DefaultTunaMaxPrice
+	}
+
+	locations := make([]tuna.Location, len(opts.TunaCountry))
+	for i := range opts.TunaCountry {
+		locations[i].CountryCode = strings.TrimSpace(opts.TunaCountry[i])
 	}
 
 	clientConfig := &nkn.ClientConfig{
@@ -90,7 +113,9 @@ func main() {
 		SeedRPCServerAddr: seedRPCServerAddr,
 	}
 	tsConfig := &ts.Config{
-		TunaMaxPrice: tunaMaxPrice,
+		TunaMaxPrice:    tunaMaxPrice,
+		TunaIPFilter:    &tuna.IPFilter{Allow: locations},
+		TunaServiceName: opts.TunaServiceName,
 	}
 	tunnelConfig := &tunnel.Config{
 		AcceptAddrs:       nkn.NewStringArray(conf.AcceptAddrs...),
@@ -110,7 +135,7 @@ func main() {
 		TCP:      true,
 		UDP:      false,
 		Cipher:   "AEAD_CHACHA20_POLY1305",
-		Password: conf.Password,
+		Password: opts.Password,
 		Server:   ssAddr,
 	}
 
@@ -122,7 +147,7 @@ func main() {
 		os.Exit(0)
 	}()
 
-	tun, err := tunnel.NewTunnel(account, conf.Identifier, "", ssAddr, true, tunnelConfig)
+	tun, err := tunnel.NewTunnel(account, opts.Identifier, "", ssAddr, opts.Tuna, tunnelConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -140,8 +165,8 @@ func main() {
 	if len(opts.AdminIdentifier) > 0 {
 		go func() {
 			identifier := opts.AdminIdentifier
-			if len(conf.Identifier) > 0 {
-				identifier += "." + conf.Identifier
+			if len(opts.Identifier) > 0 {
+				identifier += "." + opts.Identifier
 			}
 			err := admin.StartClient(account, identifier, clientConfig, tun, conf)
 			if err != nil {
