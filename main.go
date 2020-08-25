@@ -23,9 +23,13 @@ import (
 )
 
 var opts struct {
+	Client bool `short:"c" long:"client" description:"Client mode"`
+	Server bool `short:"s" long:"server" description:"Server mode"`
+
 	config.Config
-	ConfigFile string `short:"c" long:"config-file" default:"config.json" description:"Config file path"`
-	Version    bool   `short:"v" long:"version" description:"Print version"`
+	ConfigFile string `short:"f" long:"config-file" default:"config.json" description:"Config file path"`
+
+	Version bool `long:"version" description:"Print version"`
 }
 
 var (
@@ -50,6 +54,10 @@ func main() {
 	if opts.Version {
 		fmt.Println(Version)
 		os.Exit(0)
+	}
+
+	if opts.Client == opts.Server {
+		log.Fatal("Exactly one mode (client or server) should be selected.")
 	}
 
 	conf, err := config.LoadOrNewConfig(opts.ConfigFile)
@@ -96,6 +104,14 @@ func main() {
 		seedRPCServerAddr = nkn.NewStringArray(opts.SeedRPCServerAddr...)
 	}
 
+	if len(opts.Cipher) == 0 {
+		opts.Cipher = config.DefaultCipher
+	}
+
+	if len(opts.LocalAddr) == 0 {
+		opts.LocalAddr = config.DefaultClientLocalAddr
+	}
+
 	tunaMaxPrice := opts.TunaMaxPrice
 	if len(tunaMaxPrice) == 0 {
 		tunaMaxPrice = config.DefaultTunaMaxPrice
@@ -122,6 +138,7 @@ func main() {
 		ClientConfig:      clientConfig,
 		WalletConfig:      walletConfig,
 		TunaSessionConfig: tsConfig,
+		Verbose:           opts.Verbose,
 	}
 
 	port, err := util.GetFreePort()
@@ -134,9 +151,65 @@ func main() {
 	ssConfig := &ss.Config{
 		TCP:      true,
 		UDP:      false,
-		Cipher:   "AEAD_CHACHA20_POLY1305",
+		Cipher:   opts.Cipher,
 		Password: opts.Password,
-		Server:   ssAddr,
+		Verbose:  opts.Verbose,
+	}
+
+	var tun *tunnel.Tunnel
+
+	if opts.Client {
+		if len(opts.RemoteAddr) == 0 {
+			log.Fatal("Remote address should not be empty.")
+		}
+
+		ssConfig.Client = ssAddr
+		ssConfig.Socks = opts.LocalAddr
+
+		tun, err = tunnel.NewTunnel(account, opts.Identifier, ssAddr, opts.RemoteAddr, opts.Tuna, tunnelConfig)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Println("Client NKN address:", tun.Addr().String())
+		log.Println("Client socks proxy listen address:", opts.LocalAddr)
+	}
+
+	if opts.Server {
+		ssConfig.Server = ssAddr
+
+		tun, err = tunnel.NewTunnel(account, opts.Identifier, "", ssAddr, opts.Tuna, tunnelConfig)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Println("Server listen address:", tun.FromAddr())
+
+		if len(opts.AdminIdentifier) > 0 {
+			go func() {
+				identifier := opts.AdminIdentifier
+				if len(opts.Identifier) > 0 {
+					identifier += "." + opts.Identifier
+				}
+				err := admin.StartClient(account, identifier, clientConfig, tun, conf)
+				if err != nil {
+					log.Fatal(err)
+				}
+				os.Exit(0)
+			}()
+			log.Println("Admin client listening address:", opts.AdminIdentifier+"."+tun.FromAddr())
+		}
+
+		if len(opts.AdminHTTPAddr) > 0 {
+			go func() {
+				err := admin.StartWeb(opts.AdminHTTPAddr, tun, conf)
+				if err != nil {
+					log.Fatal(err)
+				}
+				os.Exit(0)
+			}()
+			log.Println("Admin web dashboard listening address:", opts.AdminHTTPAddr)
+		}
 	}
 
 	go func() {
@@ -147,11 +220,6 @@ func main() {
 		os.Exit(0)
 	}()
 
-	tun, err := tunnel.NewTunnel(account, opts.Identifier, "", ssAddr, opts.Tuna, tunnelConfig)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	go func() {
 		err := tun.Start()
 		if err != nil {
@@ -159,34 +227,6 @@ func main() {
 		}
 		os.Exit(0)
 	}()
-
-	log.Println("NKN tunnel listening address:", tun.FromAddr())
-
-	if len(opts.AdminIdentifier) > 0 {
-		go func() {
-			identifier := opts.AdminIdentifier
-			if len(opts.Identifier) > 0 {
-				identifier += "." + opts.Identifier
-			}
-			err := admin.StartClient(account, identifier, clientConfig, tun, conf)
-			if err != nil {
-				log.Fatal(err)
-			}
-			os.Exit(0)
-		}()
-		log.Println("Admin client listening address:", opts.AdminIdentifier+"."+tun.FromAddr())
-	}
-
-	if len(opts.AdminHTTPAddr) > 0 {
-		go func() {
-			err := admin.StartWeb(opts.AdminHTTPAddr, tun, conf)
-			if err != nil {
-				log.Fatal(err)
-			}
-			os.Exit(0)
-		}()
-		log.Println("Admin web dashboard listening address:", opts.AdminHTTPAddr)
-	}
 
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)

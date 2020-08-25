@@ -13,6 +13,8 @@ import (
 
 const (
 	DefaultTunaMaxPrice    = "0.01"
+	DefaultCipher          = "dummy"
+	DefaultClientLocalAddr = "127.0.0.1:1080"
 	RandomIdentifierChars  = "abcdefghijklmnopqrstuvwxyz0123456789"
 	RandomIdentifierLength = 6
 )
@@ -28,15 +30,21 @@ type Config struct {
 	Seed              string   `json:"seed" long:"seed" description:"NKN client secret seed. A random one will be generated and saved to config.json if not provided"`
 	SeedRPCServerAddr []string `json:"seedRPCServerAddr,omitempty" long:"rpc" description:"Seed RPC server address"`
 
-	Tuna            bool     `json:"tuna,omitempty" long:"tuna" description:"enable tuna sessions"`
-	TunaMaxPrice    string   `json:"tunaMaxPrice,omitempty" long:"tuna-max-price" description:"Tuna max price in unit of NKN/MB"`
-	TunaCountry     []string `json:"tunaCountry,omitempty" long:"tuna-country" description:"Tuna service node allowed country code, e.g. US. All countries will be allowed if not provided"`
-	TunaServiceName string   `json:"tunaServiceName,omitempty" long:"tuna-service-name" description:"Tuna reverse service name"`
+	LocalAddr  string `json:"localAddr,omitempty" short:"l" long:"local-addr" description:"(client only) Local socks proxy listen address (e.g. 127.0.0.1:1080)"`
+	RemoteAddr string `json:"remoteAddr,omitempty" short:"r" long:"remote-addr" description:"(client only) Remote server NKN address"`
 
+	Cipher   string `json:"cipher,omitempty" long:"cipher" description:"Socks proxy cipher. By default dummy (no cipher) will be used since NKN tunnel is already doing end to end encryption." choice:"dummy" choice:"chacha20-ietf-poly1305" choice:"aes-128-gcm" choice:"aes-256-gcm"`
 	Password string `json:"password,omitempty" long:"password" description:"Socks proxy password"`
 
-	AdminHTTPAddr   string `json:"adminHttpAddr,omitempty" long:"admin-http" description:"Admin web GUI listen address (e.g. 127.0.0.1:8000)"`
-	AdminIdentifier string `json:"adminIdentifier,omitempty" long:"admin-identifier" description:"Admin NKN client identifier prefix"`
+	Tuna            bool     `json:"tuna,omitempty" short:"t" long:"tuna" description:"Enable tuna sessions"`
+	TunaMaxPrice    string   `json:"tunaMaxPrice,omitempty" long:"tuna-max-price" description:"(server only) Tuna max price in unit of NKN/MB"`
+	TunaCountry     []string `json:"tunaCountry,omitempty" long:"tuna-country" description:"(server only) Tuna service node allowed country code, e.g. US. All countries will be allowed if not provided"`
+	TunaServiceName string   `json:"tunaServiceName,omitempty" long:"tuna-service-name" description:"(server only) Tuna reverse service name"`
+
+	AdminHTTPAddr   string `json:"adminHttpAddr,omitempty" long:"admin-http" description:"(server only) Admin web GUI listen address (e.g. 127.0.0.1:8000)"`
+	AdminIdentifier string `json:"adminIdentifier,omitempty" long:"admin-identifier" description:"(server only) Admin NKN client identifier prefix"`
+
+	Verbose bool `json:"verbose" short:"v" long:"verbose" description:"Verbose mode, show logs on dialing/accepting connections"`
 
 	lock        sync.RWMutex
 	AcceptAddrs []string `json:"acceptAddrs"`
