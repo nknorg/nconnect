@@ -41,6 +41,7 @@ type getInfoJSON struct {
 	LocalIP  *localIPJSON `json:"localIP"`
 	InPrice  []string     `json:"inPrice,omitempty"`
 	OutPrice []string     `json:"outPrice,omitempty"`
+	Tags     []string     `json:tags,omitempty`
 }
 
 func handleRequest(req *rpcReq, conf *config.Config, tun *tunnel.Tunnel) *rpcResp {
@@ -97,7 +98,7 @@ func handleRequest(req *rpcReq, conf *config.Config, tun *tunnel.Tunnel) *rpcRes
 		}
 		resp.Result = localIP
 	case "getInfo":
-		info, err := getInfo(tun)
+		info, err := getInfo(conf, tun)
 		if err != nil {
 			resp.Error = err.Error()
 			break
@@ -194,7 +195,7 @@ func getLocalIP() (*localIPJSON, error) {
 	return &localIPJSON{Ipv4: ipv4}, nil
 }
 
-func getInfo(tun *tunnel.Tunnel) (*getInfoJSON, error) {
+func getInfo(conf *config.Config, tun *tunnel.Tunnel) (*getInfoJSON, error) {
 	localIP, err := getLocalIP()
 	if err != nil {
 		return nil, err
@@ -211,6 +212,9 @@ func getInfo(tun *tunnel.Tunnel) (*getInfoJSON, error) {
 			info.InPrice[i] = tunaPubAddrs.Addrs[i].InPrice
 			info.OutPrice[i] = tunaPubAddrs.Addrs[i].OutPrice
 		}
+	}
+	if len(conf.Tags) > 0 {
+		info.Tags = conf.Tags
 	}
 	return info, nil
 }

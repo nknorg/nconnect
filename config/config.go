@@ -44,6 +44,8 @@ type Config struct {
 	AdminHTTPAddr   string `json:"adminHttpAddr,omitempty" long:"admin-http" description:"(server only) Admin web GUI listen address (e.g. 127.0.0.1:8000)"`
 	AdminIdentifier string `json:"adminIdentifier,omitempty" long:"admin-identifier" description:"(server only) Admin NKN client identifier prefix"`
 
+	Tags []string `json:"tags,omitempty" long:"tags" description:"(server only) Tags that will be included in get info api"`
+
 	Verbose bool `json:"verbose" short:"v" long:"verbose" description:"Verbose mode, show logs on dialing/accepting connections"`
 
 	lock        sync.RWMutex
