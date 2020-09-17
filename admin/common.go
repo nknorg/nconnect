@@ -3,9 +3,9 @@ package admin
 import (
 	"net"
 
-	"github.com/nknorg/nkn-sdk-go"
 	"github.com/nknorg/nconnect/config"
 	"github.com/nknorg/nconnect/util"
+	"github.com/nknorg/nkn-sdk-go"
 	tunnel "github.com/nknorg/nkn-tunnel"
 )
 
@@ -37,8 +37,10 @@ type localIPJSON struct {
 }
 
 type getInfoJSON struct {
-	Addr    string       `json:"addr"`
-	LocalIP *localIPJSON `json:"localIP"`
+	Addr     string       `json:"addr"`
+	LocalIP  *localIPJSON `json:"localIP"`
+	InPrice  []string     `json:"inPrice,omitempty"`
+	OutPrice []string     `json:"outPrice,omitempty"`
 }
 
 func handleRequest(req *rpcReq, conf *config.Config, tun *tunnel.Tunnel) *rpcResp {
@@ -200,6 +202,15 @@ func getInfo(tun *tunnel.Tunnel) (*getInfoJSON, error) {
 	info := &getInfoJSON{
 		Addr:    tun.FromAddr(),
 		LocalIP: localIP,
+	}
+	tunaPubAddrs := tun.TunaPubAddrs()
+	if tunaPubAddrs != nil {
+		info.InPrice = make([]string, len(tunaPubAddrs.Addrs))
+		info.OutPrice = make([]string, len(tunaPubAddrs.Addrs))
+		for i := range tunaPubAddrs.Addrs {
+			info.InPrice[i] = tunaPubAddrs.Addrs[i].InPrice
+			info.OutPrice[i] = tunaPubAddrs.Addrs[i].OutPrice
+		}
 	}
 	return info, nil
 }
