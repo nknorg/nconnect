@@ -145,6 +145,10 @@ func (c *Config) Save() error {
 }
 
 func (c *Config) save() error {
+	if len(c.path) == 0 {
+		return nil
+	}
+
 	b, err := json.MarshalIndent(c, "", " ")
 	if err != nil {
 		return err
