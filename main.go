@@ -151,6 +151,7 @@ func main() {
 	ssConfig := &ss.Config{
 		TCP:      true,
 		UDP:      false,
+		UDPSocks: true,
 		Cipher:   opts.Cipher,
 		Password: opts.Password,
 		Verbose:  opts.Verbose,
