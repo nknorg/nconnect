@@ -56,6 +56,8 @@ func Start(flags *Config) error {
 		key = k
 	}
 
+	errChan := make(chan error, 1)
+
 	if flags.Client != "" { // client mode
 		addr := flags.Client
 		cipher := flags.Cipher
@@ -86,31 +88,31 @@ func Start(flags *Config) error {
 		if flags.UDPTun != "" {
 			for _, tun := range strings.Split(flags.UDPTun, ",") {
 				p := strings.Split(tun, "=")
-				go udpLocal(p[0], udpAddr, p[1], ciph.PacketConn)
+				go sendErr(udpLocal(p[0], udpAddr, p[1], ciph.PacketConn), errChan)
 			}
 		}
 
 		if flags.TCPTun != "" {
 			for _, tun := range strings.Split(flags.TCPTun, ",") {
 				p := strings.Split(tun, "=")
-				go tcpTun(p[0], addr, p[1], ciph.StreamConn)
+				go sendErr(tcpTun(p[0], addr, p[1], ciph.StreamConn), errChan)
 			}
 		}
 
 		if flags.Socks != "" {
 			socks.UDPEnabled = flags.UDPSocks
-			go socksLocal(flags.Socks, addr, ciph.StreamConn)
+			go sendErr(socksLocal(flags.Socks, addr, ciph.StreamConn), errChan)
 			if flags.UDPSocks {
-				go udpSocksLocal(flags.Socks, udpAddr, ciph.PacketConn)
+				go sendErr(udpSocksLocal(flags.Socks, udpAddr, ciph.PacketConn), errChan)
 			}
 		}
 
 		if flags.RedirTCP != "" {
-			go redirLocal(flags.RedirTCP, addr, ciph.StreamConn)
+			go sendErr(redirLocal(flags.RedirTCP, addr, ciph.StreamConn), errChan)
 		}
 
 		if flags.RedirTCP6 != "" {
-			go redir6Local(flags.RedirTCP6, addr, ciph.StreamConn)
+			go sendErr(redir6Local(flags.RedirTCP6, addr, ciph.StreamConn), errChan)
 		}
 	}
 
@@ -142,16 +144,16 @@ func Start(flags *Config) error {
 		}
 
 		if flags.UDP {
-			go udpRemote(udpAddr, ciph.PacketConn)
+			go sendErr(udpRemote(udpAddr, ciph.PacketConn), errChan)
 		}
 		if flags.TCP {
-			go tcpRemote(addr, ciph.StreamConn)
+			go sendErr(tcpRemote(addr, ciph.StreamConn), errChan)
 		}
 	}
 
 	defer killPlugin()
 
-	select {}
+	return <-errChan
 }
 
 func parseURL(s string) (addr, cipher, password string, err error) {
@@ -166,4 +168,11 @@ func parseURL(s string) (addr, cipher, password string, err error) {
 		password, _ = u.User.Password()
 	}
 	return
+}
+
+func sendErr(err error, errChan chan error) {
+	select {
+	case errChan <- err:
+	default:
+	}
 }

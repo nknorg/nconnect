@@ -1,6 +1,7 @@
 package ss
 
 import (
+	"errors"
 	"net"
 	"syscall"
 	"time"
@@ -9,12 +10,12 @@ import (
 	"github.com/shadowsocks/go-shadowsocks2/socks"
 )
 
-func redirLocal(addr, server string, shadow func(net.Conn) net.Conn) {
-	tcpLocal(addr, server, shadow, natLookup)
+func redirLocal(addr, server string, shadow func(net.Conn) net.Conn) error {
+	return tcpLocal(addr, server, shadow, natLookup)
 }
 
-func redir6Local(addr, server string, shadow func(net.Conn) net.Conn) {
-	panic("TCP6 redirect not supported")
+func redir6Local(addr, server string, shadow func(net.Conn) net.Conn) error {
+	return errors.New("TCP6 redirect not supported")
 }
 
 func natLookup(c net.Conn) (socks.Addr, error) {

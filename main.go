@@ -216,7 +216,7 @@ func main() {
 	go func() {
 		err := ss.Start(ssConfig)
 		if err != nil {
-			log.Println(err)
+			log.Fatal(err)
 		}
 		os.Exit(0)
 	}()

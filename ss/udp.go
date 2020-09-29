@@ -21,24 +21,20 @@ const (
 const udpBufSize = 64 * 1024
 
 // Listen on laddr for UDP packets, encrypt and send to server to reach target.
-func udpLocal(laddr, server, target string, shadow func(net.PacketConn) net.PacketConn) {
+func udpLocal(laddr, server, target string, shadow func(net.PacketConn) net.PacketConn) error {
 	srvAddr, err := net.ResolveUDPAddr("udp", server)
 	if err != nil {
-		logf("UDP server address error: %v", err)
-		return
+		return fmt.Errorf("UDP server address error: %v", err)
 	}
 
 	tgt := socks.ParseAddr(target)
 	if tgt == nil {
-		err = fmt.Errorf("invalid target address: %q", target)
-		logf("UDP target address error: %v", err)
-		return
+		return fmt.Errorf("UDP target address error: invalid target address: %q", target)
 	}
 
 	c, err := net.ListenPacket("udp", laddr)
 	if err != nil {
-		logf("UDP local listen error: %v", err)
-		return
+		return fmt.Errorf("UDP local listen error: %v", err)
 	}
 	defer c.Close()
 
@@ -75,17 +71,15 @@ func udpLocal(laddr, server, target string, shadow func(net.PacketConn) net.Pack
 }
 
 // Listen on laddr for Socks5 UDP packets, encrypt and send to server to reach target.
-func udpSocksLocal(laddr, server string, shadow func(net.PacketConn) net.PacketConn) {
+func udpSocksLocal(laddr, server string, shadow func(net.PacketConn) net.PacketConn) error {
 	srvAddr, err := net.ResolveUDPAddr("udp", server)
 	if err != nil {
-		logf("UDP server address error: %v", err)
-		return
+		return fmt.Errorf("UDP server address error: %v", err)
 	}
 
 	c, err := net.ListenPacket("udp", laddr)
 	if err != nil {
-		logf("UDP local listen error: %v", err)
-		return
+		return fmt.Errorf("UDP local listen error: %v", err)
 	}
 	defer c.Close()
 
@@ -120,11 +114,10 @@ func udpSocksLocal(laddr, server string, shadow func(net.PacketConn) net.PacketC
 }
 
 // Listen on addr for encrypted packets and basically do UDP NAT.
-func udpRemote(addr string, shadow func(net.PacketConn) net.PacketConn) {
+func udpRemote(addr string, shadow func(net.PacketConn) net.PacketConn) error {
 	c, err := net.ListenPacket("udp", addr)
 	if err != nil {
-		logf("UDP remote listen error: %v", err)
-		return
+		return fmt.Errorf("UDP remote listen error: %v", err)
 	}
 	defer c.Close()
 	c = shadow(c)

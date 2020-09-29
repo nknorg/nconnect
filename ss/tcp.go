@@ -1,6 +1,7 @@
 package ss
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
@@ -11,34 +12,33 @@ import (
 )
 
 // Create a SOCKS server listening on addr and proxy to server.
-func socksLocal(addr, server string, shadow func(net.Conn) net.Conn) {
+func socksLocal(addr, server string, shadow func(net.Conn) net.Conn) error {
 	logf("SOCKS proxy %s <-> %s", addr, server)
-	tcpLocal(addr, server, shadow, func(c net.Conn) (socks.Addr, error) { return socks.Handshake(c) })
+	return tcpLocal(addr, server, shadow, func(c net.Conn) (socks.Addr, error) { return socks.Handshake(c) })
 }
 
 // Create a TCP tunnel from addr to target via server.
-func tcpTun(addr, server, target string, shadow func(net.Conn) net.Conn) {
+func tcpTun(addr, server, target string, shadow func(net.Conn) net.Conn) error {
 	tgt := socks.ParseAddr(target)
 	if tgt == nil {
-		logf("invalid target address %q", target)
-		return
+		return fmt.Errorf("invalid target address %q", target)
 	}
 	logf("TCP tunnel %s <-> %s <-> %s", addr, server, target)
-	tcpLocal(addr, server, shadow, func(net.Conn) (socks.Addr, error) { return tgt, nil })
+	return tcpLocal(addr, server, shadow, func(net.Conn) (socks.Addr, error) { return tgt, nil })
 }
 
 // Listen on addr and proxy to server to reach target from getAddr.
-func tcpLocal(addr, server string, shadow func(net.Conn) net.Conn, getAddr func(net.Conn) (socks.Addr, error)) {
+func tcpLocal(addr, server string, shadow func(net.Conn) net.Conn, getAddr func(net.Conn) (socks.Addr, error)) error {
 	l, err := net.Listen("tcp", addr)
 	if err != nil {
-		logf("failed to listen on %s: %v", addr, err)
-		return
+		return fmt.Errorf("failed to listen on %s: %v", addr, err)
 	}
 
 	for {
 		c, err := l.Accept()
 		if err != nil {
 			logf("failed to accept: %s", err)
+			time.Sleep(time.Second)
 			continue
 		}
 
@@ -95,11 +95,10 @@ func tcpLocal(addr, server string, shadow func(net.Conn) net.Conn, getAddr func(
 }
 
 // Listen on addr for incoming connections.
-func tcpRemote(addr string, shadow func(net.Conn) net.Conn) {
+func tcpRemote(addr string, shadow func(net.Conn) net.Conn) error {
 	l, err := net.Listen("tcp", addr)
 	if err != nil {
-		logf("failed to listen on %s: %v", addr, err)
-		return
+		return fmt.Errorf("failed to listen on %s: %v", addr, err)
 	}
 
 	logf("listening TCP on %s", addr)
@@ -107,6 +106,7 @@ func tcpRemote(addr string, shadow func(net.Conn) net.Conn) {
 		c, err := l.Accept()
 		if err != nil {
 			logf("failed to accept: %v", err)
+			time.Sleep(time.Second)
 			continue
 		}
 
