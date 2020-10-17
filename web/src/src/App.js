@@ -1,8 +1,7 @@
 import React from 'react';
 import QRCode from 'qrcode';
-import Button from '@material-ui/core/Button';
-import Container from '@material-ui/core/Container';
-import TextField from '@material-ui/core/TextField';
+import { Button, Collapse, Container, TextField } from '@material-ui/core';
+import { ExpandLess, ExpandMore } from '@material-ui/icons';
 
 import * as rpc from './rpc';
 
@@ -17,11 +16,13 @@ class App extends React.Component {
       acceptAddrs: '',
       adminAddrs: '',
       localIP: [],
+      showAdvanced: false,
     };
     this.handleAcceptAddrsChange = this.handleAcceptAddrsChange.bind(this);
     this.handleAdminAddrsChange = this.handleAdminAddrsChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.updateAdminToken = this.updateAdminToken.bind(this);
+    this.handleAdvancedChange = this.handleAdvancedChange.bind(this);
   }
 
   handleAcceptAddrsChange(event) {
@@ -30,6 +31,11 @@ class App extends React.Component {
 
   handleAdminAddrsChange(event) {
     this.setState({ adminAddrs: event.target.value });
+  }
+
+  handleAdvancedChange(event) {
+    this.setState({ showAdvanced: !this.state.showAdvanced });
+    console.log(this.state.showAdvanced);
   }
 
   async handleSubmit(event) {
@@ -90,57 +96,74 @@ class App extends React.Component {
     return (
       <div className="App">
         <Container>
-          <div>
-            <img
-              src={this.state.adminTokenQRCode}
-              />
+          <div className="row">
+            <img src="/static/media/nkn_logo.png" />
           </div>
-          <div>
-            <TextField
-              disabled
-              multiline
-              label="Local IP address"
-              value={this.state.localIP.join('\n')}
-              />
+          <div className="row">
+            <img src={this.state.adminTokenQRCode} />
           </div>
-          <div>
-            <TextField
-              disabled
-              multiline
-              label="Access key (expires in 5 minutes)"
-              value={this.state.adminTokenStr}
-              style={{width: '100%'}}
-              />
+          <div className="row">
+            Scan the QR code on nMobile Pro to connect and manage device.
           </div>
-          <div>
-            <TextField
-              multiline
-              variant="filled"
-              label="Accept addresses"
-              value={this.state.acceptAddrs}
-              onChange={this.handleAcceptAddrsChange}
-              style={{width: '100%'}}
-              />
-          </div>
-          <div>
-            <TextField
-              multiline
-              variant="filled"
-              label="Admins"
-              value={this.state.adminAddrs}
-              onChange={this.handleAdminAddrsChange}
-              style={{width: '100%'}}
-              />
-          </div>
-          <div>
+          <div className="row">
             <Button
-              variant="contained"
+              variant="outlined"
               color="primary"
-              onClick={this.handleSubmit}
+              onClick={this.handleAdvancedChange}
+              style={{width: '100%'}}
               >
-              Save
+              {this.state.showAdvanced ? <ExpandLess /> : <ExpandMore /> }
+              {this.state.showAdvanced ? "Hide Advanced" : "Show Advanced"}
             </Button>
           </div>
+          <Collapse in={this.state.showAdvanced}>
+            <div className="advanced-row">
+              <TextField
+                disabled
+                multiline
+                label="Local IP address"
+                value={this.state.localIP.join('\n')}
+                style={{width: '100%'}}
+                />
+            </div>
+            <div className="advanced-row">
+              <TextField
+                disabled
+                multiline
+                label="Access key (expires in 5 minutes)"
+                value={this.state.adminTokenStr}
+                style={{width: '100%'}}
+                />
+            </div>
+            <div className="advanced-row">
+              <TextField
+                multiline
+                variant="filled"
+                label="Accept addresses"
+                value={this.state.acceptAddrs}
+                onChange={this.handleAcceptAddrsChange}
+                style={{width: '100%'}}
+                />
+              <TextField
+                multiline
+                variant="filled"
+                label="Admins"
+                value={this.state.adminAddrs}
+                onChange={this.handleAdminAddrsChange}
+                style={{width: '100%'}}
+                />
+            </div>
+            <div className="advanced-row">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={this.handleSubmit}
+                style={{width: '100%'}}
+                >
+                Save
+              </Button>
+            </div>
+          </Collapse>
         </Container>
       </div>
     );

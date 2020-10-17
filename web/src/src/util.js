@@ -1,5 +1,3 @@
-'use strict';
-
 export function assignDefined(target, ...sources) {
   for (let source of sources) {
     if (source) {

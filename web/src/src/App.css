@@ -1,3 +1,13 @@
 .App {
   text-align: center;
 }
+
+.row {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.advanced-row {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
