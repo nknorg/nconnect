@@ -19,7 +19,7 @@ import (
 	"github.com/nknorg/nkn-sdk-go"
 	ts "github.com/nknorg/nkn-tuna-session"
 	tunnel "github.com/nknorg/nkn-tunnel"
-	"github.com/nknorg/tuna"
+	"github.com/nknorg/tuna/geo"
 )
 
 var opts struct {
@@ -117,7 +117,7 @@ func main() {
 		tunaMaxPrice = config.DefaultTunaMaxPrice
 	}
 
-	locations := make([]tuna.Location, len(opts.TunaCountry))
+	locations := make([]geo.Location, len(opts.TunaCountry))
 	for i := range opts.TunaCountry {
 		locations[i].CountryCode = strings.TrimSpace(opts.TunaCountry[i])
 	}
@@ -129,9 +129,11 @@ func main() {
 		SeedRPCServerAddr: seedRPCServerAddr,
 	}
 	tsConfig := &ts.Config{
-		TunaMaxPrice:    tunaMaxPrice,
-		TunaIPFilter:    &tuna.IPFilter{Allow: locations},
-		TunaServiceName: opts.TunaServiceName,
+		TunaMaxPrice:      tunaMaxPrice,
+		TunaIPFilter:      &geo.IPFilter{Allow: locations},
+		TunaServiceName:   opts.TunaServiceName,
+		TunaDownloadGeoDB: opts.TunaDownloadGeoDB,
+		TunaGeoDBPath:     opts.TunaGeoDBPath,
 	}
 	tunnelConfig := &tunnel.Config{
 		AcceptAddrs:       nkn.NewStringArray(conf.AcceptAddrs...),
