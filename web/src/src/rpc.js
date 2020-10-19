@@ -11,6 +11,7 @@ const methods = {
   addAddrs: { method: 'addAddrs' },
   removeAddrs: { method: 'removeAddrs' },
   getLocalIP: { method: 'getLocalIP' },
+  getInfo: { method: 'getInfo' },
 }
 
 var rpc = {};
@@ -92,4 +93,8 @@ export async function removeAddrs(acceptAddrs, adminAddrs) {
 
 export async function getLocalIP() {
   return rpc.getLocalIP(rpcAddr);
+}
+
+export async function getInfo() {
+  return rpc.getInfo(rpcAddr);
 }

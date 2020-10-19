@@ -15,6 +15,7 @@ class App extends React.Component {
       adminTokenQRCode: '',
       acceptAddrs: '',
       adminAddrs: '',
+      addr: '',
       localIP: [],
       showAdvanced: false,
     };
@@ -83,9 +84,10 @@ class App extends React.Component {
       alert(e);
     });
 
-    rpc.getLocalIP().then((localIP) => {
+    rpc.getInfo().then((info) => {
       this.setState({
-        localIP: localIP.ipv4,
+        addr: info.addr,
+        localIP: info.localIP.ipv4,
       });
     }).catch((e) => {
       console.error(e);
@@ -104,6 +106,9 @@ class App extends React.Component {
           </div>
           <div className="row">
             Scan the QR code on nMobile Pro to connect and manage device.
+          </div>
+          <div className="row">
+            Purchase data plan on nMobile Pro or <a target="_blank" href={"https://nconnect-payment.nkncdn.com/payment/?addr=" + addrToPubKey(this.state.addr)}>web payment portal</a>
           </div>
           <div className="row">
             <Button
@@ -182,6 +187,11 @@ function strToAddrs(str) {
     return [];
   }
   return str.split('\n').filter(s => s.length > 0);
+}
+
+function addrToPubKey(addr) {
+  let s = addr.split('.');
+  return s[s.length-1];
 }
 
 export default App;
