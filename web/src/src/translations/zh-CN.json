@@ -1,0 +1,12 @@
+{
+  "language": "简体中文",
+  "QR code description": "在 nMobile Pro 中扫描二维码来连接和管理设备。",
+  "purchase description": "在 nMobile Pro 内或<a>在线支付页面</a>购买流量。",
+  "show advanced": "显示高级设置",
+  "hide advanced": "隐藏高级设置",
+  "local IP address": "本地 IP 地址",
+  "access key": "访问密钥（5 分钟后过期）",
+  "accept addresses": "白名单地址",
+  "admins": "管理员地址",
+  "save": "保存"
+}

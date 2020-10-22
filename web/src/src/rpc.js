@@ -47,7 +47,7 @@ async function rpcCall(addr, method, params = {}) {
     return data.result;
   }
 
-  throw 'rpc response contains no result or error field';
+  throw new Error('rpc response contains no result or error field');
 }
 
 export async function getAdminToken() {

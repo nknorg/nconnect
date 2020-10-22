@@ -1,8 +1,10 @@
 import React from 'react';
 import QRCode from 'qrcode';
-import { Button, Collapse, Container, TextField } from '@material-ui/core';
+import { withTranslation, Trans } from 'react-i18next';
+import { Button, Collapse, Container, TextField, MenuItem, Select } from '@material-ui/core';
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
 
+import i18n, { resources as languages } from './i18n';
 import * as rpc from './rpc';
 
 import './App.css';
@@ -17,13 +19,21 @@ class App extends React.Component {
       adminAddrs: '',
       addr: '',
       localIP: [],
+      language: '',
       showAdvanced: false,
     };
+    for (let i = 0; i < i18n.languages.length; i++) {
+      if (languages[i18n.languages[i]]) {
+        this.state.language = i18n.languages[i];
+        break;
+      }
+    }
     this.handleAcceptAddrsChange = this.handleAcceptAddrsChange.bind(this);
     this.handleAdminAddrsChange = this.handleAdminAddrsChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.updateAdminToken = this.updateAdminToken.bind(this);
     this.handleAdvancedChange = this.handleAdvancedChange.bind(this);
+    this.handleLanguageChange = this.handleLanguageChange.bind(this);
   }
 
   handleAcceptAddrsChange(event) {
@@ -36,7 +46,11 @@ class App extends React.Component {
 
   handleAdvancedChange(event) {
     this.setState({ showAdvanced: !this.state.showAdvanced });
-    console.log(this.state.showAdvanced);
+  }
+
+  handleLanguageChange(event) {
+    this.setState({ language: event.target.value });
+    i18n.changeLanguage(event.target.value);
   }
 
   async handleSubmit(event) {
@@ -98,17 +112,34 @@ class App extends React.Component {
     return (
       <div className="App">
         <Container>
-          <div className="row">
-            <img src="/static/media/nkn_logo.png" />
+          <div className="language-switcher">
+            <Select
+              value={this.state.language}
+              onChange={this.handleLanguageChange}
+            >
+              {
+                Object.keys(languages).map((lang) => {
+                  return (
+                    <MenuItem key={lang} value={lang}>{i18n.getFixedT(lang)('language')}</MenuItem>
+                  )
+                })
+              }
+            </Select>
           </div>
           <div className="row">
-            <img src={this.state.adminTokenQRCode} />
+            <img src="/static/media/nkn_logo.png" alt="NKN logo" />
           </div>
           <div className="row">
-            Scan the QR code on nMobile Pro to connect and manage device.
+            <img src={this.state.adminTokenQRCode} alt="QR Code" />
           </div>
           <div className="row">
-            Purchase data plan on nMobile Pro or <a target="_blank" href={"https://nconnect-payment.nkncdn.com/payment/?addr=" + addrToPubKey(this.state.addr)}>web payment portal</a>
+            {this.props.t('QR code description')}
+          </div>
+          <div className="row">
+            <Trans
+              i18nKey="purchase description"
+              components={{ a: <a target="_blank" rel="noopener noreferrer" href={`https://nconnect-payment.nkncdn.com/payment/?addr=${addrToPubKey(this.state.addr)}&lng=${this.state.language}`} /> }}
+            />
           </div>
           <div className="row">
             <Button
@@ -118,7 +149,7 @@ class App extends React.Component {
               style={{width: '100%'}}
               >
               {this.state.showAdvanced ? <ExpandLess /> : <ExpandMore /> }
-              {this.state.showAdvanced ? "Hide Advanced" : "Show Advanced"}
+              {this.state.showAdvanced ? this.props.t('hide advanced') : this.props.t('show advanced')}
             </Button>
           </div>
           <Collapse in={this.state.showAdvanced}>
@@ -126,7 +157,7 @@ class App extends React.Component {
               <TextField
                 disabled
                 multiline
-                label="Local IP address"
+                label={this.props.t('local IP address')}
                 value={this.state.localIP.join('\n')}
                 style={{width: '100%'}}
                 />
@@ -135,7 +166,7 @@ class App extends React.Component {
               <TextField
                 disabled
                 multiline
-                label="Access key (expires in 5 minutes)"
+                label={this.props.t('access key')}
                 value={this.state.adminTokenStr}
                 style={{width: '100%'}}
                 />
@@ -144,7 +175,7 @@ class App extends React.Component {
               <TextField
                 multiline
                 variant="filled"
-                label="Accept addresses"
+                label={this.props.t('accept addresses')}
                 value={this.state.acceptAddrs}
                 onChange={this.handleAcceptAddrsChange}
                 style={{width: '100%'}}
@@ -152,7 +183,7 @@ class App extends React.Component {
               <TextField
                 multiline
                 variant="filled"
-                label="Admins"
+                label={this.props.t('admins')}
                 value={this.state.adminAddrs}
                 onChange={this.handleAdminAddrsChange}
                 style={{width: '100%'}}
@@ -165,7 +196,7 @@ class App extends React.Component {
                 onClick={this.handleSubmit}
                 style={{width: '100%'}}
                 >
-                Save
+                {this.props.t('save')}
               </Button>
             </div>
           </Collapse>
@@ -194,4 +225,4 @@ function addrToPubKey(addr) {
   return s[s.length-1];
 }
 
-export default App;
+export default withTranslation()(App);

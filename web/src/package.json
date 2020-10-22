@@ -10,9 +10,12 @@
     "@testing-library/user-event": "^7.1.2",
     "axios": "^0.19.2",
     "fontsource-roboto": "^3.0.3",
+    "i18next": "^19.8.2",
+    "i18next-browser-languagedetector": "^6.0.1",
     "qrcode": "^1.4.4",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-i18next": "^11.7.3",
     "react-scripts": "3.4.3"
   },
   "scripts": {

@@ -11,3 +11,7 @@
   padding-top: 10px;
   padding-bottom: 10px;
 }
+
+.language-switcher {
+  text-align: right;
+}

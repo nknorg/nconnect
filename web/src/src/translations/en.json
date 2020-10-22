@@ -1,0 +1,12 @@
+{
+  "language": "English",
+  "QR code description": "Scan the QR code on nMobile Pro to connect and manage device.",
+  "purchase description": "Purchase data plan on nMobile Pro or <a>web payment portal</a>",
+  "show advanced": "Show Advanced Settings",
+  "hide advanced": "Hide Advanced Settings",
+  "local IP address": "Local IP address",
+  "access key": "Access key (expires in 5 minutes)",
+  "accept addresses": "Accept addresses",
+  "admins": "Admins",
+  "save": "Save"
+}
