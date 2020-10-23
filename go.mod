@@ -7,8 +7,8 @@ require (
 	github.com/imdario/mergo v0.3.9
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/nknorg/nkn-sdk-go v1.3.4-0.20201020100539-187d9201bdfe
-	github.com/nknorg/nkn-tuna-session v0.2.1-0.20201023011702-06e5e85f37f4
-	github.com/nknorg/nkn-tunnel v0.3.1-0.20201023011853-0dd5bb54e7bf
-	github.com/nknorg/tuna v0.0.0-20201023011359-8e839f602cb4
+	github.com/nknorg/nkn-tuna-session v0.2.1-0.20201023014817-93a9483c904a
+	github.com/nknorg/nkn-tunnel v0.3.1-0.20201023014922-96b7db82a4a6
+	github.com/nknorg/tuna v0.0.0-20201023014634-001edad2cde6
 	github.com/shadowsocks/go-shadowsocks2 v0.1.2
 )
