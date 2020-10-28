@@ -25,17 +25,24 @@ for (let method in methods) {
 }
 
 async function rpcCall(addr, method, params = {}) {
+  let headers;
+  try {
+    headers = await window.rpcHeaders;
+  } catch (e) {
+    console.error('Await rpc headers error:', e);
+  }
+
   let response = await axios({
     url: addr,
     method: 'POST',
     timeout: 10000,
+    headers,
     data: {
       id: 'nConnect-web',
       jsonrpc: '2.0',
       method: method,
       params: params,
     },
-    headers: await window.rpcHeaders,
   });
 
   let data = response.data;
