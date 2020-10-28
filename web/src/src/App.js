@@ -133,12 +133,44 @@ class App extends React.Component {
             <img src={this.state.adminTokenQRCode} alt="QR Code" />
           </div>
           <div className="row">
-            {this.props.t('QR code description')}
+            <Trans
+              i18nKey="get started"
+              components={{
+                getStartedLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('getStartedLink')} />,
+              }}
+            />
+          </div>
+          <div className="row">
+            <Trans
+              i18nKey="QR code description"
+              components={{
+                nMobileProLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('nMobileProLink')} />,
+              }}
+            />
+          </div>
+          <div className="row">
+            <Trans
+              i18nKey="desktop client description"
+              components={{
+                nConnectClientDesktopLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('nConnectClientDesktopLink')} />,
+              }}
+            />
           </div>
           <div className="row">
             <Trans
               i18nKey="purchase description"
-              components={{ a: <a target="_blank" rel="noopener noreferrer" href={`https://nconnect-payment.nkncdn.com/payment/?addr=${addrToPubKey(this.state.addr)}&lng=${this.state.language}`} /> }}
+              components={{
+                nMobileProLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('nMobileProLink')} />,
+                paymentLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('paymentLink', {addr: addrToPubKey(this.state.addr), lng: this.state.language})} />,
+              }}
+            />
+          </div>
+          <div className="row">
+            <Trans
+              i18nKey="custom service description"
+              components={{
+                customServiceLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('customServiceLink')} />,
+              }}
             />
           </div>
           <div className="row">

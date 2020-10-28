@@ -1,12 +1,20 @@
 {
   "language": "English",
-  "QR code description": "Scan the QR code on nMobile Pro to connect and manage device.",
-  "purchase description": "Purchase data plan on nMobile Pro or <a>web payment portal</a>",
+  "get started": "Read <getStartedLink>this guide</getStartedLink> to get started.",
+  "QR code description": "Scan the QR code on <nMobileProLink>nMobile Pro</nMobileProLink> to manage and connect to this device.",
+  "desktop client description": "Download <nConnectClientDesktopLink>nConnect client for desktop</nConnectClientDesktopLink> to connect to this device from desktop.",
+  "purchase description": "Purchase data plan on <nMobileProLink>nMobile Pro</nMobileProLink> or <paymentLink>web payment portal</paymentLink>.",
+  "custom service description": "If you have any questions, check out our <customServiceLink>custom service information</customServiceLink>.",
   "show advanced": "Show Advanced Settings",
   "hide advanced": "Hide Advanced Settings",
   "local IP address": "Local IP address",
-  "access key": "Access key (expires in 5 minutes)",
+  "access key": "Access key (valid for 5 minutes)",
   "accept addresses": "Accept addresses",
   "admins": "Admins",
-  "save": "Save"
+  "save": "Save",
+  "getStartedLink": "https://forum.nkn.org/t/nconnect-user-manual-video-nconnect/2457",
+  "nMobileProLink": "https://www.nkn.org/nMobile-pro/",
+  "nConnectClientDesktopLink": "https://forum.nkn.org/t/nconnect-pc-download-nconnectpc/2456",
+  "paymentLink": "https://nconnect-payment.nkncdn.com/payment/?addr={{addr}}&lng={{lng}}",
+  "customServiceLink": "https://forum.nkn.org/t/nconnect-customer-service-nconnect/2461"
 }
