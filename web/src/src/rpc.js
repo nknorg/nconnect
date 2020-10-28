@@ -35,6 +35,7 @@ async function rpcCall(addr, method, params = {}) {
       method: method,
       params: params,
     },
+    headers: await window.rpcHeaders,
   });
 
   let data = response.data;
