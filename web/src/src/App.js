@@ -1,13 +1,36 @@
 import React from 'react';
 import QRCode from 'qrcode';
 import { withTranslation, Trans } from 'react-i18next';
-import { Button, Container, List, ListItem, ListItemText, Tab, TextField, MenuItem, Select } from '@material-ui/core';
+import { Button, Container, MenuItem, List, ListItem, ListItemText, Tab, TextField, Tooltip, Select } from '@material-ui/core';
 import { TabContext, TabList, TabPanel } from '@material-ui/lab';
 
 import i18n, { resources as languages } from './i18n';
 import * as rpc from './rpc';
 
 import './App.css';
+
+class HoverQRCode extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      qrCode: '',
+    };
+  }
+
+  componentDidMount() {
+    QRCode.toDataURL(this.props.rawData).then(qrCode => {
+      this.setState({ qrCode });
+    }).catch(console.error);
+  }
+
+  render() {
+    return (
+      <Tooltip title={<img src={this.state.qrCode} alt="QR Code" />} >
+        <img src="/static/media/qr_code.png" alt="QR Code" style={{height: '24px', verticalAlign: 'middle'}} />
+      </Tooltip>
+    );
+  }
+}
 
 class App extends React.Component {
   constructor(props) {
@@ -155,6 +178,7 @@ class App extends React.Component {
                       i18nKey="download nMobile pro"
                       components={{
                         nMobileProLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('nMobileProLink')} />,
+                        QRCode: <HoverQRCode rawData={this.props.t('nMobileProLink')} />,
                       }}
                     />
                   </ListItemText>
