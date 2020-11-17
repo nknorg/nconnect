@@ -37,6 +37,7 @@ async function rpcCall(addr, method, params = {}) {
     method: 'POST',
     timeout: 10000,
     headers,
+    withCredentials: true,
     data: {
       id: 'nConnect-web',
       jsonrpc: '2.0',
