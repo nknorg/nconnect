@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/nknorg/nkn-sdk-go"
 	"github.com/nknorg/nconnect/config"
 	"github.com/nknorg/nconnect/util"
+	"github.com/nknorg/nkn-sdk-go"
 	tunnel "github.com/nknorg/nkn-tunnel"
 )
 
