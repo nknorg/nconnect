@@ -65,7 +65,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = mergo.Merge(&opts.Config, conf, mergo.WithOverride)
+	err = mergo.Merge(&opts.Config, conf)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -194,7 +194,7 @@ func main() {
 				if len(opts.Identifier) > 0 {
 					identifier += "." + opts.Identifier
 				}
-				err := admin.StartClient(account, identifier, clientConfig, tun, conf)
+				err := admin.StartClient(account, identifier, clientConfig, tun, conf, &opts.Config)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -205,7 +205,7 @@ func main() {
 
 		if len(opts.AdminHTTPAddr) > 0 {
 			go func() {
-				err := admin.StartWeb(opts.AdminHTTPAddr, tun, conf)
+				err := admin.StartWeb(opts.AdminHTTPAddr, tun, conf, &opts.Config)
 				if err != nil {
 					log.Fatal(err)
 				}

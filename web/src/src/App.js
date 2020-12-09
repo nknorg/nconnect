@@ -1,7 +1,7 @@
 import React from 'react';
 import QRCode from 'qrcode';
 import { withTranslation, Trans } from 'react-i18next';
-import { Button, Container, MenuItem, List, ListItem, ListItemText, Tab, TextField, Tooltip, Select } from '@material-ui/core';
+import { Button, Container, MenuItem, List, ListItem, ListItemText, Tab, TextField, Tooltip, Select, Grid } from '@material-ui/core';
 import { TabContext, TabList, TabPanel } from '@material-ui/lab';
 
 import i18n, { resources as languages } from './i18n';
@@ -44,6 +44,9 @@ class App extends React.Component {
       addr: '',
       localIP: [],
       language: '',
+      inPrice: [],
+      outPrice: [],
+      balance: '',
     };
     for (let i = 0; i < i18n.languages.length; i++) {
       if (languages[i18n.languages[i]]) {
@@ -127,10 +130,58 @@ class App extends React.Component {
       this.setState({
         addr: info.addr,
         localIP: info.localIP.ipv4,
+        inPrice: info.inPrice,
+        outPrice: info.outPrice,
       });
     }).catch((e) => {
       console.error(e);
     });
+
+    if (!this.state.balance) {
+      rpc.getBalance().then((balance) => {
+        this.setState({ balance });
+      }).catch((e) => {
+        console.error(e);
+      });
+    }
+  }
+
+  estimatedRemainingData() {
+    if (!this.state.balance) {
+      return null;
+    }
+
+    if (!(this.state.inPrice && this.state.inPrice.length) && !(this.state.outPrice && this.state.outPrice.length)) {
+      return null;
+    }
+
+    let balance = parseFloat(this.state.balance);
+    if (isNaN(balance)) {
+      return null;
+    }
+
+    let averagePrice = 0;
+    for (let i = 0; i < this.state.inPrice.length; i++) {
+      averagePrice += parseFloat(this.state.inPrice[i]);
+    }
+    for (let i = 0; i < this.state.outPrice.length; i++) {
+      averagePrice += parseFloat(this.state.outPrice[i]);
+    }
+    averagePrice /= (this.state.inPrice.length + this.state.outPrice.length);
+    if (isNaN(averagePrice)) {
+      return null;
+    }
+
+    if (averagePrice == 0) {
+      return 'Unlimited';
+    }
+
+    let mb = balance / averagePrice;
+    let gb = mb / 1024;
+    if (gb > 1) {
+      return gb.toFixed(1) + ' GB';
+    }
+    return mb.toFixed(0) + ' MB';
   }
 
   componentDidMount() {
@@ -139,6 +190,7 @@ class App extends React.Component {
   }
 
   render() {
+    let remainingData = this.estimatedRemainingData();
     return (
       <div className="App">
         <Container>
@@ -156,9 +208,20 @@ class App extends React.Component {
               }
             </Select>
           </div>
+
           <div className="row">
-            <img src="/static/media/nkn_logo.png" alt="NKN logo" />
+            <Grid container justify="center" alignItems="center">
+              <Grid item xs={12} sm={6}>
+                <img src="/static/media/nkn_logo.png" alt="NKN logo" />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <div className="row">
+                  { remainingData && ('Estimated Remaining Data: ' + remainingData) }
+                </div>
+              </Grid>
+            </Grid>
           </div>
+
           <TabContext value={this.state.activeTab}>
             <TabList centered onChange={this.handleTabChange}>
               <Tab label={this.props.t('mobile tab')} value="0" />

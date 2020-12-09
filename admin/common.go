@@ -41,16 +41,16 @@ type getInfoJSON struct {
 	LocalIP  *localIPJSON `json:"localIP"`
 	InPrice  []string     `json:"inPrice,omitempty"`
 	OutPrice []string     `json:"outPrice,omitempty"`
-	Tags     []string     `json:tags,omitempty`
+	Tags     []string     `json:"tags,omitempty"`
 }
 
-func handleRequest(req *rpcReq, conf *config.Config, tun *tunnel.Tunnel) *rpcResp {
+func handleRequest(req *rpcReq, permissionConf, globalConf *config.Config, tun *tunnel.Tunnel) *rpcResp {
 	resp := &rpcResp{}
 	switch req.Method {
 	case "getAdminToken":
 		resp.Result = getAdminToken()
 	case "getAddrs":
-		resp.Result = getAddrs(conf)
+		resp.Result = getAddrs(permissionConf)
 	case "setAddrs":
 		addrs := &addrsJSON{}
 		err := util.JSONConvert(req.Params, addrs)
@@ -58,12 +58,12 @@ func handleRequest(req *rpcReq, conf *config.Config, tun *tunnel.Tunnel) *rpcRes
 			resp.Error = err.Error()
 			break
 		}
-		err = setAddrs(conf, addrs, tun)
+		err = setAddrs(permissionConf, addrs, tun)
 		if err != nil {
 			resp.Error = err.Error()
 			break
 		}
-		resp.Result = getAddrs(conf)
+		resp.Result = getAddrs(permissionConf)
 	case "addAddrs":
 		addrs := &addrsJSON{}
 		err := util.JSONConvert(req.Params, addrs)
@@ -71,12 +71,12 @@ func handleRequest(req *rpcReq, conf *config.Config, tun *tunnel.Tunnel) *rpcRes
 			resp.Error = err.Error()
 			break
 		}
-		err = addAddrs(conf, addrs, tun)
+		err = addAddrs(permissionConf, addrs, tun)
 		if err != nil {
 			resp.Error = err.Error()
 			break
 		}
-		resp.Result = getAddrs(conf)
+		resp.Result = getAddrs(permissionConf)
 	case "removeAddrs":
 		addrs := &addrsJSON{}
 		err := util.JSONConvert(req.Params, addrs)
@@ -84,12 +84,12 @@ func handleRequest(req *rpcReq, conf *config.Config, tun *tunnel.Tunnel) *rpcRes
 			resp.Error = err.Error()
 			break
 		}
-		err = removeAddrs(conf, addrs, tun)
+		err = removeAddrs(permissionConf, addrs, tun)
 		if err != nil {
 			resp.Error = err.Error()
 			break
 		}
-		resp.Result = getAddrs(conf)
+		resp.Result = getAddrs(permissionConf)
 	case "getLocalIP":
 		localIP, err := getLocalIP()
 		if err != nil {
@@ -98,12 +98,19 @@ func handleRequest(req *rpcReq, conf *config.Config, tun *tunnel.Tunnel) *rpcRes
 		}
 		resp.Result = localIP
 	case "getInfo":
-		info, err := getInfo(conf, tun)
+		info, err := getInfo(globalConf, tun)
 		if err != nil {
 			resp.Error = err.Error()
 			break
 		}
 		resp.Result = info
+	case "getBalance":
+		balance, err := getBalance(tun)
+		if err != nil {
+			resp.Error = err.Error()
+			break
+		}
+		resp.Result = balance
 	default:
 		resp.Error = "unknown method"
 	}
@@ -217,4 +224,12 @@ func getInfo(conf *config.Config, tun *tunnel.Tunnel) (*getInfoJSON, error) {
 		info.Tags = conf.Tags
 	}
 	return info, nil
+}
+
+func getBalance(tun *tunnel.Tunnel) (string, error) {
+	balance, err := tun.MultiClient().Balance()
+	if err != nil {
+		return "", err
+	}
+	return balance.String(), nil
 }

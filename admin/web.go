@@ -8,7 +8,7 @@ import (
 	tunnel "github.com/nknorg/nkn-tunnel"
 )
 
-func StartWeb(listenAddr string, tun *tunnel.Tunnel, conf *config.Config) error {
+func StartWeb(listenAddr string, tun *tunnel.Tunnel, permissionConf, globalConf *config.Config) error {
 	gin.SetMode(gin.ReleaseMode)
 
 	r := gin.Default()
@@ -19,7 +19,7 @@ func StartWeb(listenAddr string, tun *tunnel.Tunnel, conf *config.Config) error 
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		resp := handleRequest(req, conf, tun)
+		resp := handleRequest(req, permissionConf, globalConf, tun)
 		c.JSON(http.StatusOK, resp)
 	})
 

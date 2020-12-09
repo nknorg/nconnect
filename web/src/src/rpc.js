@@ -12,6 +12,7 @@ const methods = {
   removeAddrs: { method: 'removeAddrs' },
   getLocalIP: { method: 'getLocalIP' },
   getInfo: { method: 'getInfo' },
+  getBalance: { method: 'getBalance' },
 }
 
 var rpc = {};
@@ -106,4 +107,8 @@ export async function getLocalIP() {
 
 export async function getInfo() {
   return rpc.getInfo(rpcAddr);
+}
+
+export async function getBalance() {
+  return rpc.getBalance(rpcAddr);
 }
