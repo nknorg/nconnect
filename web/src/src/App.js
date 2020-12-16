@@ -173,7 +173,7 @@ class App extends React.Component {
     }
 
     if (averagePrice == 0) {
-      return 'Unlimited';
+      return null;
     }
 
     let mb = balance / averagePrice;
