@@ -129,11 +129,12 @@ func main() {
 		SeedRPCServerAddr: seedRPCServerAddr,
 	}
 	tsConfig := &ts.Config{
-		TunaMaxPrice:      tunaMaxPrice,
-		TunaIPFilter:      &geo.IPFilter{Allow: locations},
-		TunaServiceName:   opts.TunaServiceName,
-		TunaDownloadGeoDB: opts.TunaDownloadGeoDB,
-		TunaGeoDBPath:     opts.TunaGeoDBPath,
+		TunaMaxPrice:         tunaMaxPrice,
+		TunaIPFilter:         &geo.IPFilter{Allow: locations},
+		TunaServiceName:      opts.TunaServiceName,
+		TunaDownloadGeoDB:    opts.TunaDownloadGeoDB,
+		TunaGeoDBPath:        opts.TunaGeoDBPath,
+		TunaMeasureBandwidth: opts.TunaMeasureBandwidth,
 	}
 	tunnelConfig := &tunnel.Config{
 		AcceptAddrs:       nkn.NewStringArray(conf.AcceptAddrs...),
