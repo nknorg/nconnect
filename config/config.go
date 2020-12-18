@@ -36,12 +36,13 @@ type Config struct {
 	Cipher   string `json:"cipher,omitempty" long:"cipher" description:"Socks proxy cipher. By default dummy (no cipher) will be used since NKN tunnel is already doing end to end encryption." choice:"dummy" choice:"chacha20-ietf-poly1305" choice:"aes-128-gcm" choice:"aes-256-gcm"`
 	Password string `json:"password,omitempty" long:"password" description:"Socks proxy password"`
 
-	Tuna              bool     `json:"tuna,omitempty" short:"t" long:"tuna" description:"Enable tuna sessions"`
-	TunaMaxPrice      string   `json:"tunaMaxPrice,omitempty" long:"tuna-max-price" description:"(server only) Tuna max price in unit of NKN/MB"`
-	TunaCountry       []string `json:"tunaCountry,omitempty" long:"tuna-country" description:"(server only) Tuna service node allowed country code, e.g. US. All countries will be allowed if not provided"`
-	TunaServiceName   string   `json:"tunaServiceName,omitempty" long:"tuna-service-name" description:"(server only) Tuna reverse service name"`
-	TunaDownloadGeoDB bool     `json:"tunaDownloadGeoDB,omitempty" long:"tuna-download-geo-db" description:"(server only) Download Tuna geo db to disk"`
-	TunaGeoDBPath     string   `json:"tunaGeoDBPath,omitempty" long:"tuna-geo-db-path" description:"(server only) Path to store Tuna geo db"`
+	Tuna                 bool     `json:"tuna,omitempty" short:"t" long:"tuna" description:"Enable tuna sessions"`
+	TunaMaxPrice         string   `json:"tunaMaxPrice,omitempty" long:"tuna-max-price" description:"(server only) Tuna max price in unit of NKN/MB"`
+	TunaCountry          []string `json:"tunaCountry,omitempty" long:"tuna-country" description:"(server only) Tuna service node allowed country code, e.g. US. All countries will be allowed if not provided"`
+	TunaServiceName      string   `json:"tunaServiceName,omitempty" long:"tuna-service-name" description:"(server only) Tuna reverse service name"`
+	TunaDownloadGeoDB    bool     `json:"tunaDownloadGeoDB,omitempty" long:"tuna-download-geo-db" description:"(server only) Download Tuna geo db to disk"`
+	TunaGeoDBPath        string   `json:"tunaGeoDBPath,omitempty" long:"tuna-geo-db-path" description:"(server only) Path to store Tuna geo db"`
+	TunaMeasureBandwidth bool     `json:"tunaMeasureBandwidth,omitempty" long:"tuna-measure-bandwidth" description:"(server only) Let Tuna measure bandwidth and connect to service node with highest bandwidth"`
 
 	AdminHTTPAddr   string `json:"adminHttpAddr,omitempty" long:"admin-http" description:"(server only) Admin web GUI listen address (e.g. 127.0.0.1:8000)"`
 	AdminIdentifier string `json:"adminIdentifier,omitempty" long:"admin-identifier" description:"(server only) Admin NKN client identifier prefix"`
