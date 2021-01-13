@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -8,7 +9,11 @@ import (
 	tunnel "github.com/nknorg/nkn-tunnel"
 )
 
-func StartWeb(listenAddr string, tun *tunnel.Tunnel, permissionConf, globalConf *config.Config) error {
+var (
+	errAdminHTTPAPIDisabled = errors.New("Web API is disabled")
+)
+
+func StartWeb(listenAddr string, tun *tunnel.Tunnel, persistConf, mergedConf *config.Config) error {
 	gin.SetMode(gin.ReleaseMode)
 
 	r := gin.Default()
@@ -19,7 +24,11 @@ func StartWeb(listenAddr string, tun *tunnel.Tunnel, permissionConf, globalConf 
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		resp := handleRequest(req, permissionConf, globalConf, tun)
+		if mergedConf.DisableAdminHTTPAPI {
+			c.JSON(http.StatusOK, &rpcResp{Error: errAdminHTTPAPIDisabled.Error()})
+			return
+		}
+		resp := handleRequest(req, persistConf, mergedConf, tun)
 		c.JSON(http.StatusOK, resp)
 	})
 
