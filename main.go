@@ -60,12 +60,12 @@ func main() {
 		log.Fatal("Exactly one mode (client or server) should be selected.")
 	}
 
-	conf, err := config.LoadOrNewConfig(opts.ConfigFile)
+	persistConf, err := config.LoadOrNewConfig(opts.ConfigFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = mergo.Merge(&opts.Config, conf)
+	err = mergo.Merge(&opts.Config, persistConf)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -82,18 +82,19 @@ func main() {
 
 	shouldSave := false
 	if len(opts.Seed) == 0 {
-		conf.Seed = hex.EncodeToString(account.Seed())
+		persistConf.Seed = hex.EncodeToString(account.Seed())
+		opts.Seed = persistConf.Seed
 		shouldSave = true
 	}
 
 	if len(opts.Identifier) == 0 {
-		conf.Identifier = config.RandomIdentifier()
-		opts.Identifier = conf.Identifier
+		persistConf.Identifier = config.RandomIdentifier()
+		opts.Identifier = persistConf.Identifier
 		shouldSave = true
 	}
 
 	if shouldSave {
-		err = conf.Save()
+		err = persistConf.Save()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -137,7 +138,7 @@ func main() {
 		TunaMeasureBandwidth: opts.TunaMeasureBandwidth,
 	}
 	tunnelConfig := &tunnel.Config{
-		AcceptAddrs:       nkn.NewStringArray(conf.AcceptAddrs...),
+		AcceptAddrs:       nkn.NewStringArray(persistConf.AcceptAddrs...),
 		ClientConfig:      clientConfig,
 		WalletConfig:      walletConfig,
 		TunaSessionConfig: tsConfig,
@@ -195,7 +196,7 @@ func main() {
 				if len(opts.Identifier) > 0 {
 					identifier += "." + opts.Identifier
 				}
-				err := admin.StartClient(account, identifier, clientConfig, tun, conf, &opts.Config)
+				err := admin.StartClient(account, identifier, clientConfig, tun, persistConf, &opts.Config)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -206,7 +207,7 @@ func main() {
 
 		if len(opts.AdminHTTPAddr) > 0 {
 			go func() {
-				err := admin.StartWeb(opts.AdminHTTPAddr, tun, conf, &opts.Config)
+				err := admin.StartWeb(opts.AdminHTTPAddr, tun, persistConf, &opts.Config)
 				if err != nil {
 					log.Fatal(err)
 				}

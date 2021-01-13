@@ -14,7 +14,7 @@ var (
 	clientAddr string
 )
 
-func StartClient(account *nkn.Account, identifier string, clientConfig *nkn.ClientConfig, tun *tunnel.Tunnel, permissionConf, globalConf *config.Config) error {
+func StartClient(account *nkn.Account, identifier string, clientConfig *nkn.ClientConfig, tun *tunnel.Tunnel, persistConf, mergedConf *config.Config) error {
 	m, err := nkn.NewMultiClient(account, identifier, 4, false, clientConfig)
 	if err != nil {
 		return err
@@ -34,12 +34,12 @@ func StartClient(account *nkn.Account, identifier string, clientConfig *nkn.Clie
 			continue
 		}
 
-		if !util.MatchRegex(permissionConf.GetAdminAddrs(), msg.Src) && !tokenStore.IsValid(req.Token) {
+		if !util.MatchRegex(persistConf.GetAdminAddrs(), msg.Src) && !tokenStore.IsValid(req.Token) {
 			log.Println("Ignore authorized message from", msg.Src)
 			continue
 		}
 
-		resp := handleRequest(req, permissionConf, globalConf, tun)
+		resp := handleRequest(req, persistConf, mergedConf, tun)
 
 		b, err := json.Marshal(resp)
 		if err != nil {

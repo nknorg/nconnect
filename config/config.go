@@ -44,8 +44,9 @@ type Config struct {
 	TunaGeoDBPath        string   `json:"tunaGeoDBPath,omitempty" long:"tuna-geo-db-path" description:"(server only) Path to store Tuna geo db"`
 	TunaMeasureBandwidth bool     `json:"tunaMeasureBandwidth,omitempty" long:"tuna-measure-bandwidth" description:"(server only) Let Tuna measure bandwidth and connect to service node with highest bandwidth"`
 
-	AdminHTTPAddr   string `json:"adminHttpAddr,omitempty" long:"admin-http" description:"(server only) Admin web GUI listen address (e.g. 127.0.0.1:8000)"`
-	AdminIdentifier string `json:"adminIdentifier,omitempty" long:"admin-identifier" description:"(server only) Admin NKN client identifier prefix"`
+	AdminIdentifier     string `json:"adminIdentifier,omitempty" long:"admin-identifier" description:"(server only) Admin NKN client identifier prefix"`
+	AdminHTTPAddr       string `json:"adminHttpAddr,omitempty" long:"admin-http" description:"(server only) Admin web GUI listen address (e.g. 127.0.0.1:8000)"`
+	DisableAdminHTTPAPI bool   `json:"disableAdminHttpApi,omitempty" long:"disable-admin-http-api" description:"(server only) Disable admin http api so admin web GUI only show static assets"`
 
 	Tags []string `json:"tags,omitempty" long:"tags" description:"(server only) Tags that will be included in get info api"`
 
@@ -138,6 +139,13 @@ func (c *Config) RemoveAdminAddrs(adminAddrs []string) error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	c.AdminAddrs = util.RemoveStrings(c.AdminAddrs, adminAddrs)
+	return c.save()
+}
+
+func (c *Config) SetAdminHTTPAPI(disable bool) error {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	c.DisableAdminHTTPAPI = disable
 	return c.save()
 }
 

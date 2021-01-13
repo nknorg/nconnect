@@ -1,12 +1,18 @@
 package admin
 
 import (
+	"errors"
 	"net"
 
 	"github.com/nknorg/nconnect/config"
 	"github.com/nknorg/nconnect/util"
 	"github.com/nknorg/nkn-sdk-go"
 	tunnel "github.com/nknorg/nkn-tunnel"
+)
+
+var (
+	errUnknownMethod = errors.New("unknown method")
+	resultSuccess    = "success"
 )
 
 type rpcReq struct {
@@ -37,20 +43,25 @@ type localIPJSON struct {
 }
 
 type getInfoJSON struct {
-	Addr     string       `json:"addr"`
-	LocalIP  *localIPJSON `json:"localIP"`
-	InPrice  []string     `json:"inPrice,omitempty"`
-	OutPrice []string     `json:"outPrice,omitempty"`
-	Tags     []string     `json:"tags,omitempty"`
+	Addr                 string       `json:"addr"`
+	LocalIP              *localIPJSON `json:"localIP"`
+	AdminHTTPAPIDisabled bool         `json:"adminHttpApiDisabled"`
+	InPrice              []string     `json:"inPrice,omitempty"`
+	OutPrice             []string     `json:"outPrice,omitempty"`
+	Tags                 []string     `json:"tags,omitempty"`
 }
 
-func handleRequest(req *rpcReq, permissionConf, globalConf *config.Config, tun *tunnel.Tunnel) *rpcResp {
+type adminHTTPAPIJSON struct {
+	Disable bool `json:"disable"`
+}
+
+func handleRequest(req *rpcReq, persistConf, mergedConf *config.Config, tun *tunnel.Tunnel) *rpcResp {
 	resp := &rpcResp{}
 	switch req.Method {
 	case "getAdminToken":
 		resp.Result = getAdminToken()
 	case "getAddrs":
-		resp.Result = getAddrs(permissionConf)
+		resp.Result = getAddrs(persistConf)
 	case "setAddrs":
 		addrs := &addrsJSON{}
 		err := util.JSONConvert(req.Params, addrs)
@@ -58,12 +69,12 @@ func handleRequest(req *rpcReq, permissionConf, globalConf *config.Config, tun *
 			resp.Error = err.Error()
 			break
 		}
-		err = setAddrs(permissionConf, addrs, tun)
+		err = setAddrs(persistConf, addrs, tun)
 		if err != nil {
 			resp.Error = err.Error()
 			break
 		}
-		resp.Result = getAddrs(permissionConf)
+		resp.Result = getAddrs(persistConf)
 	case "addAddrs":
 		addrs := &addrsJSON{}
 		err := util.JSONConvert(req.Params, addrs)
@@ -71,12 +82,12 @@ func handleRequest(req *rpcReq, permissionConf, globalConf *config.Config, tun *
 			resp.Error = err.Error()
 			break
 		}
-		err = addAddrs(permissionConf, addrs, tun)
+		err = addAddrs(persistConf, addrs, tun)
 		if err != nil {
 			resp.Error = err.Error()
 			break
 		}
-		resp.Result = getAddrs(permissionConf)
+		resp.Result = getAddrs(persistConf)
 	case "removeAddrs":
 		addrs := &addrsJSON{}
 		err := util.JSONConvert(req.Params, addrs)
@@ -84,12 +95,12 @@ func handleRequest(req *rpcReq, permissionConf, globalConf *config.Config, tun *
 			resp.Error = err.Error()
 			break
 		}
-		err = removeAddrs(permissionConf, addrs, tun)
+		err = removeAddrs(persistConf, addrs, tun)
 		if err != nil {
 			resp.Error = err.Error()
 			break
 		}
-		resp.Result = getAddrs(permissionConf)
+		resp.Result = getAddrs(persistConf)
 	case "getLocalIP":
 		localIP, err := getLocalIP()
 		if err != nil {
@@ -98,7 +109,7 @@ func handleRequest(req *rpcReq, permissionConf, globalConf *config.Config, tun *
 		}
 		resp.Result = localIP
 	case "getInfo":
-		info, err := getInfo(globalConf, tun)
+		info, err := getInfo(mergedConf, tun)
 		if err != nil {
 			resp.Error = err.Error()
 			break
@@ -111,8 +122,21 @@ func handleRequest(req *rpcReq, permissionConf, globalConf *config.Config, tun *
 			break
 		}
 		resp.Result = balance
+	case "setAdminHttpApi":
+		params := &adminHTTPAPIJSON{}
+		err := util.JSONConvert(req.Params, params)
+		if err != nil {
+			resp.Error = err.Error()
+			break
+		}
+		err = setAdminHTTPAPI(persistConf, mergedConf, params)
+		if err != nil {
+			resp.Error = err.Error()
+			break
+		}
+		resp.Result = resultSuccess
 	default:
-		resp.Error = "unknown method"
+		resp.Error = errUnknownMethod.Error()
 	}
 	return resp
 }
@@ -208,8 +232,9 @@ func getInfo(conf *config.Config, tun *tunnel.Tunnel) (*getInfoJSON, error) {
 		return nil, err
 	}
 	info := &getInfoJSON{
-		Addr:    tun.FromAddr(),
-		LocalIP: localIP,
+		Addr:                 tun.FromAddr(),
+		LocalIP:              localIP,
+		AdminHTTPAPIDisabled: conf.DisableAdminHTTPAPI,
 	}
 	tunaPubAddrs := tun.TunaPubAddrs()
 	if tunaPubAddrs != nil {
@@ -232,4 +257,9 @@ func getBalance(tun *tunnel.Tunnel) (string, error) {
 		return "", err
 	}
 	return balance.String(), nil
+}
+
+func setAdminHTTPAPI(persistConf, mergedConf *config.Config, params *adminHTTPAPIJSON) error {
+	mergedConf.DisableAdminHTTPAPI = params.Disable
+	return persistConf.SetAdminHTTPAPI(params.Disable)
 }
