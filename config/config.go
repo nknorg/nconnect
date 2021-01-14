@@ -16,9 +16,6 @@ import (
 )
 
 const (
-	DefaultTunaMaxPrice    = "0.01"
-	DefaultCipher          = "dummy"
-	DefaultClientLocalAddr = "127.0.0.1:1080"
 	RandomIdentifierChars  = "abcdefghijklmnopqrstuvwxyz0123456789"
 	RandomIdentifierLength = 6
 )
@@ -34,27 +31,27 @@ type Config struct {
 	Seed              string   `json:"seed" long:"seed" description:"NKN client secret seed. A random one will be generated and saved to config.json if not provided"`
 	SeedRPCServerAddr []string `json:"seedRPCServerAddr,omitempty" long:"rpc" description:"Seed RPC server address"`
 
-	LocalAddr  string `json:"localAddr,omitempty" short:"l" long:"local-addr" description:"(client only) Local socks proxy listen address (e.g. 127.0.0.1:1080)"`
+	LocalAddr  string `json:"localAddr,omitempty" short:"l" long:"local-addr" description:"(client only) Local socks proxy listen address" default:"127.0.0.1:1080"`
 	RemoteAddr string `json:"remoteAddr,omitempty" short:"r" long:"remote-addr" description:"(client only) Remote server NKN address"`
 
-	Cipher   string `json:"cipher,omitempty" long:"cipher" description:"Socks proxy cipher. By default dummy (no cipher) will be used since NKN tunnel is already doing end to end encryption." choice:"dummy" choice:"chacha20-ietf-poly1305" choice:"aes-128-gcm" choice:"aes-256-gcm"`
+	Cipher   string `json:"cipher,omitempty" long:"cipher" description:"Socks proxy cipher. By default dummy (no cipher) will be used since NKN tunnel is already doing end to end encryption." choice:"dummy" choice:"chacha20-ietf-poly1305" choice:"aes-128-gcm" choice:"aes-256-gcm" default:"chacha20-ietf-poly1305"`
 	Password string `json:"password,omitempty" long:"password" description:"Socks proxy password"`
 
-	Tuna                 bool     `json:"tuna,omitempty" short:"t" long:"tuna" description:"Enable tuna sessions"`
-	TunaMaxPrice         string   `json:"tunaMaxPrice,omitempty" long:"tuna-max-price" description:"(server only) Tuna max price in unit of NKN/MB"`
-	TunaCountry          []string `json:"tunaCountry,omitempty" long:"tuna-country" description:"(server only) Tuna service node allowed country code, e.g. US. All countries will be allowed if not provided"`
-	TunaServiceName      string   `json:"tunaServiceName,omitempty" long:"tuna-service-name" description:"(server only) Tuna reverse service name"`
-	TunaDownloadGeoDB    bool     `json:"tunaDownloadGeoDB,omitempty" long:"tuna-download-geo-db" description:"(server only) Download Tuna geo db to disk"`
-	TunaGeoDBPath        string   `json:"tunaGeoDBPath,omitempty" long:"tuna-geo-db-path" description:"(server only) Path to store Tuna geo db"`
-	TunaMeasureBandwidth bool     `json:"tunaMeasureBandwidth,omitempty" long:"tuna-measure-bandwidth" description:"(server only) Let Tuna measure bandwidth and connect to service node with highest bandwidth"`
+	Tuna                        bool     `json:"tuna,omitempty" short:"t" long:"tuna" description:"Enable tuna sessions"`
+	TunaMaxPrice                string   `json:"tunaMaxPrice,omitempty" long:"tuna-max-price" description:"(server only) Tuna max price in unit of NKN/MB" default:"0.01"`
+	TunaCountry                 []string `json:"tunaCountry,omitempty" long:"tuna-country" description:"(server only) Tuna service node allowed country code, e.g. US. All countries will be allowed if not provided"`
+	TunaServiceName             string   `json:"tunaServiceName,omitempty" long:"tuna-service-name" description:"(server only) Tuna reverse service name"`
+	TunaDisableDownloadGeoDB    bool     `json:"tunaDisableDownloadGeoDB,omitempty" long:"tuna-disable-download-geo-db" description:"(server only) Disable Tuna download geo db to disk"`
+	TunaGeoDBPath               string   `json:"tunaGeoDBPath,omitempty" long:"tuna-geo-db-path" description:"(server only) Path to store Tuna geo db" default:"."`
+	TunaDisableMeasureBandwidth bool     `json:"tunaDisableMeasureBandwidth,omitempty" long:"tuna-disable-measure-bandwidth" description:"(server only) Disable Tuna measure bandwidth when selecting service nodes"`
 
-	AdminIdentifier     string `json:"adminIdentifier,omitempty" long:"admin-identifier" description:"(server only) Admin NKN client identifier prefix"`
+	AdminIdentifier     string `json:"adminIdentifier,omitempty" long:"admin-identifier" description:"(server only) Admin NKN client identifier prefix" default:"nConnect"`
 	AdminHTTPAddr       string `json:"adminHttpAddr,omitempty" long:"admin-http" description:"(server only) Admin web GUI listen address (e.g. 127.0.0.1:8000)"`
 	DisableAdminHTTPAPI bool   `json:"disableAdminHttpApi,omitempty" long:"disable-admin-http-api" description:"(server only) Disable admin http api so admin web GUI only show static assets"`
 
 	Tags []string `json:"tags,omitempty" long:"tags" description:"(server only) Tags that will be included in get info api"`
 
-	Verbose bool `json:"verbose" short:"v" long:"verbose" description:"Verbose mode, show logs on dialing/accepting connections"`
+	Verbose bool `json:"verbose,omitempty" short:"v" long:"verbose" description:"Verbose mode, show logs on dialing/accepting connections"`
 
 	lock        sync.RWMutex
 	AcceptAddrs []string `json:"acceptAddrs"`

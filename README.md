@@ -48,10 +48,7 @@ just need to deploy nConnect in server mode to the device you want to connect
 to using the following argument:
 
 ```shell
-nConnect -s \
-  --tuna --tuna-download-geo-db --tuna-geo-db-path . \
-  --cipher chacha20-ietf-poly1305 \
-  --admin-http :8001 --admin-identifier admin
+nConnect -s --tuna --admin-http :8001
 ```
 
 Then you can visit `http://<device-local-ip-address>:8001` in browser to access
