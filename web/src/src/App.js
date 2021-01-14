@@ -46,6 +46,7 @@ class App extends React.Component {
       language: '',
       inPrice: [],
       outPrice: [],
+      tags: [],
       balance: '',
     };
     for (let i = 0; i < i18n.languages.length; i++) {
@@ -134,6 +135,7 @@ class App extends React.Component {
         localIP: info.localIP.ipv4,
         inPrice: info.inPrice,
         outPrice: info.outPrice,
+        tags: info.tags,
       });
     }).catch((e) => {
       console.error(e);
@@ -247,6 +249,12 @@ class App extends React.Component {
 
   render() {
     let remainingData = this.estimatedRemainingData();
+    let paymentAdditionalParams = '';
+    if (this.state.tags && this.state.tags.length) {
+      for (let i = 0; i < this.state.tags.length; i++) {
+        paymentAdditionalParams += '&tag=' + this.state.tags[i];
+      }
+    }
     return (
       <div className="App">
         <Container>
@@ -387,7 +395,7 @@ class App extends React.Component {
                   <Trans
                     i18nKey="purchase from web"
                     components={{
-                      paymentLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('paymentLink', {addr: addrToPubKey(this.state.addr), lng: this.state.language})} />,
+                      paymentLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('paymentLink', {addr: addrToPubKey(this.state.addr), lng: this.state.language, additionalParams: paymentAdditionalParams})} />,
                     }}
                   />
                 </ListItemText>
