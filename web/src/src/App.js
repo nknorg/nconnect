@@ -60,6 +60,8 @@ class App extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this);
     this.updateAdminToken = this.updateAdminToken.bind(this);
     this.handleLanguageChange = this.handleLanguageChange.bind(this);
+    this.handleExportAccount = this.handleExportAccount.bind(this);
+    this.handleImportAccount = this.handleImportAccount.bind(this);
   }
 
   handleTabChange(event, value) {
@@ -90,10 +92,10 @@ class App extends React.Component {
         acceptAddrs: addrsToStr(addrs.acceptAddrs),
         adminAddrs: addrsToStr(addrs.adminAddrs),
       });
-      alert(this.props.t('save success'));
+      window.alert(this.props.t('save success'));
     } catch (e) {
       console.error(e);
-      alert(e);
+      window.alert(e);
     }
   }
 
@@ -123,7 +125,7 @@ class App extends React.Component {
       });
     }).catch((e) => {
       console.error(e);
-      alert(e);
+      window.alert(e);
     });
 
     rpc.getInfo().then((info) => {
@@ -182,6 +184,60 @@ class App extends React.Component {
       return gb.toFixed(1) + ' GB';
     }
     return mb.toFixed(0) + ' MB';
+  }
+
+  async handleExportAccount(event) {
+    event.preventDefault();
+
+    if (!window.confirm(this.props.t('exportConfirm'))) {
+      return;
+    }
+
+    try {
+      let seed = await rpc.getSeed();
+      window.alert(this.props.t('exportSuccess', { seed }));
+    } catch (e) {
+      console.error(e);
+      window.alert(e);
+    }
+  }
+
+  async handleImportAccount(event) {
+    event.preventDefault();
+
+    if (!window.confirm(this.props.t('importConfirm'))) {
+      return;
+    }
+
+    let currentSeedInput = window.prompt(this.props.t('importPromptCurrent'));
+    if (!currentSeedInput) {
+      return;
+    }
+
+    try {
+      let currentSeed = await rpc.getSeed();
+      if (currentSeed != currentSeedInput.trim()) {
+        window.alert(this.props.t('importWrongCurrent'));
+        return;
+      }
+    } catch (e) {
+      console.error(e);
+      window.alert(e);
+      return;
+    }
+
+    let newSeed = window.prompt(this.props.t('importPromptNew'));
+    if (!newSeed) {
+      return;
+    }
+
+    try {
+      await rpc.setSeed(newSeed.trim());
+      window.alert(this.props.t('importSuccess'));
+    } catch (e) {
+      console.error(e);
+      window.alert(e);
+    }
   }
 
   componentDidMount() {
@@ -421,6 +477,26 @@ class App extends React.Component {
                   >
                   {this.props.t('save')}
                 </Button>
+              </div>
+              <div className="advanced-row">
+                <div style={{paddingBottom: '5px'}}>
+                  <Button
+                    variant="contained"
+                    onClick={this.handleExportAccount}
+                    style={{width: '100%'}}
+                    >
+                    {this.props.t('export account')}
+                  </Button>
+                </div>
+                <div style={{paddingTop: '5px'}}>
+                  <Button
+                    variant="contained"
+                    onClick={this.handleImportAccount}
+                    style={{width: '100%'}}
+                    >
+                    {this.props.t('import account')}
+                  </Button>
+                </div>
               </div>
             </TabPanel>
           </TabContext>
