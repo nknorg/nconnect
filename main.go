@@ -105,19 +105,6 @@ func main() {
 		seedRPCServerAddr = nkn.NewStringArray(opts.SeedRPCServerAddr...)
 	}
 
-	if len(opts.Cipher) == 0 {
-		opts.Cipher = config.DefaultCipher
-	}
-
-	if len(opts.LocalAddr) == 0 {
-		opts.LocalAddr = config.DefaultClientLocalAddr
-	}
-
-	tunaMaxPrice := opts.TunaMaxPrice
-	if len(tunaMaxPrice) == 0 {
-		tunaMaxPrice = config.DefaultTunaMaxPrice
-	}
-
 	locations := make([]geo.Location, len(opts.TunaCountry))
 	for i := range opts.TunaCountry {
 		locations[i].CountryCode = strings.TrimSpace(opts.TunaCountry[i])
@@ -130,12 +117,12 @@ func main() {
 		SeedRPCServerAddr: seedRPCServerAddr,
 	}
 	tsConfig := &ts.Config{
-		TunaMaxPrice:         tunaMaxPrice,
+		TunaMaxPrice:         opts.TunaMaxPrice,
 		TunaIPFilter:         &geo.IPFilter{Allow: locations},
 		TunaServiceName:      opts.TunaServiceName,
-		TunaDownloadGeoDB:    opts.TunaDownloadGeoDB,
+		TunaDownloadGeoDB:    !opts.TunaDisableDownloadGeoDB,
 		TunaGeoDBPath:        opts.TunaGeoDBPath,
-		TunaMeasureBandwidth: opts.TunaMeasureBandwidth,
+		TunaMeasureBandwidth: !opts.TunaDisableMeasureBandwidth,
 	}
 	tunnelConfig := &tunnel.Config{
 		AcceptAddrs:       nkn.NewStringArray(persistConf.AcceptAddrs...),
