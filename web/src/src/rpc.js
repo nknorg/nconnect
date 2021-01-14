@@ -13,6 +13,8 @@ const methods = {
   getLocalIP: { method: 'getLocalIP' },
   getInfo: { method: 'getInfo' },
   getBalance: { method: 'getBalance' },
+  getSeed: { method: 'getSeed' },
+  setSeed: { method: 'setSeed' },
 }
 
 var rpc = {};
@@ -111,4 +113,12 @@ export async function getInfo() {
 
 export async function getBalance() {
   return rpc.getBalance(rpcAddr);
+}
+
+export async function getSeed() {
+  return rpc.getSeed(rpcAddr);
+}
+
+export async function setSeed(seed) {
+  return rpc.setSeed(rpcAddr, { seed });
 }

@@ -26,5 +26,14 @@
   "accept addresses": "白名單地址",
   "admins": "管理員地址",
   "save": "保存",
-  "save success": "保存成功！"
+  "save success": "保存成功！",
+  "export account": "導出賬號",
+  "import account": "導入賬號",
+  "exportConfirm": "確定要導出賬號嗎？賬號導出後請保密存儲。任何獲得賬號的人都可以使用賬號中的流量或解密此賬號發送的數據。如果是其他人要求您導出賬號，請勿繼續。",
+  "exportSuccess": "導出成功！此賬號的私鑰種子是：{{seed}}",
+  "importConfirm": "確定要導入賬號嗎？如果您未導出並備份此設備上的當前賬號，該賬號將永遠丟失。導入完成後，所有客戶端需要重新添加此設備。",
+  "importPromptCurrent": "請輸入當前賬號的私鑰種子，並確定您已導出並備份當前賬號：",
+  "importWrongCurrent": "當前賬號的私鑰種子不匹配！請確定您已導出並備份當前賬號。",
+  "importPromptNew": "請輸入您要導入的賬號的私鑰種子：",
+  "importSuccess": "導入成功！請重啟此設備上的 nConnect 以使用新賬號。"
 }

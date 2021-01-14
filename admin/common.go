@@ -51,6 +51,10 @@ type getInfoJSON struct {
 	Tags                 []string     `json:"tags,omitempty"`
 }
 
+type setSeedJSON struct {
+	Seed string `json:"seed"`
+}
+
 type adminHTTPAPIJSON struct {
 	Disable bool `json:"disable"`
 }
@@ -130,6 +134,21 @@ func handleRequest(req *rpcReq, persistConf, mergedConf *config.Config, tun *tun
 			break
 		}
 		err = setAdminHTTPAPI(persistConf, mergedConf, params)
+		if err != nil {
+			resp.Error = err.Error()
+			break
+		}
+		resp.Result = resultSuccess
+	case "getSeed":
+		resp.Result = mergedConf.Seed
+	case "setSeed":
+		params := &setSeedJSON{}
+		err := util.JSONConvert(req.Params, params)
+		if err != nil {
+			resp.Error = err.Error()
+			break
+		}
+		err = persistConf.SetSeed(params.Seed)
 		if err != nil {
 			resp.Error = err.Error()
 			break

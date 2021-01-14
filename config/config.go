@@ -1,7 +1,11 @@
 package config
 
 import (
+	"crypto/ed25519"
+	"encoding/hex"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -146,6 +150,22 @@ func (c *Config) SetAdminHTTPAPI(disable bool) error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	c.DisableAdminHTTPAPI = disable
+	return c.save()
+}
+
+func (c *Config) SetSeed(s string) error {
+	seed, err := hex.DecodeString(s)
+	if err != nil {
+		return errors.New("invalid seed string, should be a hex string")
+	}
+
+	if len(seed) != ed25519.SeedSize {
+		return fmt.Errorf("invalid seed string length %d, should be %d", len(s), 2*ed25519.SeedSize)
+	}
+
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	c.Seed = s
 	return c.save()
 }
 
