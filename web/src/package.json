@@ -8,7 +8,7 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "fontsource-roboto": "^3.0.3",
     "i18next": "^19.8.2",
     "i18next-browser-languagedetector": "^6.0.1",
