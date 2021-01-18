@@ -105,9 +105,14 @@ func main() {
 		seedRPCServerAddr = nkn.NewStringArray(opts.SeedRPCServerAddr...)
 	}
 
-	locations := make([]geo.Location, len(opts.TunaCountry))
+	locations := make([]geo.Location, 0, len(opts.TunaCountry))
 	for i := range opts.TunaCountry {
-		locations[i].CountryCode = strings.TrimSpace(opts.TunaCountry[i])
+		countries := strings.Split(opts.TunaCountry[i], ",")
+		l := make([]geo.Location, len(countries))
+		for i := range countries {
+			l[i].CountryCode = strings.TrimSpace(countries[i])
+		}
+		locations = append(locations, l...)
 	}
 
 	clientConfig := &nkn.ClientConfig{
