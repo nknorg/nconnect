@@ -2,7 +2,7 @@
 
 USE_PROXY=GOPROXY=https://goproxy.io
 VERSION:=$(shell git describe --abbrev=7 --dirty --always --tags)
-BUILD=go build -ldflags "-s -w -X main.Version=$(VERSION) -X main.GOARM=$(GOARM)"
+BUILD=go build -ldflags "-s -w -X github.com/nknorg/nconnect/config.Version=$(VERSION)"
 BUILD_DIR=build
 BIN_NAME=nConnect
 ifdef GOARM

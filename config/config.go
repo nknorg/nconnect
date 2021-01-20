@@ -20,6 +20,10 @@ const (
 	RandomIdentifierLength = 6
 )
 
+var (
+	Version string
+)
+
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }

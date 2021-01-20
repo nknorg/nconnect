@@ -32,10 +32,6 @@ var opts struct {
 	Version bool `long:"version" description:"Print version"`
 }
 
-var (
-	Version string
-)
-
 func main() {
 	defer func() {
 		if r := recover(); r != nil {
@@ -52,7 +48,7 @@ func main() {
 	}
 
 	if opts.Version {
-		fmt.Println(Version)
+		fmt.Println(config.Version)
 		os.Exit(0)
 	}
 

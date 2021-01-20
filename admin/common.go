@@ -46,6 +46,7 @@ type getInfoJSON struct {
 	Addr                 string       `json:"addr"`
 	LocalIP              *localIPJSON `json:"localIP"`
 	AdminHTTPAPIDisabled bool         `json:"adminHttpApiDisabled"`
+	Version              string       `json:"version"`
 	InPrice              []string     `json:"inPrice,omitempty"`
 	OutPrice             []string     `json:"outPrice,omitempty"`
 	Tags                 []string     `json:"tags,omitempty"`
@@ -254,6 +255,7 @@ func getInfo(conf *config.Config, tun *tunnel.Tunnel) (*getInfoJSON, error) {
 		Addr:                 tun.FromAddr(),
 		LocalIP:              localIP,
 		AdminHTTPAPIDisabled: conf.DisableAdminHTTPAPI,
+		Version:              config.Version,
 	}
 	tunaPubAddrs := tun.TunaPubAddrs()
 	if tunaPubAddrs != nil {
