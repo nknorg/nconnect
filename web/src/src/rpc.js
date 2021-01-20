@@ -15,6 +15,7 @@ const methods = {
   getBalance: { method: 'getBalance' },
   getSeed: { method: 'getSeed' },
   setSeed: { method: 'setSeed' },
+  setTunaConfig: { method: 'setTunaConfig' },
 }
 
 var rpc = {};
@@ -121,4 +122,8 @@ export async function getSeed() {
 
 export async function setSeed(seed) {
   return rpc.setSeed(rpcAddr, { seed });
+}
+
+export async function setTunaConfig(tunaConfig) {
+  return rpc.setTunaConfig(rpcAddr, tunaConfig);
 }

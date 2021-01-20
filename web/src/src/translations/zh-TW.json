@@ -35,5 +35,13 @@
   "importPromptCurrent": "請輸入當前賬號的私鑰種子，並確定您已導出並備份當前賬號：",
   "importWrongCurrent": "當前賬號的私鑰種子不匹配！請確定您已導出並備份當前賬號。",
   "importPromptNew": "請輸入您要導入的賬號的私鑰種子：",
-  "importSuccess": "導入成功！請重啟此設備上的 nConnect 以使用新賬號。"
+  "importSuccess": "導入成功！請重啟此設備上的 nConnect 以使用新賬號。",
+  "estimatedRemainingData": "預計剩餘流量",
+  "currentServerRegion": "當前服務器區域",
+  "customized": "自定義",
+  "tunaConfigChoiceTitle": "請選擇服務器區域",
+  "cancel": "取消",
+  "setTunaConfigSuccess": "修改服務器區域成功！請重啟此設備上的 nConnect 以使用新配置。",
+  "global": "全球",
+  "china": "中國"
 }

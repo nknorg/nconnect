@@ -170,6 +170,14 @@ func (c *Config) SetSeed(s string) error {
 	return c.save()
 }
 
+func (c *Config) SetTunaConfig(serviceName string, country []string) error {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	c.TunaServiceName = serviceName
+	c.TunaCountry = country
+	return c.save()
+}
+
 func (c *Config) Save() error {
 	c.lock.Lock()
 	defer c.lock.Unlock()

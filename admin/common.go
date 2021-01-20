@@ -47,6 +47,9 @@ type getInfoJSON struct {
 	LocalIP              *localIPJSON `json:"localIP"`
 	AdminHTTPAPIDisabled bool         `json:"adminHttpApiDisabled"`
 	Version              string       `json:"version"`
+	Tuna                 bool         `json:"tuna"`
+	TunaServiceName      string       `json:"tunaServiceName,omitempty"`
+	TunaCountry          []string     `json:"tunaCountry,omitempty"`
 	InPrice              []string     `json:"inPrice,omitempty"`
 	OutPrice             []string     `json:"outPrice,omitempty"`
 	Tags                 []string     `json:"tags,omitempty"`
@@ -58,6 +61,11 @@ type setSeedJSON struct {
 
 type adminHTTPAPIJSON struct {
 	Disable bool `json:"disable"`
+}
+
+type tunaConfigJSON struct {
+	ServiceName string   `json:"serviceName"`
+	Country     []string `json:"country"`
 }
 
 func handleRequest(req *rpcReq, persistConf, mergedConf *config.Config, tun *tunnel.Tunnel) *rpcResp {
@@ -150,6 +158,19 @@ func handleRequest(req *rpcReq, persistConf, mergedConf *config.Config, tun *tun
 			break
 		}
 		err = persistConf.SetSeed(params.Seed)
+		if err != nil {
+			resp.Error = err.Error()
+			break
+		}
+		resp.Result = resultSuccess
+	case "setTunaConfig":
+		params := &tunaConfigJSON{}
+		err := util.JSONConvert(req.Params, params)
+		if err != nil {
+			resp.Error = err.Error()
+			break
+		}
+		err = persistConf.SetTunaConfig(params.ServiceName, params.Country)
 		if err != nil {
 			resp.Error = err.Error()
 			break
@@ -255,6 +276,9 @@ func getInfo(conf *config.Config, tun *tunnel.Tunnel) (*getInfoJSON, error) {
 		Addr:                 tun.FromAddr(),
 		LocalIP:              localIP,
 		AdminHTTPAPIDisabled: conf.DisableAdminHTTPAPI,
+		Tuna:                 conf.Tuna,
+		TunaServiceName:      conf.TunaServiceName,
+		TunaCountry:          conf.TunaCountry,
 		Version:              config.Version,
 	}
 	tunaPubAddrs := tun.TunaPubAddrs()

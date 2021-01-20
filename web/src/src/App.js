@@ -1,13 +1,21 @@
+import axios from 'axios';
 import React from 'react';
 import QRCode from 'qrcode';
 import { withTranslation, Trans } from 'react-i18next';
-import { Button, Container, MenuItem, List, ListItem, ListItemText, Tab, TextField, Tooltip, Select, Grid } from '@material-ui/core';
+import {
+  Button, Container, MenuItem, List, ListItem, ListItemText, Tab, TextField,
+  Tooltip, Select, Grid, Dialog, DialogTitle, DialogContent, RadioGroup,
+  FormControlLabel, Radio, DialogActions,
+} from '@material-ui/core';
 import { TabContext, TabList, TabPanel } from '@material-ui/lab';
+import { ArrowDropDown } from '@material-ui/icons';
 
 import i18n, { resources as languages } from './i18n';
 import * as rpc from './rpc';
 
 import './App.css';
+
+const tunaConfigChoicesAddr = '/static/tuna-config-choices.json';
 
 class HoverQRCode extends React.Component {
   constructor(props) {
@@ -36,6 +44,7 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      initialized: false,
       activeTab: '0',
       adminTokenStr: '',
       adminTokenQRCode: '',
@@ -48,6 +57,12 @@ class App extends React.Component {
       outPrice: [],
       tags: [],
       balance: '',
+      tunaServiceName: '',
+      tunaCountry: [],
+      tunaConfigChoices: [],
+      tunaConfigSelected: -1,
+      isTunaConfigChoiceOpen: false,
+      currentTunaConfig: -1,
     };
     for (let i = 0; i < i18n.languages.length; i++) {
       if (languages[i18n.languages[i]]) {
@@ -63,12 +78,16 @@ class App extends React.Component {
     this.handleLanguageChange = this.handleLanguageChange.bind(this);
     this.handleExportAccount = this.handleExportAccount.bind(this);
     this.handleImportAccount = this.handleImportAccount.bind(this);
+    this.openTunaConfigChoice = this.openTunaConfigChoice.bind(this);
+    this.handleTunaConfigChoiceCancel = this.handleTunaConfigChoiceCancel.bind(this);
+    this.handleTunaConfigChoiceOK = this.handleTunaConfigChoiceOK.bind(this);
+    this.handleTunaConfigChoiceChange = this.handleTunaConfigChoiceChange.bind(this);
   }
 
   handleTabChange(event, value) {
     this.setState({ activeTab: value });
     if (value === '4') {
-      this.updateAdvancedInfo();
+      this.updateInfo();
     }
   }
 
@@ -116,7 +135,7 @@ class App extends React.Component {
     }
   }
 
-  updateAdvancedInfo() {
+  updateInfo() {
     this.updateAdminToken();
 
     rpc.getAddrs().then((addrs) => {
@@ -130,13 +149,44 @@ class App extends React.Component {
     });
 
     rpc.getInfo().then((info) => {
+      let initialized = this.state.initialized;
       this.setState({
+        initialized: true,
         addr: info.addr,
         localIP: info.localIP.ipv4,
         inPrice: info.inPrice,
         outPrice: info.outPrice,
         tags: info.tags,
+        tunaServiceName: info.tunaServiceName || '',
+        tunaCountry: info.tunaCountry || [],
       });
+      if (!initialized) {
+        axios.get(tunaConfigChoicesAddr + '?t=' + Date.now()).then((response) => {
+          if (response.data && response.data.length) {
+            this.setState({
+              tunaConfigChoices: response.data,
+            });
+            for (let i = 0; i < this.state.tunaConfigChoices.length; i++) {
+              if (this.state.tunaConfigChoices[i].config.serviceName === this.state.tunaServiceName) {
+                if (JSON.stringify(this.state.tunaConfigChoices[i].config.country) === JSON.stringify(this.state.tunaCountry)) {
+                  this.setState({
+                    tunaConfigSelected: i,
+                    currentTunaConfig: i,
+                  });
+                  break;
+                }
+              }
+            }
+            if (this.state.tunaConfigSelected < 0 && !this.state.tunaServiceName && !(this.state.tunaCountry && this.state.tunaCountry.length)) {
+              this.openTunaConfigChoice();
+            }
+          }
+        }).catch((e) => {
+          if (e.response.status !== 404) {
+            console.error(e);
+          }
+        });
+      }
     }).catch((e) => {
       console.error(e);
     });
@@ -242,8 +292,42 @@ class App extends React.Component {
     }
   }
 
+  openTunaConfigChoice() {
+    this.setState({
+      isTunaConfigChoiceOpen: true,
+    });
+  }
+
+  handleTunaConfigChoiceCancel() {
+    this.setState({
+      isTunaConfigChoiceOpen: false,
+    });
+  }
+
+  async handleTunaConfigChoiceOK() {
+    this.setState({
+      isTunaConfigChoiceOpen: false,
+      currentTunaConfig: this.state.tunaConfigSelected,
+    });
+    if (this.state.tunaConfigSelected >= 0) {
+      try {
+        await rpc.setTunaConfig(this.state.tunaConfigChoices[this.state.tunaConfigSelected].config);
+        window.alert(this.props.t('setTunaConfigSuccess'));
+      } catch (e) {
+        console.error(e);
+        window.alert(e);
+      }
+    }
+  }
+
+  handleTunaConfigChoiceChange(event) {
+    this.setState({
+      tunaConfigSelected: event.target.value,
+    });
+  }
+
   componentDidMount() {
-    this.updateAdvancedInfo();
+    this.updateInfo();
     setInterval(this.updateAdminToken, 5 * 60 * 1000);
   }
 
@@ -253,6 +337,15 @@ class App extends React.Component {
     if (this.state.tags && this.state.tags.length) {
       for (let i = 0; i < this.state.tags.length; i++) {
         paymentAdditionalParams += '&tag=' + this.state.tags[i];
+      }
+    }
+    let currentServerRegionName = '';
+    if (this.state.tunaConfigChoices && this.state.tunaConfigChoices.length) {
+      if (this.state.currentTunaConfig >= 0) {
+        let item = this.state.tunaConfigChoices[this.state.currentTunaConfig];
+        currentServerRegionName = this.props.t(item.textId) || item.textId;
+      } else {
+        currentServerRegionName = this.props.t('customized');
       }
     }
     return (
@@ -280,7 +373,20 @@ class App extends React.Component {
               </Grid>
               <Grid item xs={12} sm={6}>
                 <div className="row">
-                  { remainingData && ('Estimated Remaining Data: ' + remainingData) }
+                  {
+                    currentServerRegionName && (
+                      <span>
+                        {this.props.t('currentServerRegion') + ': '}
+                        <span onClick={this.openTunaConfigChoice} style={{cursor: 'pointer'}}>
+                          {currentServerRegionName}
+                          <ArrowDropDown style={{verticalAlign: 'middle'}} />
+                        </span>
+                      </span>
+                    )
+                  }
+                </div>
+                <div className="row">
+                  { remainingData && (this.props.t('estimatedRemainingData') + ': ' + remainingData) }
                 </div>
               </Grid>
             </Grid>
@@ -508,6 +614,40 @@ class App extends React.Component {
               </div>
             </TabPanel>
           </TabContext>
+          <Dialog
+            disableBackdropClick
+            disableEscapeKeyDown
+            keepMounted
+            maxWidth="xs"
+            open={this.state.isTunaConfigChoiceOpen}
+            >
+            <DialogTitle>{this.props.t('tunaConfigChoiceTitle')}</DialogTitle>
+            <DialogContent dividers>
+              <RadioGroup
+                value={`${this.state.tunaConfigSelected}`}
+                onChange={this.handleTunaConfigChoiceChange}
+                >
+                {
+                  this.state.tunaConfigChoices.map((item, index) => (
+                    <FormControlLabel
+                      value={`${index}`}
+                      key={`${index}`}
+                      control={<Radio />}
+                      label={this.props.t(item.textId) || item.textId}
+                      />
+                  ))
+                }
+              </RadioGroup>
+            </DialogContent>
+            <DialogActions>
+              <Button autoFocus onClick={this.handleTunaConfigChoiceCancel} color="primary">
+                {this.props.t('cancel')}
+              </Button>
+              <Button onClick={this.handleTunaConfigChoiceOK} color="primary">
+                {this.props.t('save')}
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Container>
       </div>
     );
