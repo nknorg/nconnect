@@ -48,6 +48,7 @@ type Config struct {
 	TunaDisableDownloadGeoDB    bool     `json:"tunaDisableDownloadGeoDB,omitempty" long:"tuna-disable-download-geo-db" description:"(server only) Disable Tuna download geo db to disk"`
 	TunaGeoDBPath               string   `json:"tunaGeoDBPath,omitempty" long:"tuna-geo-db-path" description:"(server only) Path to store Tuna geo db" default:"."`
 	TunaDisableMeasureBandwidth bool     `json:"tunaDisableMeasureBandwidth,omitempty" long:"tuna-disable-measure-bandwidth" description:"(server only) Disable Tuna measure bandwidth when selecting service nodes"`
+	TunaMeasureStoragePath      string   `json:"tunaMeasureStoragePath,omitempty" long:"tuna-measure-storage-path" description:"(server only) Path to store Tuna measurement results" default:"."`
 
 	AdminIdentifier     string `json:"adminIdentifier,omitempty" long:"admin-identifier" description:"(server only) Admin NKN client identifier prefix" default:"nConnect"`
 	AdminHTTPAddr       string `json:"adminHttpAddr,omitempty" long:"admin-http" description:"(server only) Admin web GUI listen address (e.g. 127.0.0.1:8000)"`

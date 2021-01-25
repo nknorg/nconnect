@@ -7,3 +7,5 @@ config.json
 aws-ip.json
 gcp-ip.json
 geolite2-country.mmdb
+favorite-node.json
+avoid-node.json
