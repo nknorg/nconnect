@@ -41,7 +41,7 @@
   "customized": "自定義",
   "tunaConfigChoiceTitle": "請選擇服務器區域",
   "cancel": "取消",
-  "setTunaConfigSuccess": "修改服務器區域成功！請重啟此設備上的 nConnect 以使用新配置。",
+  "setTunaConfigSuccess": "修改服務器區域成功！到此設備的新連接將使用新配置。",
   "global": "全球",
   "china": "中國"
 }

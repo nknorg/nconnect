@@ -41,7 +41,7 @@
   "customized": "自定义",
   "tunaConfigChoiceTitle": "请选择服务器区域",
   "cancel": "取消",
-  "setTunaConfigSuccess": "修改服务器区域成功！请重启此设备上的 nConnect 以使用新配置。",
+  "setTunaConfigSuccess": "修改服务器区域成功！到此设备的新连接将使用新配置。",
   "global": "全球",
   "china": "中国"
 }

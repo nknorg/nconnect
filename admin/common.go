@@ -7,7 +7,9 @@ import (
 	"github.com/nknorg/nconnect/config"
 	"github.com/nknorg/nconnect/util"
 	"github.com/nknorg/nkn-sdk-go"
+	ts "github.com/nknorg/nkn-tuna-session"
 	tunnel "github.com/nknorg/nkn-tunnel"
+	"github.com/nknorg/tuna/geo"
 )
 
 var (
@@ -170,7 +172,7 @@ func handleRequest(req *rpcReq, persistConf, mergedConf *config.Config, tun *tun
 			resp.Error = err.Error()
 			break
 		}
-		err = persistConf.SetTunaConfig(params.ServiceName, params.Country)
+		err = setTunaConfig(tun, persistConf, mergedConf, params)
 		if err != nil {
 			resp.Error = err.Error()
 			break
@@ -305,6 +307,36 @@ func getBalance(tun *tunnel.Tunnel) (string, error) {
 }
 
 func setAdminHTTPAPI(persistConf, mergedConf *config.Config, params *adminHTTPAPIJSON) error {
-	mergedConf.DisableAdminHTTPAPI = params.Disable
-	return persistConf.SetAdminHTTPAPI(params.Disable)
+	err := persistConf.SetAdminHTTPAPI(params.Disable)
+	if err != nil {
+		return err
+	}
+	return mergedConf.SetAdminHTTPAPI(params.Disable)
+}
+
+func setTunaConfig(tun *tunnel.Tunnel, persistConf, mergedConf *config.Config, params *tunaConfigJSON) error {
+	err := persistConf.SetTunaConfig(params.ServiceName, params.Country)
+	if err != nil {
+		return err
+	}
+	err = mergedConf.SetTunaConfig(params.ServiceName, params.Country)
+	if err != nil {
+		return err
+	}
+	tsClient := tun.TunaSessionClient()
+	if tsClient != nil {
+		locations := make([]geo.Location, len(params.Country))
+		for i := range params.Country {
+			locations[i].CountryCode = params.Country[i]
+		}
+		err = tsClient.SetConfig(&ts.Config{
+			TunaIPFilter:    &geo.IPFilter{Allow: locations},
+			TunaServiceName: params.ServiceName,
+		})
+		if err != nil {
+			return err
+		}
+		go tsClient.RotateAll()
+	}
+	return nil
 }

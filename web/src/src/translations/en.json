@@ -41,7 +41,7 @@
   "customized": "Customized",
   "tunaConfigChoiceTitle": "Please select server region",
   "cancel": "Cancel",
-  "setTunaConfigSuccess": "Change server region success! Please restart nConnect on this device to use new configurations.",
+  "setTunaConfigSuccess": "Change server region success! New connections made to this device will use new configurations.",
   "global": "Global",
   "china": "China",
   "getStartedLink": "https://forum.nkn.org/t/nconnect-user-manual-video-nconnect/2457",
