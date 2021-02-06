@@ -2,13 +2,18 @@
 
 USE_PROXY=GOPROXY=https://goproxy.io
 VERSION:=$(shell git describe --abbrev=7 --dirty --always --tags)
-BUILD=go build -ldflags "-s -w -X github.com/nknorg/nconnect/config.Version=$(VERSION)"
+LDFLAGS="-s -w -X github.com/nknorg/nconnect/config.Version=$(VERSION)"
+BUILD=go build -ldflags $(LDFLAGS)
+XGO_MODULE=github.com/nknorg/nconnect
+XGO_BUILD=xgo -ldflags $(LDFLAGS) --targets=$(XGO_TARGET)
 BUILD_DIR=build
 BIN_NAME=nConnect
 ifdef GOARM
 BIN_DIR=$(GOOS)-$(GOARCH)v$(GOARM)
+XGO_TARGET=$(GOOS)/$(GOARCH)-$(GOARM)
 else
 BIN_DIR=$(GOOS)-$(GOARCH)
+XGO_TARGET=$(GOOS)/$(GOARCH)
 endif
 
 web/dist: $(shell find web/src -type f -not -path "web/src/node_modules/*" -not -path "web/src/build/*")
@@ -31,7 +36,7 @@ local_or_with_proxy:
 build: web/dist
 	rm -rf $(BUILD_DIR)/$(BIN_DIR)
 	mkdir -p $(BUILD_DIR)/$(BIN_DIR)
-	GOOS=$(GOOS) GOARCH=$(GOARCH) GOARM=$(GOARM) $(BUILD) -o $(BUILD_DIR)/$(BIN_DIR)/$(BIN_NAME)$(EXT) .
+	cd $(BUILD_DIR)/$(BIN_DIR) && $(XGO_BUILD) -out $(BIN_NAME) $(XGO_MODULE) && mv $(BIN_NAME)* $(BIN_NAME)$(EXT)
 	mkdir -p $(BUILD_DIR)/$(BIN_DIR)/web/
 	@cp -a web/dist $(BUILD_DIR)/$(BIN_DIR)/web/
 	${MAKE} tar
