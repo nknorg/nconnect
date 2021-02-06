@@ -201,7 +201,7 @@ func main() {
 			}
 			remoteInfoCache, err = c.GetInfo(opts.RemoteAdminAddr)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("Get remote server info error: %v. Please make sure server is online and accepting from this client address", err)
 			}
 			return remoteInfoCache, nil
 		}
@@ -210,9 +210,36 @@ func main() {
 		if len(remoteTunnelAddr) == 0 {
 			remoteInfo, err := getRemoteInfo()
 			if err != nil {
-				log.Fatalf("Get remote server info error: %v. Please make sure server is online and accepting from this client address.", err)
+				log.Fatal(err)
 			}
 			remoteTunnelAddr = remoteInfo.Addr
+		}
+
+		var vpnCIDR []*net.IPNet
+		if opts.VPN {
+			vpnRoutes := opts.VPNRoute
+			if len(vpnRoutes) == 0 {
+				remoteInfo, err := getRemoteInfo()
+				if err != nil {
+					log.Fatal(err)
+				}
+				if len(remoteInfo.LocalIP.Ipv4) > 0 {
+					vpnRoutes = make([]string, len(remoteInfo.LocalIP.Ipv4))
+					for i, ip := range remoteInfo.LocalIP.Ipv4 {
+						vpnRoutes[i] = fmt.Sprintf("%s/32", ip)
+					}
+				}
+			}
+			if len(vpnRoutes) > 0 {
+				vpnCIDR = make([]*net.IPNet, len(vpnRoutes))
+				for i, cidr := range vpnRoutes {
+					_, cidr, err := net.ParseCIDR(cidr)
+					if err != nil {
+						log.Fatalf("Parse CIDR %s error: %v", cidr, err)
+					}
+					vpnCIDR[i] = cidr
+				}
+			}
 		}
 
 		proxyAddr, err := net.ResolveTCPAddr("tcp", opts.LocalSocksAddr)
@@ -233,8 +260,8 @@ func main() {
 		log.Println("Client NKN address:", tun.Addr().String())
 		log.Println("Client socks proxy listen address:", opts.LocalSocksAddr)
 
-		if opts.Tun {
-			tunDevice, err := gotun.OpenTunDevice(opts.TunName, opts.TunAddr, opts.TunGateway, opts.TunMask, strings.Split(opts.TunDNS, ","), true)
+		if opts.Tun || opts.VPN {
+			tunDevice, err := gotun.OpenTunDevice(opts.TunName, opts.TunAddr, opts.TunGateway, opts.TunMask, opts.TunDNS, true)
 			if err != nil {
 				log.Fatalf("Failed to open TUN device: %v", err)
 			}
@@ -253,6 +280,25 @@ func main() {
 			}()
 
 			log.Println("Started tun2socks")
+
+			if opts.VPN {
+				for _, dest := range vpnCIDR {
+					out, err := addRouteCmd(dest, opts.TunAddr)
+					log.Print(string(out))
+					if err != nil {
+						log.Fatal(err)
+					}
+					defer func(dest *net.IPNet) {
+						out, err := deleteRouteCmd(dest, opts.TunAddr)
+						if len(out) > 0 {
+							log.Print(string(out))
+						}
+						if err != nil {
+							log.Println(err)
+						}
+					}(dest)
+				}
+			}
 		}
 	}
 
