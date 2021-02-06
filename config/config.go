@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"runtime"
 	"sync"
 	"time"
 
@@ -18,6 +19,8 @@ import (
 const (
 	RandomIdentifierChars  = "abcdefghijklmnopqrstuvwxyz0123456789"
 	RandomIdentifierLength = 6
+	DefaultTunNameLinux    = "nConnect-tun0"
+	DefaultTunNameNonLinux = "nConnect-tap0"
 )
 
 var (
@@ -35,11 +38,19 @@ type Config struct {
 	Seed              string   `json:"seed" long:"seed" description:"NKN client secret seed. A random one will be generated and saved to config.json if not provided"`
 	SeedRPCServerAddr []string `json:"seedRPCServerAddr,omitempty" long:"rpc" description:"Seed RPC server address"`
 
-	LocalAddr  string `json:"localAddr,omitempty" short:"l" long:"local-addr" description:"(client only) Local socks proxy listen address" default:"127.0.0.1:1080"`
-	RemoteAddr string `json:"remoteAddr,omitempty" short:"r" long:"remote-addr" description:"(client only) Remote server NKN address"`
-
-	Cipher   string `json:"cipher,omitempty" long:"cipher" description:"Socks proxy cipher. By default dummy (no cipher) will be used since NKN tunnel is already doing end to end encryption." choice:"dummy" choice:"chacha20-ietf-poly1305" choice:"aes-128-gcm" choice:"aes-256-gcm" default:"chacha20-ietf-poly1305"`
+	Cipher   string `json:"cipher,omitempty" long:"cipher" description:"Socks proxy cipher. Dummy (no cipher) will not reduce security because NKN tunnel is already doing end to end encryption" choice:"dummy" choice:"chacha20-ietf-poly1305" choice:"aes-128-gcm" choice:"aes-256-gcm" default:"chacha20-ietf-poly1305"`
 	Password string `json:"password,omitempty" long:"password" description:"Socks proxy password"`
+
+	LocalSocksAddr   string `json:"localSocksAddr,omitempty" short:"l" long:"local-socks-addr" description:"(client only) Local socks proxy listen address" default:"127.0.0.1:1080"`
+	RemoteAdminAddr  string `json:"remoteAdminAddr,omitempty" short:"a" long:"remote-admin-addr" description:"(client only) Remote server admin client address"`
+	RemoteTunnelAddr string `json:"remoteTunnelAddr,omitempty" short:"r" long:"remote-tunnel-addr" description:"(client only) Remote server tunnel address, not needed if remote server admin address is given"`
+
+	Tun        bool   `json:"tun,omitempty" long:"tun" description:"(client only) Enable TUN device"`
+	TunAddr    string `json:"tunAddr,omitempty" long:"tun-addr" description:"(client only) TUN device IP address" default:"10.0.86.2"`
+	TunGateway string `json:"tunGateway,omitempty" long:"tun-gateway" description:"(client only) TUN device gateway" default:"10.0.86.1"`
+	TunMask    string `json:"tunMask,omitempty" long:"tun-mask" description:"(client only) TUN device network mask, should be a prefixlen (a number) for IPv6 address" default:"255.255.255.0"`
+	TunDNS     string `json:"tunDNS,omitempty" long:"tun-dns" description:"(client only) Comma-separated list of DNS resolvers for the TUN device (Windows only)" default:"1.1.1.1,8.8.8.8"`
+	TunName    string `json:"tunName,omitempty" long:"tun-name" description:"(client only) TUN device name, will be ignored on MacOS. Default is nConnect-tun0 on Linux and nConnect-tap0 on Windows"`
 
 	Tuna                        bool     `json:"tuna,omitempty" short:"t" long:"tuna" description:"Enable tuna sessions"`
 	TunaMaxPrice                string   `json:"tunaMaxPrice,omitempty" long:"tuna-max-price" description:"(server only) Tuna max price in unit of NKN/MB" default:"0.01"`
@@ -92,6 +103,29 @@ func LoadOrNewConfig(path string) (*Config, error) {
 	}
 
 	return c, nil
+}
+
+func (c *Config) SetPlatformSpecificDefaultValues() error {
+	if len(c.TunName) == 0 {
+		switch runtime.GOOS {
+		case "linux":
+			c.TunName = DefaultTunNameLinux
+		default:
+			c.TunName = DefaultTunNameNonLinux
+		}
+	}
+	return nil
+}
+
+func (c *Config) VerifyClient() error {
+	if len(c.RemoteAdminAddr) == 0 && len(c.RemoteTunnelAddr) == 0 {
+		return errors.New("remoteAdminAddr and remoteTunnelAddr are both empty")
+	}
+	return nil
+}
+
+func (c *Config) VerifyServer() error {
+	return nil
 }
 
 func (c *Config) GetAcceptAddrs() []string {

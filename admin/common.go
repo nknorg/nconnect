@@ -44,7 +44,7 @@ type localIPJSON struct {
 	Ipv4 []string `json:"ipv4"`
 }
 
-type getInfoJSON struct {
+type GetInfoJSON struct {
 	Addr                 string       `json:"addr"`
 	LocalIP              *localIPJSON `json:"localIP"`
 	AdminHTTPAPIDisabled bool         `json:"adminHttpApiDisabled"`
@@ -185,11 +185,11 @@ func handleRequest(req *rpcReq, persistConf, mergedConf *config.Config, tun *tun
 }
 
 func getAdminToken() *adminTokenJSON {
-	if len(clientAddr) == 0 {
+	if len(serverAdminAddr) == 0 {
 		return nil
 	}
 	return &adminTokenJSON{
-		Addr:  clientAddr,
+		Addr:  serverAdminAddr,
 		Token: tokenStore.GetCurrentToken(),
 	}
 }
@@ -269,12 +269,12 @@ func getLocalIP() (*localIPJSON, error) {
 	return &localIPJSON{Ipv4: ipv4}, nil
 }
 
-func getInfo(conf *config.Config, tun *tunnel.Tunnel) (*getInfoJSON, error) {
+func getInfo(conf *config.Config, tun *tunnel.Tunnel) (*GetInfoJSON, error) {
 	localIP, err := getLocalIP()
 	if err != nil {
 		return nil, err
 	}
-	info := &getInfoJSON{
+	info := &GetInfoJSON{
 		Addr:                 tun.FromAddr(),
 		LocalIP:              localIP,
 		AdminHTTPAPIDisabled: conf.DisableAdminHTTPAPI,

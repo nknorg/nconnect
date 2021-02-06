@@ -3,6 +3,7 @@ module github.com/nknorg/nconnect
 go 1.13
 
 require (
+	github.com/eycorsican/go-tun2socks v1.16.11
 	github.com/gin-gonic/gin v1.4.0
 	github.com/imdario/mergo v0.3.9
 	github.com/jessevdk/go-flags v1.4.0

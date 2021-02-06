@@ -13,7 +13,7 @@ var (
 	errAdminHTTPAPIDisabled = errors.New("Web API is disabled")
 )
 
-func StartWeb(listenAddr string, tun *tunnel.Tunnel, persistConf, mergedConf *config.Config) error {
+func StartWebServer(listenAddr string, tun *tunnel.Tunnel, persistConf, mergedConf *config.Config) error {
 	gin.SetMode(gin.ReleaseMode)
 
 	r := gin.Default()

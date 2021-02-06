@@ -3,13 +3,19 @@ package main
 import (
 	"encoding/hex"
 	"fmt"
+	"io"
 	"log"
+	"net"
 	"os"
 	"os/signal"
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
+	"github.com/eycorsican/go-tun2socks/core"
+	"github.com/eycorsican/go-tun2socks/proxy/socks"
+	gotun "github.com/eycorsican/go-tun2socks/tun"
 	"github.com/imdario/mergo"
 	"github.com/jessevdk/go-flags"
 	"github.com/nknorg/nconnect/admin"
@@ -20,6 +26,10 @@ import (
 	ts "github.com/nknorg/nkn-tuna-session"
 	tunnel "github.com/nknorg/nkn-tunnel"
 	"github.com/nknorg/tuna/geo"
+)
+
+const (
+	mtu = 1500
 )
 
 var opts struct {
@@ -44,6 +54,11 @@ func main() {
 		if flagsErr, ok := err.(*flags.Error); ok && flagsErr.Type == flags.ErrHelp {
 			os.Exit(0)
 		}
+		log.Fatal(err)
+	}
+
+	err = (&opts.Config).SetPlatformSpecificDefaultValues()
+	if err != nil {
 		log.Fatal(err)
 	}
 
@@ -153,23 +168,100 @@ func main() {
 	var tun *tunnel.Tunnel
 
 	if opts.Client {
-		if len(opts.RemoteAddr) == 0 {
-			log.Fatal("Remote address should not be empty.")
+		err = (&opts.Config).VerifyClient()
+		if err != nil {
+			log.Fatal(err)
 		}
 
-		ssConfig.Client = ssAddr
-		ssConfig.Socks = opts.LocalAddr
+		// Lazy create admin client to avoid unnecessary client creation.
+		var adminClientCache *admin.Client
+		getAdminClient := func() (*admin.Client, error) {
+			if adminClientCache != nil {
+				return adminClientCache, nil
+			}
+			c, err := admin.NewClient(account, nil)
+			if err != nil {
+				return nil, err
+			}
+			// Wait for more sub-clients to connect
+			time.Sleep(time.Second)
+			adminClientCache = c
+			return adminClientCache, nil
+		}
 
-		tun, err = tunnel.NewTunnel(account, opts.Identifier, ssAddr, opts.RemoteAddr, opts.Tuna, tunnelConfig)
+		// Lazy get remote info to avoid unnecessary rpc call.
+		var remoteInfoCache *admin.GetInfoJSON
+		getRemoteInfo := func() (*admin.GetInfoJSON, error) {
+			if remoteInfoCache != nil {
+				return remoteInfoCache, nil
+			}
+			c, err := getAdminClient()
+			if err != nil {
+				return nil, err
+			}
+			remoteInfoCache, err = c.GetInfo(opts.RemoteAdminAddr)
+			if err != nil {
+				return nil, err
+			}
+			return remoteInfoCache, nil
+		}
+
+		remoteTunnelAddr := opts.RemoteTunnelAddr
+		if len(remoteTunnelAddr) == 0 {
+			remoteInfo, err := getRemoteInfo()
+			if err != nil {
+				log.Fatalf("Get remote server info error: %v. Please make sure server is online and accepting from this client address.", err)
+			}
+			remoteTunnelAddr = remoteInfo.Addr
+		}
+
+		proxyAddr, err := net.ResolveTCPAddr("tcp", opts.LocalSocksAddr)
+		if err != nil {
+			log.Fatalf("Invalid proxy server address: %v", err)
+		}
+		proxyHost := proxyAddr.IP.String()
+		proxyPort := uint16(proxyAddr.Port)
+
+		ssConfig.Client = ssAddr
+		ssConfig.Socks = opts.LocalSocksAddr
+
+		tun, err = tunnel.NewTunnel(account, opts.Identifier, ssAddr, remoteTunnelAddr, opts.Tuna, tunnelConfig)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		log.Println("Client NKN address:", tun.Addr().String())
-		log.Println("Client socks proxy listen address:", opts.LocalAddr)
+		log.Println("Client socks proxy listen address:", opts.LocalSocksAddr)
+
+		if opts.Tun {
+			tunDevice, err := gotun.OpenTunDevice(opts.TunName, opts.TunAddr, opts.TunGateway, opts.TunMask, strings.Split(opts.TunDNS, ","), true)
+			if err != nil {
+				log.Fatalf("Failed to open TUN device: %v", err)
+			}
+
+			core.RegisterOutputFn(tunDevice.Write)
+
+			core.RegisterTCPConnHandler(socks.NewTCPHandler(proxyHost, proxyPort))
+
+			lwipWriter := core.NewLWIPStack()
+
+			go func() {
+				_, err := io.CopyBuffer(lwipWriter, tunDevice, make([]byte, mtu))
+				if err != nil {
+					log.Fatalf("Failed to write data to network stack: %v", err)
+				}
+			}()
+
+			log.Println("Started tun2socks")
+		}
 	}
 
 	if opts.Server {
+		err = (&opts.Config).VerifyServer()
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		ssConfig.Server = ssAddr
 
 		tun, err = tunnel.NewTunnel(account, opts.Identifier, "", ssAddr, opts.Tuna, tunnelConfig)
@@ -177,7 +269,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		log.Println("Server listen address:", tun.FromAddr())
+		log.Println("Tunnel listen address:", tun.FromAddr())
 
 		if len(opts.AdminIdentifier) > 0 {
 			go func() {
@@ -185,7 +277,7 @@ func main() {
 				if len(opts.Identifier) > 0 {
 					identifier += "." + opts.Identifier
 				}
-				err := admin.StartClient(account, identifier, clientConfig, tun, persistConf, &opts.Config)
+				err := admin.StartNKNServer(account, identifier, clientConfig, tun, persistConf, &opts.Config)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -196,7 +288,7 @@ func main() {
 
 		if len(opts.AdminHTTPAddr) > 0 {
 			go func() {
-				err := admin.StartWeb(opts.AdminHTTPAddr, tun, persistConf, &opts.Config)
+				err := admin.StartWebServer(opts.AdminHTTPAddr, tun, persistConf, &opts.Config)
 				if err != nil {
 					log.Fatal(err)
 				}
