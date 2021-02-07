@@ -200,7 +200,7 @@ func main() {
 			}
 			remoteInfoCache, err = c.GetInfo(opts.RemoteAdminAddr)
 			if err != nil {
-				return nil, fmt.Errorf("Get remote server info error: %v. Please make sure server is online and accepting from this client address", err)
+				return nil, fmt.Errorf("Get remote server info error: %v. Please make sure server is online and accepting connections from this client address", err)
 			}
 			return remoteInfoCache, nil
 		}
