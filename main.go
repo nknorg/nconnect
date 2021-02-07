@@ -282,6 +282,7 @@ func main() {
 
 			if opts.VPN {
 				for _, dest := range vpnCIDR {
+					log.Printf("Adding route %s", dest)
 					out, err := addRouteCmd(dest, opts.TunAddr)
 					if len(out) > 0 {
 						log.Print(string(out))
@@ -290,6 +291,7 @@ func main() {
 						log.Fatal(util.ParseExecError(err))
 					}
 					defer func(dest *net.IPNet) {
+						log.Printf("Deleting route %s", dest)
 						out, err := deleteRouteCmd(dest, opts.TunAddr)
 						if len(out) > 0 {
 							log.Print(string(out))
