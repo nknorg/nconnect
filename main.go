@@ -15,7 +15,6 @@ import (
 
 	"github.com/eycorsican/go-tun2socks/core"
 	"github.com/eycorsican/go-tun2socks/proxy/socks"
-	gotun "github.com/eycorsican/go-tun2socks/tun"
 	"github.com/imdario/mergo"
 	"github.com/jessevdk/go-flags"
 	"github.com/nknorg/nconnect/admin"
@@ -261,7 +260,7 @@ func main() {
 		log.Println("Client socks proxy listen address:", opts.LocalSocksAddr)
 
 		if opts.Tun || opts.VPN {
-			tunDevice, err := gotun.OpenTunDevice(opts.TunName, opts.TunAddr, opts.TunGateway, opts.TunMask, opts.TunDNS, true)
+			tunDevice, err := OpenTunDevice(opts.TunName, opts.TunAddr, opts.TunGateway, opts.TunMask, opts.TunDNS, true)
 			if err != nil {
 				log.Fatalf("Failed to open TUN device: %v", err)
 			}
@@ -284,9 +283,11 @@ func main() {
 			if opts.VPN {
 				for _, dest := range vpnCIDR {
 					out, err := addRouteCmd(dest, opts.TunAddr)
-					log.Print(string(out))
+					if len(out) > 0 {
+						log.Print(string(out))
+					}
 					if err != nil {
-						log.Fatal(err)
+						log.Fatal(util.ParseExecError(err))
 					}
 					defer func(dest *net.IPNet) {
 						out, err := deleteRouteCmd(dest, opts.TunAddr)
@@ -294,7 +295,7 @@ func main() {
 							log.Print(string(out))
 						}
 						if err != nil {
-							log.Println(err)
+							log.Println(util.ParseExecError(err))
 						}
 					}(dest)
 				}
