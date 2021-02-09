@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/eycorsican/go-tun2socks/core"
+	"github.com/eycorsican/go-tun2socks/proxy/dnsfallback"
 	"github.com/eycorsican/go-tun2socks/proxy/socks"
 	"github.com/imdario/mergo"
 	"github.com/jessevdk/go-flags"
@@ -268,6 +269,7 @@ func main() {
 			core.RegisterOutputFn(tunDevice.Write)
 
 			core.RegisterTCPConnHandler(socks.NewTCPHandler(proxyHost, proxyPort))
+			core.RegisterUDPConnHandler(dnsfallback.NewUDPHandler())
 
 			lwipWriter := core.NewLWIPStack()
 
