@@ -5,7 +5,7 @@ VERSION:=$(shell git describe --abbrev=7 --dirty --always --tags)
 LDFLAGS="-s -w -X github.com/nknorg/nconnect/config.Version=$(VERSION)"
 BUILD=go build -ldflags $(LDFLAGS)
 XGO_MODULE=github.com/nknorg/nconnect
-XGO_BUILD=xgo -ldflags $(LDFLAGS) --targets=$(XGO_TARGET)
+XGO_BUILD=xgo -ldflags $(LDFLAGS) --targets=$(XGO_TARGET) $(XGOFLAGS)
 BUILD_DIR=build
 BIN_NAME=nConnect
 ifdef GOARM

@@ -12,4 +12,5 @@ require (
 	github.com/nknorg/nkn-tunnel v0.3.1-0.20210127121941-af8a618d4f0e
 	github.com/nknorg/tuna v0.0.0-20210127090526-f32561052184
 	github.com/shadowsocks/go-shadowsocks2 v0.1.2
+	github.com/songgao/water v0.0.0-20190725173103-fd331bda3f4b
 )
