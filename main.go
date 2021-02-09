@@ -224,9 +224,13 @@ func main() {
 					log.Fatal(err)
 				}
 				if len(remoteInfo.LocalIP.Ipv4) > 0 {
-					vpnRoutes = make([]string, len(remoteInfo.LocalIP.Ipv4))
-					for i, ip := range remoteInfo.LocalIP.Ipv4 {
-						vpnRoutes[i] = fmt.Sprintf("%s/32", ip)
+					vpnRoutes = make([]string, 0, len(remoteInfo.LocalIP.Ipv4))
+					for _, ip := range remoteInfo.LocalIP.Ipv4 {
+						if ip == opts.TunAddr {
+							log.Printf("Skipping server's local IP %s in routes\n", ip)
+							continue
+						}
+						vpnRoutes = append(vpnRoutes, fmt.Sprintf("%s/32", ip))
 					}
 				}
 			}
