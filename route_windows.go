@@ -3,22 +3,16 @@ package main
 import (
 	"net"
 	"os/exec"
-	"strconv"
-	"strings"
 )
 
-func maskToString(m net.IPMask) string {
-	s := make([]string, len(m))
-	for i, b := range m {
-		s[i] = strconv.Itoa(int(b))
+func addRouteCmd(dest *net.IPNet, gateway, devName string) ([]byte, error) {
+	b, err := exec.Command("netsh", "interface", "ipv4", "add", "route", dest.String(), "nexthop="+gateway, "interface="+devName, "metric=0", "store=active").Output()
+	if err != nil {
+		return exec.Command("netsh", "interface", "ipv4", "set", "route", dest.String(), "nexthop="+gateway, "interface="+devName, "metric=0", "store=active").Output()
 	}
-	return strings.Join(s, ".")
+	return b, nil
 }
 
-func addRouteCmd(dest *net.IPNet, gateway string) ([]byte, error) {
-	return exec.Command("route", "add", dest.IP.String(), "MASK", maskToString(dest.Mask), gateway).Output()
-}
-
-func deleteRouteCmd(dest *net.IPNet, gateway string) ([]byte, error) {
-	return exec.Command("route", "delete", dest.IP.String()).Output()
+func deleteRouteCmd(dest *net.IPNet, gateway, devName string) ([]byte, error) {
+	return exec.Command("netsh", "interface", "ipv4", "delete", "route", dest.String(), "interface="+devName).Output()
 }
