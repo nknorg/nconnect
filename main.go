@@ -226,7 +226,7 @@ func main() {
 				if len(remoteInfo.LocalIP.Ipv4) > 0 {
 					vpnRoutes = make([]string, 0, len(remoteInfo.LocalIP.Ipv4))
 					for _, ip := range remoteInfo.LocalIP.Ipv4 {
-						if ip == opts.TunAddr {
+						if ip == opts.TunAddr || ip == opts.TunGateway {
 							log.Printf("Skipping server's local IP %s in routes\n", ip)
 							continue
 						}
@@ -289,7 +289,7 @@ func main() {
 			if opts.VPN {
 				for _, dest := range vpnCIDR {
 					log.Printf("Adding route %s", dest)
-					out, err := addRouteCmd(dest, opts.TunAddr, opts.TunName)
+					out, err := addRouteCmd(dest, opts.TunGateway, opts.TunName)
 					if len(out) > 0 {
 						log.Print(string(out))
 					}
@@ -298,7 +298,7 @@ func main() {
 					}
 					defer func(dest *net.IPNet) {
 						log.Printf("Deleting route %s", dest)
-						out, err := deleteRouteCmd(dest, opts.TunAddr, opts.TunName)
+						out, err := deleteRouteCmd(dest, opts.TunGateway, opts.TunName)
 						if len(out) > 0 {
 							log.Print(string(out))
 						}
