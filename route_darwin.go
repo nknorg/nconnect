@@ -7,10 +7,10 @@ import (
 
 func addRouteCmd(dest *net.IPNet, gateway, devName string) ([]byte, error) {
 	b, err := exec.Command("route", "-n", "add", "-net", dest.String(), gateway).Output()
-	if err != nil {
-		return exec.Command("route", "-n", "change", "-net", dest.String(), gateway).Output()
+	if err == nil {
+		return b, nil
 	}
-	return b, nil
+	return exec.Command("route", "-n", "change", "-net", dest.String(), gateway).Output()
 }
 
 func deleteRouteCmd(dest *net.IPNet, gateway, devName string) ([]byte, error) {
