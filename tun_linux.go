@@ -21,7 +21,7 @@ func OpenTunDevice(name, addr, gw, mask string, dnsServers []string, persist boo
 	}
 
 	out, err := func() ([]byte, error) {
-		out, err := exec.Command("ip", "addr", "add", addr+"/"+mask, "dev", name).Output()
+		out, err := exec.Command("ip", "addr", "replace", addr+"/"+mask, "dev", name).Output()
 		if err != nil {
 			return out, err
 		}
@@ -31,6 +31,7 @@ func OpenTunDevice(name, addr, gw, mask string, dnsServers []string, persist boo
 		if len(out) > 0 {
 			log.Print(string(out))
 		}
+		log.Println(util.ParseExecError(err))
 
 		ip := net.ParseIP(addr)
 		if ip == nil {
