@@ -30,12 +30,27 @@ func StartNKNServer(account *nkn.Account, identifier string, clientConfig *nkn.C
 			continue
 		}
 
-		if !util.MatchRegex(persistConf.GetAdminAddrs(), msg.Src) && !tokenStore.IsValid(req.Token) {
+		isAcceptAddr := util.MatchRegex(persistConf.GetAcceptAddrs(), msg.Src)
+		isAdminAddr := util.MatchRegex(persistConf.GetAdminAddrs(), msg.Src)
+
+		if !isAdminAddr && tokenStore.IsValid(req.Token) {
+			isAdminAddr = true
+		}
+
+		if !isAcceptAddr && !isAdminAddr {
 			log.Println("Ignore authorized message from", msg.Src)
 			continue
 		}
 
-		resp := handleRequest(req, persistConf, mergedConf, tun)
+		var perm permission
+		if isAcceptAddr {
+			perm |= rpcPermissionAcceptClient
+		}
+		if isAdminAddr {
+			perm |= rpcPermissionAdminClient
+		}
+
+		resp := handleRequest(req, persistConf, mergedConf, tun, perm)
 
 		b, err := json.Marshal(resp)
 		if err != nil {

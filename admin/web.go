@@ -28,7 +28,7 @@ func StartWebServer(listenAddr string, tun *tunnel.Tunnel, persistConf, mergedCo
 			c.JSON(http.StatusOK, &rpcResp{Error: errAdminHTTPAPIDisabled.Error()})
 			return
 		}
-		resp := handleRequest(req, persistConf, mergedConf, tun)
+		resp := handleRequest(req, persistConf, mergedConf, tun, rpcPermissionWeb)
 		c.JSON(http.StatusOK, resp)
 	})
 

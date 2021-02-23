@@ -12,9 +12,35 @@ import (
 	"github.com/nknorg/tuna/geo"
 )
 
+type permission uint8
+
+const (
+	rpcPermissionAcceptClient permission = 1 << iota
+	rpcPermissionAdminClient
+	rpcPermissionWeb
+)
+
 var (
-	errUnknownMethod = errors.New("unknown method")
-	resultSuccess    = "success"
+	errUnknownMethod    = errors.New("unknown method")
+	errPermissionDenied = errors.New("permission denied")
+	resultSuccess       = "success"
+)
+
+var (
+	rpcPermissions = map[string]permission{
+		"getAdminToken":   rpcPermissionAdminClient | rpcPermissionWeb,
+		"getAddrs":        rpcPermissionAdminClient | rpcPermissionWeb,
+		"setAddrs":        rpcPermissionAdminClient | rpcPermissionWeb,
+		"addAddrs":        rpcPermissionAdminClient | rpcPermissionWeb,
+		"removeAddrs":     rpcPermissionAdminClient | rpcPermissionWeb,
+		"getLocalIP":      rpcPermissionAcceptClient | rpcPermissionAdminClient | rpcPermissionWeb,
+		"getInfo":         rpcPermissionAcceptClient | rpcPermissionAdminClient | rpcPermissionWeb,
+		"getBalance":      rpcPermissionAcceptClient | rpcPermissionAdminClient | rpcPermissionWeb,
+		"setAdminHttpApi": rpcPermissionAdminClient | rpcPermissionWeb,
+		"getSeed":         rpcPermissionAdminClient | rpcPermissionWeb,
+		"setSeed":         rpcPermissionAdminClient | rpcPermissionWeb,
+		"setTunaConfig":   rpcPermissionAdminClient | rpcPermissionWeb,
+	}
 )
 
 type rpcReq struct {
@@ -70,8 +96,14 @@ type tunaConfigJSON struct {
 	Country     []string `json:"country"`
 }
 
-func handleRequest(req *rpcReq, persistConf, mergedConf *config.Config, tun *tunnel.Tunnel) *rpcResp {
+func handleRequest(req *rpcReq, persistConf, mergedConf *config.Config, tun *tunnel.Tunnel, rpcPerm permission) *rpcResp {
 	resp := &rpcResp{}
+
+	if rpcPermissions[req.Method]&rpcPerm == 0 {
+		resp.Error = errPermissionDenied.Error()
+		return resp
+	}
+
 	switch req.Method {
 	case "getAdminToken":
 		resp.Result = getAdminToken()
