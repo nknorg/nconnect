@@ -41,7 +41,7 @@ type Config struct {
 	Cipher   string `json:"cipher,omitempty" long:"cipher" description:"Socks proxy cipher. Dummy (no cipher) will not reduce security because NKN tunnel already has end to end encryption." choice:"dummy" choice:"chacha20-ietf-poly1305" choice:"aes-128-gcm" choice:"aes-256-gcm" default:"chacha20-ietf-poly1305"`
 	Password string `json:"password,omitempty" long:"password" description:"Socks proxy password"`
 
-	RemoteAdminAddr  string `json:"remoteAdminAddr,omitempty" short:"a" long:"remote-admin-addr" description:"(client only) Remote server admin client address"`
+	RemoteAdminAddr  string `json:"remoteAdminAddr,omitempty" short:"a" long:"remote-admin-addr" description:"(client only) Remote server admin address"`
 	RemoteTunnelAddr string `json:"remoteTunnelAddr,omitempty" short:"r" long:"remote-tunnel-addr" description:"(client only) Remote server tunnel address, not needed if remote server admin address is given"`
 	LocalSocksAddr   string `json:"localSocksAddr,omitempty" short:"l" long:"local-socks-addr" description:"(client only) Local socks proxy listen address" default:"127.0.0.1:1080"`
 

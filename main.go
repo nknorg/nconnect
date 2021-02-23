@@ -25,6 +25,7 @@ import (
 	"github.com/nknorg/nkn-sdk-go"
 	ts "github.com/nknorg/nkn-tuna-session"
 	tunnel "github.com/nknorg/nkn-tunnel"
+	"github.com/nknorg/nkn/v2/util/address"
 	"github.com/nknorg/tuna/geo"
 )
 
@@ -39,6 +40,7 @@ var opts struct {
 	config.Config
 	ConfigFile string `short:"f" long:"config-file" default:"config.json" description:"Config file path"`
 
+	Address bool `long:"address" description:"Print client address (client mode) or admin address (server mode)"`
 	Version bool `long:"version" description:"Print version"`
 }
 
@@ -109,6 +111,15 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+	}
+
+	if opts.Address {
+		addr := address.MakeAddressString(account.PubKey(), opts.Identifier)
+		if opts.Server && len(opts.AdminIdentifier) > 0 {
+			addr = opts.AdminIdentifier + "." + addr
+		}
+		fmt.Println(addr)
+		os.Exit(0)
 	}
 
 	var seedRPCServerAddr *nkn.StringArray
@@ -338,7 +349,7 @@ func main() {
 				}
 				os.Exit(0)
 			}()
-			log.Println("Admin client listening address:", opts.AdminIdentifier+"."+tun.FromAddr())
+			log.Println("Admin listening address:", opts.AdminIdentifier+"."+tun.FromAddr())
 		}
 
 		if len(opts.AdminHTTPAddr) > 0 {
