@@ -88,31 +88,43 @@ func Start(flags *Config) error {
 		if flags.UDPTun != "" {
 			for _, tun := range strings.Split(flags.UDPTun, ",") {
 				p := strings.Split(tun, "=")
-				go sendErr(udpLocal(p[0], udpAddr, p[1], ciph.PacketConn), errChan)
+				go func() {
+					sendErr(udpLocal(p[0], udpAddr, p[1], ciph.PacketConn), errChan)
+				}()
 			}
 		}
 
 		if flags.TCPTun != "" {
 			for _, tun := range strings.Split(flags.TCPTun, ",") {
 				p := strings.Split(tun, "=")
-				go sendErr(tcpTun(p[0], addr, p[1], ciph.StreamConn), errChan)
+				go func() {
+					sendErr(tcpTun(p[0], addr, p[1], ciph.StreamConn), errChan)
+				}()
 			}
 		}
 
 		if flags.Socks != "" {
 			socks.UDPEnabled = flags.UDPSocks
-			go sendErr(socksLocal(flags.Socks, addr, ciph.StreamConn), errChan)
+			go func() {
+				sendErr(socksLocal(flags.Socks, addr, ciph.StreamConn), errChan)
+			}()
 			if flags.UDPSocks {
-				go sendErr(udpSocksLocal(flags.Socks, udpAddr, ciph.PacketConn), errChan)
+				go func() {
+					sendErr(udpSocksLocal(flags.Socks, udpAddr, ciph.PacketConn), errChan)
+				}()
 			}
 		}
 
 		if flags.RedirTCP != "" {
-			go sendErr(redirLocal(flags.RedirTCP, addr, ciph.StreamConn), errChan)
+			go func() {
+				sendErr(redirLocal(flags.RedirTCP, addr, ciph.StreamConn), errChan)
+			}()
 		}
 
 		if flags.RedirTCP6 != "" {
-			go sendErr(redir6Local(flags.RedirTCP6, addr, ciph.StreamConn), errChan)
+			go func() {
+				sendErr(redir6Local(flags.RedirTCP6, addr, ciph.StreamConn), errChan)
+			}()
 		}
 	}
 
@@ -144,10 +156,14 @@ func Start(flags *Config) error {
 		}
 
 		if flags.UDP {
-			go sendErr(udpRemote(udpAddr, ciph.PacketConn), errChan)
+			go func() {
+				sendErr(udpRemote(udpAddr, ciph.PacketConn), errChan)
+			}()
 		}
 		if flags.TCP {
-			go sendErr(tcpRemote(addr, ciph.StreamConn), errChan)
+			go func() {
+				sendErr(tcpRemote(addr, ciph.StreamConn), errChan)
+			}()
 		}
 	}
 
