@@ -102,20 +102,10 @@ Items in each list are regular expressions. If you want to add a nConnect client
 public key to the list, it is important that you add `$` to the end to match
 the public key part. For example,
 `ad37e248005113dd42be15a4885e6446e9e23f35537dfa6c584f2563a7e8f96d$`
-will allow any address using public key
-`ad37e248005113dd42be15a4885e6446e9e23f35537dfa6c584f2563a7e8f96d`,
-such as
+will allow any address using this public key, such as
 `ad37e248005113dd42be15a4885e6446e9e23f35537dfa6c584f2563a7e8f96d`
 and
 `nkn.ad37e248005113dd42be15a4885e6446e9e23f35537dfa6c584f2563a7e8f96d`.
-If you want to add a specific address to the list, you should add `^` in the front, and `$` to the end. For example,
-`^nkn.ad37e248005113dd42be15a4885e6446e9e23f35537dfa6c584f2563a7e8f96d$`
-will only match address
-`nkn.ad37e248005113dd42be15a4885e6446e9e23f35537dfa6c584f2563a7e8f96d`
-but not
-`ad37e248005113dd42be15a4885e6446e9e23f35537dfa6c584f2563a7e8f96d`
-or
-`nConnect.ad37e248005113dd42be15a4885e6446e9e23f35537dfa6c584f2563a7e8f96d`.
 
 #### Get Your Server Address
 
@@ -169,10 +159,13 @@ By default all local IP addresses on the server machine will be added to routes,
 but you can manually specify which IP or IP range you would like to route
 through the VPN using `--vpn-route` arguments. Use `./nConnect -h` for all available arguments.
 
-Note that if you are using windows, you would need to install the network
-adaptor driver and change adaptor info beforehand. The simplest way of doing
-that is to install nConnect client for windows before using nConnect command
-line version.
+If you start multiple nConnect clients in VPN mode, make sure to use different
+subnets for both `--tun-addr` and `--tun-gateway` (e.g. `10.0.86.X` for one
+client, `10.0.87.X` for another client).
+
+If you are using windows, you will need to install the network adaptor driver
+and change adaptor info beforehand. The simplest way of doing that is to install
+nConnect client for windows before using nConnect command line version.
 
 #### TUN Device Mode
 
@@ -194,10 +187,13 @@ routed through the TUN device.
 You can also change the name, IP, etc of the TUN device. Use `./nConnect -h` for
 all available arguments.
 
-Note that if you are using windows, you would need to install the network
-adaptor driver and change adaptor info beforehand. The simplest way of doing
-that is to install nConnect client for windows before using nConnect command
-line version.
+If you start multiple nConnect clients in TUN device mode, make sure to use
+different subnets for both `--tun-addr` and `--tun-gateway` (e.g. `10.0.86.X`
+for one client, `10.0.87.X` for another client).
+
+If you are using windows, you will need to install the network adaptor driver
+and change adaptor info beforehand. The simplest way of doing that is to install
+nConnect client for windows before using nConnect command line version.
 
 #### SOCKS Proxy Mode
 
