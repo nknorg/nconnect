@@ -17,8 +17,7 @@ XGO_TARGET=$(GOOS)/$(GOARCH)
 endif
 
 web/dist: $(shell find web/src -type f -not -path "web/src/node_modules/*" -not -path "web/src/build/*")
-	@rm -rf web/dist
-	-@cd web/src && yarn && yarn build && cp -a ./build ../dist
+	-@cd web/src && yarn && yarn build && rm -rf ../dist && cp -a ./build ../dist
 
 .PHONY: local
 local: web/dist
