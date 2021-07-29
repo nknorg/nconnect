@@ -1,17 +1,33 @@
 .App {
-  text-align: center;
+    text-align: center;
 }
 
 .row {
-  padding-top: 10px;
-  padding-bottom: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 .advanced-row {
-  padding-top: 10px;
-  padding-bottom: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 .language-switcher {
-  text-align: right;
+    text-align: right;
+}
+
+.bottom-line {
+    border-bottom: 1px solid #00002222;
+}
+
+.margin-left-auto {
+    margin-left: auto !important;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
 }
