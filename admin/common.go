@@ -92,8 +92,12 @@ type adminHTTPAPIJSON struct {
 }
 
 type tunaConfigJSON struct {
-	ServiceName string   `json:"serviceName"`
-	Country     []string `json:"country"`
+	ServiceName     string   `json:"serviceName"`
+	Country         []string `json:"country"`
+	AllowNknAddr    []string `json:"allowNknAddr"`
+	DisallowNknAddr []string `json:"disallowNknAddr"`
+	AllowIp         []string `json:"allowIp"`
+	DisallowIp      []string `json:"disallowIp"`
 }
 
 func handleRequest(req *rpcReq, persistConf, mergedConf *config.Config, tun *tunnel.Tunnel, rpcPerm permission) *rpcResp {
@@ -347,11 +351,11 @@ func setAdminHTTPAPI(persistConf, mergedConf *config.Config, params *adminHTTPAP
 }
 
 func setTunaConfig(tun *tunnel.Tunnel, persistConf, mergedConf *config.Config, params *tunaConfigJSON) error {
-	err := persistConf.SetTunaConfig(params.ServiceName, params.Country)
+	err := persistConf.SetTunaConfig(params.ServiceName, params.Country, params.AllowNknAddr, params.DisallowNknAddr, params.AllowIp, params.DisallowIp)
 	if err != nil {
 		return err
 	}
-	err = mergedConf.SetTunaConfig(params.ServiceName, params.Country)
+	err = mergedConf.SetTunaConfig(params.ServiceName, params.Country, params.AllowNknAddr, params.DisallowNknAddr, params.AllowIp, params.DisallowIp)
 	if err != nil {
 		return err
 	}
@@ -361,8 +365,19 @@ func setTunaConfig(tun *tunnel.Tunnel, persistConf, mergedConf *config.Config, p
 		for i := range params.Country {
 			locations[i].CountryCode = params.Country[i]
 		}
+		allowIps := make([]geo.Location, len(params.AllowIp))
+		for i := range params.AllowIp {
+			allowIps[i].IP = params.AllowIp[i]
+		}
+		var allowed = append(locations, allowIps...)
+
+		disallowed := make([]geo.Location, len(params.DisallowIp))
+		for i := range params.DisallowIp {
+			disallowed[i].IP = params.DisallowIp[i]
+		}
+
 		err = tsClient.SetConfig(&ts.Config{
-			TunaIPFilter:    &geo.IPFilter{Allow: locations},
+			TunaIPFilter:    &geo.IPFilter{Allow: allowed, Disallow: disallowed},
 			TunaServiceName: params.ServiceName,
 		})
 		if err != nil {
