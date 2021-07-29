@@ -7,6 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.4.0
 	github.com/imdario/mergo v0.3.9
 	github.com/jessevdk/go-flags v1.4.0
+	github.com/karalabe/xgo v0.0.0-20191115072854-c5ccff8648a7 // indirect
 	github.com/nknorg/nkn-sdk-go v1.3.7-0.20210520085335-6a2cf0700b0c
 	github.com/nknorg/nkn-tuna-session v0.2.1-0.20210715021421-1b12ad76c965
 	github.com/nknorg/nkn-tunnel v0.3.1-0.20210715030454-236d6a97f1d8

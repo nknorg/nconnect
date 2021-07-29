@@ -59,6 +59,10 @@ type Config struct {
 	TunaMaxPrice                string   `json:"tunaMaxPrice,omitempty" long:"tuna-max-price" description:"(server only) Tuna max price in unit of NKN/MB" default:"0.01"`
 	TunaCountry                 []string `json:"tunaCountry,omitempty" long:"tuna-country" description:"(server only) Tuna service node allowed country code, e.g. US. All countries will be allowed if not provided"`
 	TunaServiceName             string   `json:"tunaServiceName,omitempty" long:"tuna-service-name" description:"(server only) Tuna reverse service name"`
+	TunaAllowNknAddr            []string `json:"tunaAllowNknAddr,omitempty" long:"tuna-allow-nkn-addr" description:"(server only) Tuna service node allowed NKN address. All NKN address will be allowed if not provided"`
+	TunaDisallowNknAddr         []string `json:"tunaDisallowNknAddr,omitempty" long:"tuna-disallow-nkn-addr" description:"(server only) Tuna service node disallowed NKN address. All NKN address will be allowed if not provided"`
+	TunaAllowIp                 []string `json:"tunaAllowIp,omitempty" long:"tuna-allow-ip" description:"(server only) Tuna service node allowed IP. All IP will be allowed if not provided"`
+	TunaDisallowIp              []string `json:"tunaDisallowIp,omitempty" long:"tuna-disallow-ip" description:"(server only) Tuna service node disallowed IP. All IP will be allowed if not provided"`
 	TunaDisableDownloadGeoDB    bool     `json:"tunaDisableDownloadGeoDB,omitempty" long:"tuna-disable-download-geo-db" description:"(server only) Disable Tuna download geo db to disk"`
 	TunaGeoDBPath               string   `json:"tunaGeoDBPath,omitempty" long:"tuna-geo-db-path" description:"(server only) Path to store Tuna geo db" default:"."`
 	TunaDisableMeasureBandwidth bool     `json:"tunaDisableMeasureBandwidth,omitempty" long:"tuna-disable-measure-bandwidth" description:"(server only) Disable Tuna measure bandwidth when selecting service nodes"`
@@ -208,11 +212,15 @@ func (c *Config) SetSeed(s string) error {
 	return c.save()
 }
 
-func (c *Config) SetTunaConfig(serviceName string, country []string) error {
+func (c *Config) SetTunaConfig(serviceName string, country []string, allowNknAddr []string, disallowNknAddr []string, allowIp []string, disallowIp []string) error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	c.TunaServiceName = serviceName
 	c.TunaCountry = country
+	c.TunaAllowNknAddr = allowNknAddr
+	c.TunaDisallowNknAddr = disallowNknAddr
+	c.TunaAllowIp = allowIp
+	c.TunaDisallowIp = disallowIp
 	return c.save()
 }
 
