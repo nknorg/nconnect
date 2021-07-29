@@ -27,14 +27,14 @@ class HoverQRCode extends React.Component {
 
   componentDidMount() {
     QRCode.toDataURL(this.props.rawData).then(qrCode => {
-      this.setState({ qrCode });
+      this.setState({qrCode});
     }).catch(console.error);
   }
 
   render() {
     return (
-      <Tooltip title={<img src={this.state.qrCode} alt="QR Code" />} >
-        <img src="/static/media/qr_code.png" alt="QR Code" style={{height: '24px', verticalAlign: 'middle'}} />
+      <Tooltip title={<img src={this.state.qrCode} alt="QR Code"/>}>
+        <img src="/static/media/qr_code.png" alt="QR Code" style={{height: '24px', verticalAlign: 'middle'}}/>
       </Tooltip>
     );
   }
@@ -85,22 +85,22 @@ class App extends React.Component {
   }
 
   handleTabChange(event, value) {
-    this.setState({ activeTab: value });
+    this.setState({activeTab: value});
     if (value === '4') {
       this.updateInfo();
     }
   }
 
   handleAcceptAddrsChange(event) {
-    this.setState({ acceptAddrs: event.target.value });
+    this.setState({acceptAddrs: event.target.value});
   }
 
   handleAdminAddrsChange(event) {
-    this.setState({ adminAddrs: event.target.value });
+    this.setState({adminAddrs: event.target.value});
   }
 
   handleLanguageChange(event) {
-    this.setState({ language: event.target.value });
+    this.setState({language: event.target.value});
     i18n.changeLanguage(event.target.value);
   }
 
@@ -193,7 +193,7 @@ class App extends React.Component {
 
     if (!this.state.balance) {
       rpc.getBalance().then((balance) => {
-        this.setState({ balance });
+        this.setState({balance});
       }).catch((e) => {
         console.error(e);
       });
@@ -226,7 +226,7 @@ class App extends React.Component {
       return null;
     }
 
-    if (averagePrice == 0) {
+    if (averagePrice === 0) {
       return null;
     }
 
@@ -247,7 +247,7 @@ class App extends React.Component {
 
     try {
       let seed = await rpc.getSeed();
-      window.alert(this.props.t('exportSuccess', { seed }));
+      window.alert(this.props.t('exportSuccess', {seed}));
     } catch (e) {
       console.error(e);
       window.alert(e);
@@ -268,7 +268,7 @@ class App extends React.Component {
 
     try {
       let currentSeed = await rpc.getSeed();
-      if (currentSeed != currentSeedInput.trim()) {
+      if (currentSeed !== currentSeedInput.trim()) {
         window.alert(this.props.t('importWrongCurrent'));
         return;
       }
@@ -368,50 +368,71 @@ class App extends React.Component {
 
           <div className="row">
             <Grid container justify="center" alignItems="center">
-              <Grid item xs={12} sm={6}>
-                <img src="/static/media/nkn_logo.png" alt="NKN logo" />
+              <Grid item xs={12} sm={6} className="text-left">
+                <img src="/static/media/nkn_logo.png" alt="NKN logo"/>
               </Grid>
               <Grid item xs={12} sm={6}>
-                <div className="row">
-                  {
-                    currentServerRegionName && (
-                      <span>
+                <Grid container
+                      direction="row"
+                      justify="flex-end"
+                      alignItems="center">
+                  <Grid item xs>
+                    <div className="row text-right">
+                      {
+                        currentServerRegionName && (
+                          <span>
                         {this.props.t('currentServerRegion') + ': '}
-                        <span onClick={this.openTunaConfigChoice} style={{cursor: 'pointer'}}>
+                            <span onClick={this.openTunaConfigChoice} style={{cursor: 'pointer'}}>
                           {currentServerRegionName}
-                          <ArrowDropDown style={{verticalAlign: 'middle'}} />
+                              <ArrowDropDown style={{verticalAlign: 'middle'}}/>
                         </span>
                       </span>
-                    )
-                  }
-                </div>
-                <div className="row">
-                  { remainingData && (this.props.t('estimatedRemainingData') + ': ' + remainingData) }
-                </div>
+                        )
+                      }
+                    </div>
+                    <div className="row text-right">
+                      {remainingData && (this.props.t('estimatedRemainingData') + ': ' + remainingData)}
+                    </div>
+                  </Grid>
+                  <Grid item xs={4} className="text-right">
+                    <Button variant="contained" color="primary" target="_blank" href={this.props.t('paymentLink', {
+                      addr: addrToPubKey(this.state.addr),
+                      lng: this.state.language,
+                      additionalParams: paymentAdditionalParams
+                    })}>
+                      {this.props.t('data plan tab')}
+                    </Button>
+                  </Grid>
+                </Grid>
               </Grid>
             </Grid>
           </div>
 
           <TabContext value={this.state.activeTab}>
-            <TabList centered onChange={this.handleTabChange}>
-              <Tab label={this.props.t('mobile tab')} value="0" />
-              <Tab label={this.props.t('desktop tab')} value="1" />
-              <Tab label={this.props.t('data plan tab')} value="2" />
-              <Tab label={this.props.t('need help tab')} value="3" />
-              <Tab label={this.props.t('advanced tab')} value="4" />
+            <TabList onChange={this.handleTabChange} className="bottom-line">
+              <Tab label={this.props.t('mobile tab')} value="0"/>
+              <Tab label={this.props.t('desktop tab')} value="1"/>
+              <Tab label={this.props.t('advanced tab')} value="2"/>
+              <Tab className="margin-left-auto" label={this.props.t('need help tab')} value="3"/>
             </TabList>
             <TabPanel value="0">
-              <div className="row">
-                <img src={this.state.adminTokenQRCode} alt="QR Code" />
-              </div>
+              <Grid container spacing={10} justify="center" alignItems="center">
+                <Grid item xs={12} sm={6} className="text-right">
+                  <img src={this.state.adminTokenQRCode} alt="QR Code"/>
+                </Grid>
+                <Grid item xs={12} sm={6} className="text-left">
+                  <div>{this.props.t('export tip')}</div>
+                </Grid>
+              </Grid>
               <List>
                 <ListItem>
                   <ListItemText>
                     <Trans
-                      i18nKey="download nMobile pro"
+                      i18nKey="download nConnect"
                       components={{
-                        nMobileProLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('nMobileProLink')} />,
-                        QRCode: <HoverQRCode rawData={this.props.t('nMobileProLink')} />,
+                        nConnectLink: <a target="_blank" rel="noopener noreferrer"
+                                         href={this.props.t('nConnectLink')}/>,
+                        QRCode: <HoverQRCode rawData={this.props.t('nConnectLink')}/>,
                       }}
                     />
                   </ListItemText>
@@ -431,7 +452,7 @@ class App extends React.Component {
                     <Trans
                       i18nKey="mobile guide"
                       components={{
-                        guideLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('getStartedLink')} />,
+                        guideLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('getStartedLink')}/>,
                       }}
                     />
                   </ListItemText>
@@ -444,7 +465,7 @@ class App extends React.Component {
                   <Trans
                     i18nKey="add device in mobile first"
                     components={{
-                      nMobileProLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('nMobileProLink')} />,
+                      nConnectLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('nConnectLink')}/>,
                     }}
                   />
                 </ListItemText>
@@ -454,7 +475,8 @@ class App extends React.Component {
                   <Trans
                     i18nKey="add server from desktop"
                     components={{
-                      nConnectClientDesktopLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('nConnectClientDesktopLink')} />,
+                      nConnectClientDesktopLink: <a target="_blank" rel="noopener noreferrer"
+                                                    href={this.props.t('nConnectClientDesktopLink')}/>,
                     }}
                   />
                 </ListItemText>
@@ -474,38 +496,79 @@ class App extends React.Component {
                   <Trans
                     i18nKey="desktop guide"
                     components={{
-                      guideLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('getStartedLink')} />,
+                      guideLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('getStartedLink')}/>,
                     }}
                   />
                 </ListItemText>
               </ListItem>
             </TabPanel>
             <TabPanel value="2">
-              <ListItem>
-                <ListItemText>
-                  {this.props.t('purchase method')}
-                </ListItemText>
-              </ListItem>
-              <ListItem>
-                <ListItemText>
-                  <Trans
-                    i18nKey="purchase from mobile"
-                    components={{
-                      nMobileProLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('nMobileProLink')} />,
-                    }}
-                  />
-                </ListItemText>
-              </ListItem>
-              <ListItem>
-                <ListItemText>
-                  <Trans
-                    i18nKey="purchase from web"
-                    components={{
-                      paymentLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('paymentLink', {addr: addrToPubKey(this.state.addr), lng: this.state.language, additionalParams: paymentAdditionalParams})} />,
-                    }}
-                  />
-                </ListItemText>
-              </ListItem>
+              <div className="advanced-row">
+                <TextField
+                  disabled
+                  multiline
+                  label={this.props.t('local IP address')}
+                  value={this.state.localIP.join('\n')}
+                  style={{width: '100%'}}
+                />
+              </div>
+              <div className="advanced-row">
+                <TextField
+                  disabled
+                  multiline
+                  label={this.props.t('access key')}
+                  value={this.state.adminTokenStr}
+                  style={{width: '100%'}}
+                />
+              </div>
+              <div className="advanced-row">
+                <TextField
+                  multiline
+                  variant="filled"
+                  label={this.props.t('accept addresses')}
+                  value={this.state.acceptAddrs}
+                  onChange={this.handleAcceptAddrsChange}
+                  style={{width: '100%'}}
+                />
+                <TextField
+                  multiline
+                  variant="filled"
+                  label={this.props.t('admins')}
+                  value={this.state.adminAddrs}
+                  onChange={this.handleAdminAddrsChange}
+                  style={{width: '100%'}}
+                />
+              </div>
+              <div className="advanced-row">
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={this.handleSubmit}
+                  style={{width: '100%'}}
+                >
+                  {this.props.t('save')}
+                </Button>
+              </div>
+              <div className="advanced-row">
+                <div style={{paddingBottom: '5px'}}>
+                  <Button
+                    variant="contained"
+                    onClick={this.handleExportAccount}
+                    style={{width: '100%'}}
+                  >
+                    {this.props.t('export account')}
+                  </Button>
+                </div>
+                <div style={{paddingTop: '5px'}}>
+                  <Button
+                    variant="contained"
+                    onClick={this.handleImportAccount}
+                    style={{width: '100%'}}
+                  >
+                    {this.props.t('import account')}
+                  </Button>
+                </div>
+              </div>
             </TabPanel>
             <TabPanel value="3">
               <ListItem>
@@ -518,7 +581,17 @@ class App extends React.Component {
                   <Trans
                     i18nKey="create forum post"
                     components={{
-                      forumLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('forumLink')} />,
+                      forumLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('forumLink')}/>,
+                    }}
+                  />
+                </ListItemText>
+              </ListItem>
+              <ListItem>
+                <ListItemText>
+                  <Trans
+                    i18nKey="Q&A"
+                    components={{
+                      'QALink': <a target="_blank" rel="noopener noreferrer" href={this.props.t('QALink')}/>,
                     }}
                   />
                 </ListItemText>
@@ -528,7 +601,7 @@ class App extends React.Component {
                   <Trans
                     i18nKey="send email"
                     components={{
-                      emailLink: <a href={'mailto:'+this.props.t('emailAddress')} />,
+                      emailLink: <a href={'mailto:' + this.props.t('emailAddress')}/>,
                       emailAddress: this.props.t('emailAddress'),
                     }}
                   />
@@ -539,79 +612,11 @@ class App extends React.Component {
                   <Trans
                     i18nKey="mobile customer service"
                     components={{
-                      nMobileProLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('nMobileProLink')} />,
+                      nConnectLink: <a target="_blank" rel="noopener noreferrer" href={this.props.t('nConnectLink')}/>,
                     }}
                   />
                 </ListItemText>
               </ListItem>
-            </TabPanel>
-            <TabPanel value="4">
-              <div className="advanced-row">
-                <TextField
-                  disabled
-                  multiline
-                  label={this.props.t('local IP address')}
-                  value={this.state.localIP.join('\n')}
-                  style={{width: '100%'}}
-                  />
-              </div>
-              <div className="advanced-row">
-                <TextField
-                  disabled
-                  multiline
-                  label={this.props.t('access key')}
-                  value={this.state.adminTokenStr}
-                  style={{width: '100%'}}
-                  />
-              </div>
-              <div className="advanced-row">
-                <TextField
-                  multiline
-                  variant="filled"
-                  label={this.props.t('accept addresses')}
-                  value={this.state.acceptAddrs}
-                  onChange={this.handleAcceptAddrsChange}
-                  style={{width: '100%'}}
-                  />
-                <TextField
-                  multiline
-                  variant="filled"
-                  label={this.props.t('admins')}
-                  value={this.state.adminAddrs}
-                  onChange={this.handleAdminAddrsChange}
-                  style={{width: '100%'}}
-                  />
-              </div>
-              <div className="advanced-row">
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={this.handleSubmit}
-                  style={{width: '100%'}}
-                  >
-                  {this.props.t('save')}
-                </Button>
-              </div>
-              <div className="advanced-row">
-                <div style={{paddingBottom: '5px'}}>
-                  <Button
-                    variant="contained"
-                    onClick={this.handleExportAccount}
-                    style={{width: '100%'}}
-                    >
-                    {this.props.t('export account')}
-                  </Button>
-                </div>
-                <div style={{paddingTop: '5px'}}>
-                  <Button
-                    variant="contained"
-                    onClick={this.handleImportAccount}
-                    style={{width: '100%'}}
-                    >
-                    {this.props.t('import account')}
-                  </Button>
-                </div>
-              </div>
             </TabPanel>
           </TabContext>
           <Dialog
@@ -620,21 +625,21 @@ class App extends React.Component {
             keepMounted
             maxWidth="xs"
             open={this.state.isTunaConfigChoiceOpen}
-            >
+          >
             <DialogTitle>{this.props.t('tunaConfigChoiceTitle')}</DialogTitle>
             <DialogContent dividers>
               <RadioGroup
                 value={`${this.state.tunaConfigSelected}`}
                 onChange={this.handleTunaConfigChoiceChange}
-                >
+              >
                 {
                   this.state.tunaConfigChoices.map((item, index) => (
                     <FormControlLabel
                       value={`${index}`}
                       key={`${index}`}
-                      control={<Radio />}
+                      control={<Radio/>}
                       label={this.props.t(item.textId) || item.textId}
-                      />
+                    />
                   ))
                 }
               </RadioGroup>
@@ -670,7 +675,7 @@ function strToAddrs(str) {
 
 function addrToPubKey(addr) {
   let s = addr.split('.');
-  return s[s.length-1];
+  return s[s.length - 1];
 }
 
 export default withTranslation()(App);
