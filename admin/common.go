@@ -2,6 +2,7 @@ package admin
 
 import (
 	"errors"
+	"github.com/nknorg/tuna/filter"
 	"net"
 
 	"github.com/nknorg/nconnect/config"
@@ -376,8 +377,19 @@ func setTunaConfig(tun *tunnel.Tunnel, persistConf, mergedConf *config.Config, p
 			disallowed[i].IP = params.DisallowIp[i]
 		}
 
+		allowNknAddrs := make([]filter.NknClient, len(params.AllowNknAddr))
+		for i := range params.AllowNknAddr {
+			allowNknAddrs[i].Address = params.AllowNknAddr[i]
+		}
+
+		disallowNknAddrs := make([]filter.NknClient, len(params.DisallowNknAddr))
+		for i := range params.DisallowNknAddr {
+			disallowNknAddrs[i].Address = params.DisallowNknAddr[i]
+		}
+
 		err = tsClient.SetConfig(&ts.Config{
 			TunaIPFilter:    &geo.IPFilter{Allow: allowed, Disallow: disallowed},
+			TunaNknFilter:   &filter.NknFilter{Allow: allowNknAddrs, Disallow: disallowNknAddrs},
 			TunaServiceName: params.ServiceName,
 		})
 		if err != nil {

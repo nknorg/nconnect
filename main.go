@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/nknorg/tuna/filter"
 	"io"
 	"log"
 	"net"
@@ -137,15 +138,53 @@ func main() {
 		locations = append(locations, l...)
 	}
 
+	allowIps := make([]geo.Location, len(opts.TunaAllowIp))
+	for i := range opts.TunaAllowIp {
+		ips := strings.Split(opts.TunaAllowIp[i], ",")
+		l := make([]geo.Location, len(ips))
+		for i := range ips {
+			l[i].CountryCode = strings.TrimSpace(ips[i])
+		}
+		allowIps = append(allowIps, l...)
+	}
+	var allowedIP = append(locations, allowIps...)
+
+	disallowedIP := make([]geo.Location, len(opts.TunaDisallowIp))
+	for i := range opts.TunaDisallowIp {
+		disallowedIP[i].IP = opts.TunaDisallowIp[i]
+	}
+
+	allowedNknAddrs := make([]filter.NknClient, len(opts.TunaAllowNknAddr))
+	for i := range opts.TunaAllowNknAddr {
+		addrs := strings.Split(opts.TunaAllowNknAddr[i], ",")
+		l := make([]filter.NknClient, len(addrs))
+		for i := range addrs {
+			l[i].Address = strings.TrimSpace(addrs[i])
+		}
+		allowedNknAddrs = append(allowedNknAddrs, l...)
+	}
+
+	disallowedNknAddrs := make([]filter.NknClient, len(opts.TunaDisallowNknAddr))
+	for i := range opts.TunaDisallowNknAddr {
+		addrs := strings.Split(opts.TunaDisallowNknAddr[i], ",")
+		l := make([]filter.NknClient, len(addrs))
+		for i := range addrs {
+			l[i].Address = strings.TrimSpace(addrs[i])
+		}
+		disallowedNknAddrs = append(disallowedNknAddrs, l...)
+	}
+
 	clientConfig := &nkn.ClientConfig{
 		SeedRPCServerAddr: seedRPCServerAddr,
 	}
 	walletConfig := &nkn.WalletConfig{
 		SeedRPCServerAddr: seedRPCServerAddr,
 	}
+
 	tsConfig := &ts.Config{
 		TunaMaxPrice:           opts.TunaMaxPrice,
-		TunaIPFilter:           &geo.IPFilter{Allow: locations},
+		TunaIPFilter:           &geo.IPFilter{Allow: allowedIP, Disallow: disallowedIP},
+		TunaNknFilter:          &filter.NknFilter{Allow: allowedNknAddrs, Disallow: disallowedNknAddrs},
 		TunaServiceName:        opts.TunaServiceName,
 		TunaDownloadGeoDB:      !opts.TunaDisableDownloadGeoDB,
 		TunaGeoDBPath:          opts.TunaGeoDBPath,
