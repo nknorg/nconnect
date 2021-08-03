@@ -143,7 +143,7 @@ func main() {
 		ips := strings.Split(opts.TunaAllowIp[i], ",")
 		l := make([]geo.Location, len(ips))
 		for i := range ips {
-			l[i].CountryCode = strings.TrimSpace(ips[i])
+			l[i].IP = strings.TrimSpace(ips[i])
 		}
 		allowIps = append(allowIps, l...)
 	}
@@ -151,7 +151,12 @@ func main() {
 
 	disallowedIP := make([]geo.Location, len(opts.TunaDisallowIp))
 	for i := range opts.TunaDisallowIp {
-		disallowedIP[i].IP = opts.TunaDisallowIp[i]
+		ips := strings.Split(opts.TunaDisallowIp[i], ",")
+		l := make([]geo.Location, len(ips))
+		for i := range ips {
+			l[i].IP = strings.TrimSpace(ips[i])
+		}
+		disallowedIP = append(disallowedIP, l...)
 	}
 
 	allowedNknAddrs := make([]filter.NknClient, len(opts.TunaAllowNknAddr))
