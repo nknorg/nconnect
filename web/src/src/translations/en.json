@@ -48,7 +48,7 @@
   "china": "China",
   "getStartedLink": "https://forum.nkn.org/t/nconnect-user-manual-video-nconnect/2457",
   "nMobileProLink": "https://www.nkn.org/nMobile-pro/",
-  "nConnectLink": "https://www.nkn.org/nConnect/",
+  "nConnectLink": "https://nconnect.nkn.org/",
   "nConnectClientDesktopLink": "https://forum.nkn.org/t/nconnect-pc-download-nconnectpc/2456",
   "paymentLink": "https://nconnect-payment.nkncdn.com/payment/?addr={{addr}}&lng={{lng}}{{additionalParams}}",
   "forumLink": "https://forum.nkn.org/c/applications/nconnect/52",
