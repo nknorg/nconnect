@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/nknorg/ncp-go"
 	"github.com/nknorg/tuna/filter"
 	"io"
 	"log"
@@ -196,6 +197,12 @@ func main() {
 		TunaMeasureBandwidth:   !opts.TunaDisableMeasureBandwidth,
 		TunaMeasureStoragePath: opts.TunaMeasureStoragePath,
 	}
+
+	if opts.SessionWindowSize > 0 {
+		clientConfig.SessionConfig = &ncp.Config{SessionWindowSize: opts.SessionWindowSize}
+		tsConfig.SessionConfig = &ncp.Config{SessionWindowSize: opts.SessionWindowSize}
+	}
+
 	tunnelConfig := &tunnel.Config{
 		AcceptAddrs:       nkn.NewStringArray(persistConf.AcceptAddrs...),
 		ClientConfig:      clientConfig,
