@@ -3,8 +3,6 @@ package main
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/nknorg/ncp-go"
-	"github.com/nknorg/tuna/filter"
 	"io"
 	"log"
 	"net"
@@ -24,11 +22,14 @@ import (
 	"github.com/nknorg/nconnect/config"
 	"github.com/nknorg/nconnect/ss"
 	"github.com/nknorg/nconnect/util"
+	"github.com/nknorg/ncp-go"
 	"github.com/nknorg/nkn-sdk-go"
 	ts "github.com/nknorg/nkn-tuna-session"
 	tunnel "github.com/nknorg/nkn-tunnel"
 	"github.com/nknorg/nkn/v2/util/address"
+	"github.com/nknorg/tuna/filter"
 	"github.com/nknorg/tuna/geo"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 const (
@@ -83,6 +84,14 @@ func main() {
 	err = mergo.Merge(&opts.Config, persistConf)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if len(opts.LogFileName) > 0 {
+		log.SetOutput(&lumberjack.Logger{
+			Filename:   opts.LogFileName,
+			MaxSize:    opts.LogMaxSize,
+			MaxBackups: opts.LogMaxBackups,
+		})
 	}
 
 	seed, err := hex.DecodeString(opts.Seed)
