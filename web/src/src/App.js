@@ -82,6 +82,7 @@ class App extends React.Component {
     this.handleTunaConfigChoiceCancel = this.handleTunaConfigChoiceCancel.bind(this);
     this.handleTunaConfigChoiceOK = this.handleTunaConfigChoiceOK.bind(this);
     this.handleTunaConfigChoiceChange = this.handleTunaConfigChoiceChange.bind(this);
+    this.downloadLog = this.downloadLog.bind(this);
   }
 
   handleTabChange(event, value) {
@@ -331,7 +332,11 @@ class App extends React.Component {
 
     try {
       let log = await rpc.getLog();
-      downloadFile('nConnect.log', log);
+      if (log && log.length) {
+        downloadFile('nConnect.log', log);
+      } else {
+        window.alert(this.props.t('no log available'))
+      }
     } catch (e) {
       console.error(e);
       window.alert(e);
