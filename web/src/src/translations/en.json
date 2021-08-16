@@ -46,6 +46,7 @@
   "setTunaConfigSuccess": "Change server region success! New connections made to this device will use new configurations.",
   "global": "Global",
   "china": "China",
+  "download log": "Download log",
   "getStartedLink": "https://forum.nkn.org/t/nconnect-user-manual-video-nconnect/2457",
   "nMobileProLink": "https://www.nkn.org/nMobile-pro/",
   "nConnectLink": "https://nconnect.nkn.org/",
