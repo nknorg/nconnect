@@ -15,4 +15,5 @@ require (
 	github.com/nknorg/tuna v0.0.0-20210811062047-38dae81de87e
 	github.com/shadowsocks/go-shadowsocks2 v0.1.2
 	github.com/songgao/water v0.0.0-20190725173103-fd331bda3f4b
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )

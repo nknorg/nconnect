@@ -38,9 +38,14 @@ type Config struct {
 	Seed              string   `json:"seed" long:"seed" description:"NKN client secret seed. A random one will be generated and saved to config.json if not provided."`
 	SeedRPCServerAddr []string `json:"seedRPCServerAddr,omitempty" long:"rpc" description:"Seed RPC server address"`
 
-	Cipher            string `json:"cipher,omitempty" long:"cipher" description:"Socks proxy cipher. Dummy (no cipher) will not reduce security because NKN tunnel already has end to end encryption." choice:"dummy" choice:"chacha20-ietf-poly1305" choice:"aes-128-gcm" choice:"aes-256-gcm" default:"chacha20-ietf-poly1305"`
-	Password          string `json:"password,omitempty" long:"password" description:"Socks proxy password"`
-	SessionWindowSize int32  `json:"sessionWindowSize,omitempty" long:"session-window-size" description:"tuna session window size (byte)."`
+	Cipher   string `json:"cipher,omitempty" long:"cipher" description:"Socks proxy cipher. Dummy (no cipher) will not reduce security because NKN tunnel already has end to end encryption." choice:"dummy" choice:"chacha20-ietf-poly1305" choice:"aes-128-gcm" choice:"aes-256-gcm" default:"chacha20-ietf-poly1305"`
+	Password string `json:"password,omitempty" long:"password" description:"Socks proxy password"`
+
+	SessionWindowSize int32 `json:"sessionWindowSize,omitempty" long:"session-window-size" description:"tuna session window size (byte)."`
+
+	LogFileName   string `json:"log,omitempty" long:"log" description:"Log file path. Will write log to stdout if not provided."`
+	LogMaxSize    int    `json:"logMaxSize,omitempty" long:"log-max-size" description:"Maximum size in megabytes of the log file before it gets rotated." default:"1"`
+	LogMaxBackups int    `json:"logMaxBackups,omitempty" long:"log-max-backups" description:"Maximum number of old log files to retain." default:"3"`
 
 	RemoteAdminAddr  string `json:"remoteAdminAddr,omitempty" short:"a" long:"remote-admin-addr" description:"(client only) Remote server admin address"`
 	RemoteTunnelAddr string `json:"remoteTunnelAddr,omitempty" short:"r" long:"remote-tunnel-addr" description:"(client only) Remote server tunnel address, not needed if remote server admin address is given"`
