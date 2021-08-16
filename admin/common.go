@@ -2,7 +2,7 @@ package admin
 
 import (
 	"errors"
-	"github.com/nknorg/tuna/filter"
+	"io/ioutil"
 	"net"
 
 	"github.com/nknorg/nconnect/config"
@@ -10,6 +10,7 @@ import (
 	"github.com/nknorg/nkn-sdk-go"
 	ts "github.com/nknorg/nkn-tuna-session"
 	tunnel "github.com/nknorg/nkn-tunnel"
+	"github.com/nknorg/tuna/filter"
 	"github.com/nknorg/tuna/geo"
 )
 
@@ -41,6 +42,7 @@ var (
 		"getSeed":         rpcPermissionAdminClient | rpcPermissionWeb,
 		"setSeed":         rpcPermissionAdminClient | rpcPermissionWeb,
 		"setTunaConfig":   rpcPermissionAdminClient | rpcPermissionWeb,
+		"getLog":          rpcPermissionAdminClient | rpcPermissionWeb,
 	}
 )
 
@@ -215,6 +217,13 @@ func handleRequest(req *rpcReq, persistConf, mergedConf *config.Config, tun *tun
 			break
 		}
 		resp.Result = resultSuccess
+	case "getLog":
+		logContent, err := getLog(mergedConf)
+		if err != nil {
+			resp.Error = err.Error()
+			break
+		}
+		resp.Result = logContent
 	default:
 		resp.Error = errUnknownMethod.Error()
 	}
@@ -398,4 +407,15 @@ func setTunaConfig(tun *tunnel.Tunnel, persistConf, mergedConf *config.Config, p
 		go tsClient.RotateAll()
 	}
 	return nil
+}
+
+func getLog(conf *config.Config) (string, error) {
+	if len(conf.LogFileName) == 0 {
+		return "", nil
+	}
+	b, err := ioutil.ReadFile(conf.LogFileName)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }

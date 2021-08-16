@@ -326,6 +326,18 @@ class App extends React.Component {
     });
   }
 
+  async downloadLog(event) {
+    event.preventDefault();
+
+    try {
+      let log = await rpc.getLog();
+      downloadFile('nConnect.log', log);
+    } catch (e) {
+      console.error(e);
+      window.alert(e);
+    }
+  }
+
   componentDidMount() {
     this.updateInfo();
     setInterval(this.updateAdminToken, 5 * 60 * 1000);
@@ -568,6 +580,15 @@ class App extends React.Component {
                     {this.props.t('import account')}
                   </Button>
                 </div>
+                <div className="advanced-row">
+                  <Button
+                    variant="contained"
+                    onClick={this.downloadLog}
+                    style={{width: '100%'}}
+                  >
+                    {this.props.t('download log')}
+                  </Button>
+                </div>
               </div>
             </TabPanel>
             <TabPanel value="3">
@@ -676,6 +697,16 @@ function strToAddrs(str) {
 function addrToPubKey(addr) {
   let s = addr.split('.');
   return s[s.length - 1];
+}
+
+function downloadFile(filename, content) {
+  var element = document.createElement('a');
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
+  element.setAttribute('download', filename);
+  element.style.display = 'none';
+  document.body.appendChild(element);
+  element.click();
+  document.body.removeChild(element);
 }
 
 export default withTranslation()(App);

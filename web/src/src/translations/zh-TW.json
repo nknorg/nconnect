@@ -45,5 +45,6 @@
   "cancel": "取消",
   "setTunaConfigSuccess": "修改服務器區域成功！到此設備的新連接將使用新配置。",
   "global": "全球",
-  "china": "中國"
+  "china": "中國",
+  "download log": "下載日誌"
 }

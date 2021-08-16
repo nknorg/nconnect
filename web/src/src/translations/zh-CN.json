@@ -45,5 +45,6 @@
   "cancel": "取消",
   "setTunaConfigSuccess": "修改服务器区域成功！到此设备的新连接将使用新配置。",
   "global": "全球",
-  "china": "中国"
+  "china": "中国",
+  "download log": "下载日志"
 }
