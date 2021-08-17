@@ -46,6 +46,7 @@
   "setTunaConfigSuccess": "修改服務器區域成功！到此設備的新連接將使用新配置。",
   "global": "全球",
   "china": "中國",
+  "asia": "亞洲",
   "download log": "下載日誌",
   "no log available": "沒有可用的日誌"
 }
