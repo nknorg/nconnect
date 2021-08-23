@@ -6,7 +6,7 @@
   "need help tab": "需要帮助",
   "advanced tab": "高级",
   "download nConnect": "1. 下载 <nConnectLink>nConnect</nConnectLink> <QRCode/> 并创建账户。",
-  "add device from mobile": "2. 在 nConnect 的 nConnect 页面扫描上面的二维码来添加此设备。",
+  "add device from mobile": "2. 打开nConnect手机端扫描上面的二维码来添加此设备。",
   "connect from mobile": "3. 开启到此设备的连接后就可以在任何应用中用此设备的本地 IP 地址来访问此设备。",
   "mobile guide": "更详尽的步骤请参见<guideLink>这篇教程</guideLink>。",
   "add device in mobile first": "1. 在 <nConnectLink>nConnect</nConnectLink> 中添加此设备。",
