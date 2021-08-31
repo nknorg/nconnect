@@ -43,9 +43,10 @@ type Config struct {
 
 	SessionWindowSize int32 `json:"sessionWindowSize,omitempty" long:"session-window-size" description:"tuna session window size (byte)."`
 
-	LogFileName   string `json:"log,omitempty" long:"log" description:"Log file path. Will write log to stdout if not provided."`
-	LogMaxSize    int    `json:"logMaxSize,omitempty" long:"log-max-size" description:"Maximum size in megabytes of the log file before it gets rotated." default:"1"`
-	LogMaxBackups int    `json:"logMaxBackups,omitempty" long:"log-max-backups" description:"Maximum number of old log files to retain." default:"3"`
+	LogFileName        string `json:"log,omitempty" long:"log" description:"Log file path. Will write log to stdout if not provided."`
+	LogMaxSize         int    `json:"logMaxSize,omitempty" long:"log-max-size" description:"Maximum size in megabytes of the log file before it gets rotated." default:"1"`
+	LogMaxBackups      int    `json:"logMaxBackups,omitempty" long:"log-max-backups" description:"Maximum number of old log files to retain." default:"3"`
+	LogAPIResponseSize int    `json:"logAPIResponseSize,omitempty" long:"log-api-response-size" description:"(server only) Maximum size in bytes of get log api response. If log size is greater than this value, only the lastest part of the log will be returned."`
 
 	RemoteAdminAddr  string `json:"remoteAdminAddr,omitempty" short:"a" long:"remote-admin-addr" description:"(client only) Remote server admin address"`
 	RemoteTunnelAddr string `json:"remoteTunnelAddr,omitempty" short:"r" long:"remote-tunnel-addr" description:"(client only) Remote server tunnel address, not needed if remote server admin address is given"`
