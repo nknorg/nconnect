@@ -4,7 +4,8 @@ go 1.13
 
 require (
 	github.com/eycorsican/go-tun2socks v1.16.11
-	github.com/gin-gonic/gin v1.4.0
+	github.com/gin-contrib/gzip v0.0.3
+	github.com/gin-gonic/gin v1.6.3
 	github.com/imdario/mergo v0.3.9
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/nknorg/ncp-go v1.0.3
