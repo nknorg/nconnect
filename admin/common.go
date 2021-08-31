@@ -103,6 +103,10 @@ type tunaConfigJSON struct {
 	DisallowIp      []string `json:"disallowIp"`
 }
 
+type getLogJSON struct {
+	MaxSize int `json:"maxSize"`
+}
+
 func handleRequest(req *rpcReq, persistConf, mergedConf *config.Config, tun *tunnel.Tunnel, rpcPerm permission) *rpcResp {
 	resp := &rpcResp{}
 
@@ -218,7 +222,13 @@ func handleRequest(req *rpcReq, persistConf, mergedConf *config.Config, tun *tun
 		}
 		resp.Result = resultSuccess
 	case "getLog":
-		logContent, err := getLog(mergedConf)
+		params := &getLogJSON{}
+		err := util.JSONConvert(req.Params, params)
+		if err != nil {
+			resp.Error = err.Error()
+			break
+		}
+		logContent, err := getLog(mergedConf, params)
 		if err != nil {
 			resp.Error = err.Error()
 			break
@@ -409,13 +419,19 @@ func setTunaConfig(tun *tunnel.Tunnel, persistConf, mergedConf *config.Config, p
 	return nil
 }
 
-func getLog(conf *config.Config) (string, error) {
+func getLog(conf *config.Config, params *getLogJSON) (string, error) {
 	if len(conf.LogFileName) == 0 {
 		return "", nil
 	}
 	b, err := ioutil.ReadFile(conf.LogFileName)
 	if err != nil {
 		return "", err
+	}
+	if conf.LogAPIResponseSize > 0 && len(b) > conf.LogAPIResponseSize {
+		b = b[len(b)-conf.LogAPIResponseSize:]
+	}
+	if params.MaxSize > 0 && len(b) > params.MaxSize {
+		b = b[len(b)-params.MaxSize:]
 	}
 	return string(b), nil
 }
