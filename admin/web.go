@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/nknorg/nconnect/config"
 	tunnel "github.com/nknorg/nkn-tunnel"
@@ -17,6 +18,8 @@ func StartWebServer(listenAddr string, tun *tunnel.Tunnel, persistConf, mergedCo
 	gin.SetMode(gin.ReleaseMode)
 
 	r := gin.Default()
+
+	r.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	r.POST("/rpc/admin", func(c *gin.Context) {
 		req := &rpcReq{}
