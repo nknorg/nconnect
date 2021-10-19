@@ -78,6 +78,7 @@ type Config struct {
 	AdminIdentifier     string `json:"adminIdentifier,omitempty" long:"admin-identifier" description:"(server only) Admin NKN client identifier prefix" default:"nConnect"`
 	AdminHTTPAddr       string `json:"adminHttpAddr,omitempty" long:"admin-http" description:"(server only) Admin web GUI listen address (e.g. 127.0.0.1:8000)"`
 	DisableAdminHTTPAPI bool   `json:"disableAdminHttpApi,omitempty" long:"disable-admin-http-api" description:"(server only) Disable admin http api so admin web GUI only show static assets"`
+	WebRootPath         string `json:"webRootPath,omitempty" long:"web-root-path" description:"(server only) Web root path" default:"web/dist"`
 
 	Tags []string `json:"tags,omitempty" long:"tags" description:"(server only) Tags that will be included in get info api"`
 

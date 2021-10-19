@@ -3,6 +3,7 @@ package admin
 import (
 	"errors"
 	"net/http"
+	"path"
 
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
@@ -35,8 +36,8 @@ func StartWebServer(listenAddr string, tun *tunnel.Tunnel, persistConf, mergedCo
 		c.JSON(http.StatusOK, resp)
 	})
 
-	r.StaticFile("/", "web/dist/index.html")
-	r.Static("/static", "web/dist/static")
+	r.StaticFile("/", path.Join(mergedConf.WebRootPath, "index.html"))
+	r.Static("/static", path.Join(mergedConf.WebRootPath, "static"))
 
 	return r.Run(listenAddr)
 }
