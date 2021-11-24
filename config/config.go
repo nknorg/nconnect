@@ -21,6 +21,7 @@ const (
 	RandomIdentifierLength = 6
 	DefaultTunNameLinux    = "nConnect-tun0"
 	DefaultTunNameNonLinux = "nConnect-tap0"
+	FallbackTunaMaxPrice   = "0.01"
 )
 
 var (
@@ -63,7 +64,7 @@ type Config struct {
 	VPNRoute []string `json:"vpnRoute,omitempty" long:"vpn-route" description:"(client only) VPN routing table destinations, each item should be a valid CIDR. If not given, remote server's local IP addresses will be used."`
 
 	Tuna                        bool     `json:"tuna,omitempty" short:"t" long:"tuna" description:"Enable tuna sessions"`
-	TunaMaxPrice                string   `json:"tunaMaxPrice,omitempty" long:"tuna-max-price" description:"(server only) Tuna max price in unit of NKN/MB" default:"0.01"`
+	TunaMaxPrice                string   `json:"tunaMaxPrice,omitempty" long:"tuna-max-price" description:"(server only) Tuna max price in unit of NKN/MB. Can also be a url where the price will be get dynamically at launch." default:"0.01"`
 	TunaCountry                 []string `json:"tunaCountry,omitempty" long:"tuna-country" description:"(server only) Tuna service node allowed country code, e.g. US. All countries will be allowed if not provided"`
 	TunaServiceName             string   `json:"tunaServiceName,omitempty" long:"tuna-service-name" description:"(server only) Tuna reverse service name"`
 	TunaAllowNknAddr            []string `json:"tunaAllowNknAddr,omitempty" long:"tuna-allow-nkn-addr" description:"(server only) Tuna service node allowed NKN address. All NKN address will be allowed if not provided"`
