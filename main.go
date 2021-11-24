@@ -4,8 +4,11 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
+	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"strconv"
@@ -27,6 +30,7 @@ import (
 	ts "github.com/nknorg/nkn-tuna-session"
 	tunnel "github.com/nknorg/nkn-tunnel"
 	"github.com/nknorg/nkn/v2/util/address"
+	"github.com/nknorg/tuna"
 	"github.com/nknorg/tuna/filter"
 	"github.com/nknorg/tuna/geo"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -194,6 +198,16 @@ func main() {
 	}
 	walletConfig := &nkn.WalletConfig{
 		SeedRPCServerAddr: seedRPCServerAddr,
+	}
+
+	if isValidUrl(opts.TunaMaxPrice) {
+		price, err := getRemotePrice(opts.TunaMaxPrice)
+		if err != nil {
+			log.Printf("Get remote price error: %v", err)
+			price = config.FallbackTunaMaxPrice
+		}
+		log.Printf("Set dynamic price to %s", price)
+		opts.TunaMaxPrice = price
 	}
 
 	tsConfig := &ts.Config{
@@ -443,4 +457,40 @@ func main() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	<-sigs
+}
+
+// isValidUrl tests a string to determine if it is a well-structured url or not.
+func isValidUrl(toTest string) bool {
+	_, err := url.ParseRequestURI(toTest)
+	if err != nil {
+		return false
+	}
+
+	u, err := url.Parse(toTest)
+	if err != nil || u.Scheme == "" || u.Host == "" {
+		return false
+	}
+
+	return true
+}
+
+func getRemotePrice(url string) (string, error) {
+	client := http.Client{
+		Timeout: 10 * time.Second,
+	}
+	resp, err := client.Get(opts.TunaMaxPrice)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	price := strings.TrimSpace(string(b))
+	_, _, err = tuna.ParsePrice(price)
+	if err != nil {
+		return "", err
+	}
+	return price, nil
 }
