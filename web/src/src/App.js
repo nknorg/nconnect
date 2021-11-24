@@ -215,23 +215,29 @@ class App extends React.Component {
       return null;
     }
 
-    let averagePrice = 0;
+    let maxPrice = 0;
     for (let i = 0; i < this.state.inPrice.length; i++) {
-      averagePrice += parseFloat(this.state.inPrice[i]);
+      let price = parseFloat(this.state.inPrice[i]);
+      if (!isNaN(price) && price > maxPrice) {
+        maxPrice = price;
+      }
     }
     for (let i = 0; i < this.state.outPrice.length; i++) {
-      averagePrice += parseFloat(this.state.outPrice[i]);
+      let price = parseFloat(this.state.outPrice[i]);
+      if (!isNaN(price) && price > maxPrice) {
+        maxPrice = price;
+      }
     }
-    averagePrice /= (this.state.inPrice.length + this.state.outPrice.length);
-    if (isNaN(averagePrice)) {
+
+    if (isNaN(maxPrice)) {
       return null;
     }
 
-    if (averagePrice === 0) {
+    if (maxPrice === 0) {
       return null;
     }
 
-    let mb = balance / averagePrice;
+    let mb = balance / maxPrice;
     let gb = mb / 1024;
     if (gb > 1) {
       return gb.toFixed(1) + ' GB';
