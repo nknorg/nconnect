@@ -58,3 +58,18 @@ all:
 	${MAKE} build GOOS=linux GOARCH=arm GOARM=7
 	${MAKE} build GOOS=windows GOARCH=amd64 EXT=.exe
 	${MAKE} build GOOS=windows GOARCH=386 EXT=.exe
+
+.PHONY: docker
+docker:
+	${MAKE} build GOOS=linux GOARCH=amd64
+	docker build -f docker/Dockerfile --build-arg build_dir="./build/linux-amd64" -t nknorg/nconnect:latest-amd64 .
+	${MAKE} build GOOS=linux GOARCH=arm64
+	docker build -f docker/Dockerfile --build-arg build_dir="./build/linux-arm64" --build-arg base="arm64v8/" -t nknorg/nconnect:latest-arm64v8 .
+
+.PHONY: docker_publish
+docker_publish:
+	docker push nknorg/nconnect:latest-amd64
+	docker push nknorg/nconnect:latest-arm64v8
+	DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create nknorg/nconnect:latest nknorg/nconnect:latest-amd64 nknorg/nconnect:latest-arm64v8 --amend
+	DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate nknorg/nconnect:latest nknorg/nconnect:latest-arm64v8 --os linux --arch arm64
+	DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push -p nknorg/nconnect:latest
