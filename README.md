@@ -222,6 +222,27 @@ nConnect server side. You can get your client address using:
 The address typically contains one or more dot, with the part after last dot
 being your client public key.
 
+### Use pre-built Docker image
+
+*Prerequirement*: Have working docker software installed. For help with that
+*visit [official docker
+*docs](https://docs.docker.com/install/#supported-platforms)
+
+We host latest Docker image on our official Docker Hub account. You can get
+it by
+
+```shell
+$ docker pull nknorg/nconnect
+```
+
+and run it with
+
+```shell
+docker run --rm -it --net=host -v ${PWD}:/nConnect/data nknorg/nconnect
+```
+
+followed by the command line argument you want to add.
+
 ## Contributing
 
 **Can I submit a bug, suggestion or feature request?**
