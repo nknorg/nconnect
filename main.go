@@ -47,8 +47,9 @@ var opts struct {
 	config.Config
 	ConfigFile string `short:"f" long:"config-file" default:"config.json" description:"Config file path"`
 
-	Address bool `long:"address" description:"Print client address (client mode) or admin address (server mode)"`
-	Version bool `long:"version" description:"Print version"`
+	Address       bool `long:"address" description:"Print client address (client mode) or admin address (server mode)"`
+	WalletAddress bool `long:"wallet-address" description:"Print wallet address (server only)"`
+	Version       bool `long:"version" description:"Print version"`
 }
 
 func main() {
@@ -134,6 +135,15 @@ func main() {
 			addr = opts.AdminIdentifier + "." + addr
 		}
 		fmt.Println(addr)
+		os.Exit(0)
+	}
+
+	if opts.WalletAddress {
+		if opts.Server {
+			fmt.Println(account.WalletAddress())
+		} else {
+			fmt.Println("Wallet address will not be shown in client mode")
+		}
 		os.Exit(0)
 	}
 
