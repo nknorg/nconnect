@@ -1,0 +1,37 @@
+.bg-linear-1 {
+  border: 1.08px solid !important;
+  border-image-source: linear-gradient(218.16deg, rgba(255, 255, 255, 0.3) -27.92%, rgba(255, 255, 255, 0) 92.11%) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0px 17.5609px 16.2101px rgba(11, 39, 40, 0.07) !important;
+  backdrop-filter: blur(18.9118px) !important;
+  border-radius: 10px !important;
+  text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25) !important;
+   * {
+     text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25) !important;
+   }
+}
+
+.bg-linear-1.active {
+  background: rgba(255, 255, 255, 0.79) !important;
+  color: #120E34 !important;
+}
+
+.bg-linear-2 {
+  background: #FFFFFF !important;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25) !important;
+  border-radius: 7px !important;
+  text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25) !important;
+  * {
+    text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25) !important;
+  }
+}
+
+.br-10 {
+  border-radius: 10px !important;
+}
+
+.btn-1 {
+  background: rgba(0, 163, 255, 0.58) !important;
+  box-shadow: 0px 17.5609px 16.2101px rgba(11, 39, 40, 0.07) !important;
+  backdrop-filter: blur(18.9118px) !important;
+}

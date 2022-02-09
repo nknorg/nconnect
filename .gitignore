@@ -9,3 +9,4 @@ gcp-ip.json
 geolite2-country.mmdb
 *.favorite-node.json
 *.avoid-node.json
+*.log

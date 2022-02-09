@@ -37,7 +37,13 @@ func StartWebServer(listenAddr string, tun *tunnel.Tunnel, persistConf, mergedCo
 	})
 
 	r.StaticFile("/", path.Join(mergedConf.WebRootPath, "index.html"))
+	r.StaticFile("/favicon.ico", path.Join(mergedConf.WebRootPath, "favicon.ico"))
+	r.StaticFile("/sw.js", path.Join(mergedConf.WebRootPath, "sw.js"))
 	r.Static("/static", path.Join(mergedConf.WebRootPath, "static"))
+	r.Static("/_nuxt", path.Join(mergedConf.WebRootPath, "_nuxt"))
+	r.Static("/img", path.Join(mergedConf.WebRootPath, "img"))
+	r.Static("/zh", path.Join(mergedConf.WebRootPath, "zh"))
+	r.Static("/zh-TW", path.Join(mergedConf.WebRootPath, "zh-TW"))
 
 	return r.Run(listenAddr)
 }
