@@ -1,0 +1,1 @@
+__NUXT_JSONP__("/zh-TW", {data:[{}],fetch:{},mutations:void 0});

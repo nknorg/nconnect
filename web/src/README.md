@@ -1,68 +1,69 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# nconnect-web
 
-## Available Scripts
+## Build Setup
 
-In the project directory, you can run:
+```bash
+# install dependencies
+$ yarn install
 
-### `yarn start`
+# serve with hot reload at localhost:3000
+$ yarn dev
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+# build for production and launch server
+$ yarn build
+$ yarn start
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+# generate static project
+$ yarn generate
+```
 
-### `yarn test`
+For detailed explanation on how things work, check out the [documentation](https://nuxtjs.org).
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Special Directories
 
-### `yarn build`
+You can create the following extra directories, some of which have special behaviors. Only `pages` is required; you can delete them if you don't want to use their functionality.
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### `assets`
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+The assets directory contains your uncompiled assets such as Stylus or Sass files, images, or fonts.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/assets).
 
-### `yarn eject`
+### `components`
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+The components directory contains your Vue.js components. Components make up the different parts of your page and can be reused and imported into your pages, layouts and even other components.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/components).
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### `layouts`
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Layouts are a great help when you want to change the look and feel of your Nuxt app, whether you want to include a sidebar or have distinct layouts for mobile and desktop.
 
-## Learn More
+More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/layouts).
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### `pages`
 
-### Code Splitting
+This directory contains your application views and routes. Nuxt will read all the `*.vue` files inside this directory and setup Vue Router automatically.
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/get-started/routing).
 
-### Analyzing the Bundle Size
+### `plugins`
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
+The plugins directory contains JavaScript plugins that you want to run before instantiating the root Vue.js Application. This is the place to add Vue plugins and to inject functions or constants. Every time you need to use `Vue.use()`, you should create a file in `plugins/` and add its path to plugins in `nuxt.config.js`.
 
-### Making a Progressive Web App
+More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/plugins).
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
+### `static`
 
-### Advanced Configuration
+This directory contains your static files. Each file inside this directory is mapped to `/`.
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
+Example: `/static/robots.txt` is mapped as `/robots.txt`.
 
-### Deployment
+More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/static).
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
+### `store`
 
-### `yarn build` fails to minify
+This directory contains your Vuex store files. Creating a file in this directory automatically activates Vuex.
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/store).

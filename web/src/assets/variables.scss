@@ -1,0 +1,26 @@
+// Ref: https://github.com/nuxt-community/vuetify-module#customvariables
+//
+// The variables you want to modify
+// $font-size-root: 20px;
+.v-btn{
+  text-transform: none !important;
+}
+
+.v-text-field.v-text-field--solo:not(.v-text-field--solo-flat) > .v-input__control > .v-input__slot {
+  border: 1.08px solid !important;
+  border-image-source: linear-gradient(218.16deg, rgba(255, 255, 255, 0.3) -27.92%, rgba(255, 255, 255, 0) 92.11%) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0px 17.5609px 16.2101px rgba(11, 39, 40, 0.07) !important;
+  backdrop-filter: blur(18.9118px) !important;
+  border-radius: 10px !important;
+}
+.v-text-field.v-text-field--solo .v-input__prepend-outer, .v-text-field.v-text-field--solo .v-input__append-outer{
+  margin-top: 6px !important;
+}
+.v-text-field.v-text-field--solo .v-input__control {
+  min-height: 36px !important;
+}
+
+.v-select__selection--comma{
+  text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25) !important;
+}

@@ -16,8 +16,8 @@ BIN_DIR=$(GOOS)-$(GOARCH)
 XGO_TARGET=$(GOOS)/$(GOARCH)
 endif
 
-web/dist: $(shell find web/src -type f -not -path "web/src/node_modules/*" -not -path "web/src/build/*")
-	-@cd web/src && yarn && yarn build && rm -rf ../dist && cp -a ./build ../dist
+web/dist: $(shell find web/src -type f -not -path "web/src/node_modules/*" -not -path "web/src/dist/*")
+	-@cd web/src && yarn && yarn generate && rm -rf ../dist && cp -a ./dist ../dist
 
 .PHONY: local
 local: web/dist

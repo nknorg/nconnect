@@ -1,0 +1,10 @@
+{
+  "name": "nconnect-web",
+  "short_name": "nconnect-web",
+  "description": "## Build Setup",
+  "icons": [],
+  "start_url": "/?standalone=true",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "lang": "en"
+}
