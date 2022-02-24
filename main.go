@@ -30,6 +30,7 @@ import (
 	ts "github.com/nknorg/nkn-tuna-session"
 	tunnel "github.com/nknorg/nkn-tunnel"
 	"github.com/nknorg/nkn/v2/util/address"
+	"github.com/nknorg/nkngomobile"
 	"github.com/nknorg/tuna"
 	"github.com/nknorg/tuna/filter"
 	"github.com/nknorg/tuna/geo"
@@ -147,7 +148,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	var seedRPCServerAddr *nkn.StringArray
+	var seedRPCServerAddr *nkngomobile.StringArray
 	if len(opts.SeedRPCServerAddr) > 0 {
 		seedRPCServerAddr = nkn.NewStringArray(opts.SeedRPCServerAddr...)
 	}
