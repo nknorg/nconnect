@@ -210,6 +210,9 @@ func main() {
 	walletConfig := &nkn.WalletConfig{
 		SeedRPCServerAddr: seedRPCServerAddr,
 	}
+	dialConfig := &nkn.DialConfig{
+		DialTimeout: opts.DialTimeout,
+	}
 
 	if isValidUrl(opts.TunaMaxPrice) {
 		price, err := getRemotePrice(opts.TunaMaxPrice)
@@ -241,6 +244,7 @@ func main() {
 		AcceptAddrs:       nkn.NewStringArray(persistConf.AcceptAddrs...),
 		ClientConfig:      clientConfig,
 		WalletConfig:      walletConfig,
+		DialConfig:        dialConfig,
 		TunaSessionConfig: tsConfig,
 		Verbose:           opts.Verbose,
 	}
