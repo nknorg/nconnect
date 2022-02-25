@@ -42,6 +42,7 @@ type Config struct {
 	Cipher   string `json:"cipher,omitempty" long:"cipher" description:"Socks proxy cipher. Dummy (no cipher) will not reduce security because NKN tunnel already has end to end encryption." choice:"dummy" choice:"chacha20-ietf-poly1305" choice:"aes-128-gcm" choice:"aes-256-gcm" default:"chacha20-ietf-poly1305"`
 	Password string `json:"password,omitempty" long:"password" description:"Socks proxy password"`
 
+	DialTimeout       int32 `json:"dialTimeout,omitempty" long:"dial-timeout" description:"dial timeout in milliseconds"`
 	SessionWindowSize int32 `json:"sessionWindowSize,omitempty" long:"session-window-size" description:"tuna session window size (byte)."`
 
 	LogFileName        string `json:"log,omitempty" long:"log" description:"Log file path. Will write log to stdout if not provided."`
