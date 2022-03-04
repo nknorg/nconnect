@@ -32,7 +32,7 @@
   "save success": "Save success!",
   "export account": "Export account",
   "import account": "Import account",
-  "export tip": "You can find your account information in “Advance”. Please make sure to export and save your account information both before and after your purchase. For user privacy, NKN does not keep any user information.",
+  "export tip": "You can find your account information in “Advanced”. Please make sure to export and save your account information both before and after your purchase. For user privacy, NKN does not keep any user information.",
   "exportConfirm": "Do you want to export account? The account should be kept as secret. Anyone who has it can consume your data or decrypt the data you send. Do not continue if someone else asks you to do it.",
   "exportSuccess": "Export success! The secret seed of your account is: {seed}",
   "importConfirm": "Do you want to import account? The current account on this device will be lost permanently if not exported and backed up. All clients need to add this device again after import is finished.",
