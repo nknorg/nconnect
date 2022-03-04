@@ -185,6 +185,7 @@ export default {
 
   // PWA module configuration: https://go.nuxtjs.dev/pwa
   pwa: {
+    workbox: false,
     manifest: {
       lang: 'en'
     }
@@ -207,6 +208,10 @@ export default {
         }
       }
     }
+  },
+
+  router: {
+    base: process.env.BASE_URL || ''
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
