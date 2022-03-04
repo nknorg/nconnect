@@ -26,7 +26,9 @@ export default {
   css: [],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: [],
+  plugins: [
+    '~/plugins/i18n'
+  ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,
@@ -43,7 +45,6 @@ export default {
     '@nuxtjs/axios',
     // https://go.nuxtjs.dev/pwa
     '@nuxtjs/pwa',
-    '@nuxtjs/i18n',
   ],
   i18n: {
     // Options
@@ -51,7 +52,7 @@ export default {
     vueI18n: {
       fallbackLocale: 'en',
     },
-
+    parsePages: false,
     // If true, vue-i18n-loader is added to Nuxt's Webpack config
     vueI18nLoader: false,
 
@@ -211,7 +212,18 @@ export default {
   },
 
   router: {
-    base: process.env.BASE_URL || ''
+    base: process.env.BASE_URL || '',
+    extendRoutes (routes, resolve) {
+      routes.push({
+        name: 'index',
+        path: '/index.html',
+        component: resolve(__dirname, 'pages/index.vue'),
+      });
+    },
+  },
+
+  generate: {
+    subFolders: false
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build

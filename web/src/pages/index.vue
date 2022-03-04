@@ -281,7 +281,7 @@ export default {
   },
   methods: {
     onChangeSwitchLanguage(event) {
-      this.$router.replace(this.switchLocalePath(event));
+      this.$i18n.locale = event
     },
     async updateAdminToken() {
       try {
