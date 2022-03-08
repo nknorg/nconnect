@@ -277,7 +277,7 @@ export default {
     setInterval(this.updateAdminToken, 5 * 60 * 1000);
   },
   async created() {
-    this.downloadQrcode = await Qrcode.toDataURL('https://nconnect.org')
+    this.downloadQrcode = await Qrcode.toDataURL(this.$t('nConnectLink'))
   },
   methods: {
     onChangeSwitchLanguage(event) {
