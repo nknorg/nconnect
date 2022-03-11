@@ -2,7 +2,6 @@ package util
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net"
 	"os/exec"
@@ -81,12 +80,12 @@ func MatchRegex(patterns []string, s string) bool {
 	return false
 }
 
-func ParseExecError(err error) error {
+func ParseExecError(err error) string {
 	if err != nil {
 		if ee, ok := err.(*exec.ExitError); ok {
-			return fmt.Errorf("%s: %s", err.Error(), string(ee.Stderr))
+			return string(ee.Stderr)
 		}
-		return err
+		return err.Error()
 	}
-	return nil
+	return ""
 }

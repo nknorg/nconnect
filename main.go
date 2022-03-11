@@ -391,19 +391,20 @@ func main() {
 					log.Printf("Adding route %s", dest)
 					out, err := addRouteCmd(dest, opts.TunGateway, opts.TunName)
 					if len(out) > 0 {
-						log.Print(string(out))
+						os.Stdout.Write(out)
 					}
 					if err != nil {
-						log.Fatal(util.ParseExecError(err))
+						os.Stdout.Write([]byte(util.ParseExecError(err)))
+						os.Exit(1)
 					}
 					defer func(dest *net.IPNet) {
 						log.Printf("Deleting route %s", dest)
 						out, err := deleteRouteCmd(dest, opts.TunGateway, opts.TunName)
 						if len(out) > 0 {
-							log.Print(string(out))
+							os.Stdout.Write(out)
 						}
 						if err != nil {
-							log.Println(util.ParseExecError(err))
+							os.Stdout.Write([]byte(util.ParseExecError(err)))
 						}
 					}(dest)
 				}
