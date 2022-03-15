@@ -54,7 +54,7 @@ func OpenTunDevice(name, addr, gw, mask string, dnsServers []string, persist boo
 			if len(out) > 0 {
 				log.Print(string(out))
 			}
-			return nil, util.ParseExecError(err)
+			return nil, errors.New(util.ParseExecError(err))
 		}
 	}
 
