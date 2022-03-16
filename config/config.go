@@ -66,6 +66,8 @@ type Config struct {
 
 	Tuna                        bool     `json:"tuna,omitempty" short:"t" long:"tuna" description:"Enable tuna sessions"`
 	TunaMaxPrice                string   `json:"tunaMaxPrice,omitempty" long:"tuna-max-price" description:"(server only) Tuna max price in unit of NKN/MB. Can also be a url where the price will be get dynamically at launch." default:"0.01"`
+	TunaMinFee                  string   `json:"tunaMinFee,omitempty" long:"tuna-min-fee" description:"(server only) Tuna nanopay minimal txn fee" default:"0.00001"`
+	TunaFeeRatio                float64  `json:"tunaFeeRatio,omitempty" long:"tuna-fee-ratio" description:"(server only) Tuna nanopay txn fee ratio" default:"0.1"`
 	TunaCountry                 []string `json:"tunaCountry,omitempty" long:"tuna-country" description:"(server only) Tuna service node allowed country code, e.g. US. All countries will be allowed if not provided"`
 	TunaServiceName             string   `json:"tunaServiceName,omitempty" long:"tuna-service-name" description:"(server only) Tuna reverse service name"`
 	TunaAllowNknAddr            []string `json:"tunaAllowNknAddr,omitempty" long:"tuna-allow-nkn-addr" description:"(server only) Tuna service node allowed NKN address. All NKN address will be allowed if not provided"`

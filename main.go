@@ -226,6 +226,8 @@ func main() {
 
 	tsConfig := &ts.Config{
 		TunaMaxPrice:           opts.TunaMaxPrice,
+		TunaMinNanoPayFee:      opts.TunaMinFee,
+		TunaNanoPayFeeRatio:    opts.TunaFeeRatio,
 		TunaIPFilter:           &geo.IPFilter{Allow: allowedIP, Disallow: disallowedIP},
 		TunaNknFilter:          &filter.NknFilter{Allow: allowedNknAddrs, Disallow: disallowedNknAddrs},
 		TunaServiceName:        opts.TunaServiceName,
@@ -494,7 +496,7 @@ func getRemotePrice(url string) (string, error) {
 	client := http.Client{
 		Timeout: 10 * time.Second,
 	}
-	resp, err := client.Get(opts.TunaMaxPrice)
+	resp, err := client.Get(url)
 	if err != nil {
 		return "", err
 	}
