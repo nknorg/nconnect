@@ -309,7 +309,6 @@ export default {
         console.log(info)
         let initialized = this.initialized
 
-        this.initialized = true
         this.addr = info.addr
         this.localIP = info.localIP.ipv4
         this.inPrice = info.inPrice
@@ -342,6 +341,7 @@ export default {
               console.error(e);
             }
           });
+          this.initialized = true
         }
       }).catch((e) => {
         console.error(e);
