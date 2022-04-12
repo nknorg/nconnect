@@ -29,6 +29,7 @@ import (
 	"github.com/nknorg/nkn-sdk-go"
 	ts "github.com/nknorg/nkn-tuna-session"
 	tunnel "github.com/nknorg/nkn-tunnel"
+	"github.com/nknorg/nkn/v2/common"
 	"github.com/nknorg/nkn/v2/util/address"
 	"github.com/nknorg/nkngomobile"
 	"github.com/nknorg/tuna"
@@ -281,7 +282,7 @@ func main() {
 			if adminClientCache != nil {
 				return adminClientCache, nil
 			}
-			c, err := admin.NewClient(account, nil)
+			c, err := admin.NewClient(account, clientConfig)
 			if err != nil {
 				return nil, err
 			}
@@ -329,7 +330,7 @@ func main() {
 					vpnRoutes = make([]string, 0, len(remoteInfo.LocalIP.Ipv4))
 					for _, ip := range remoteInfo.LocalIP.Ipv4 {
 						if ip == opts.TunAddr || ip == opts.TunGateway {
-							log.Printf("Skipping server's local IP %s in routes\n", ip)
+							log.Printf("Skipping server's local IP %s in routes", ip)
 							continue
 						}
 						vpnRoutes = append(vpnRoutes, fmt.Sprintf("%s/32", ip))
@@ -421,6 +422,27 @@ func main() {
 		}
 
 		ssConfig.Server = ssAddr
+
+		if opts.Tuna {
+			w, err := nkn.NewWallet(account, walletConfig)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			balance, err := w.Balance()
+			if err != nil {
+				log.Println("Fetch balance error:", err)
+			} else {
+				minBalance, err := common.StringToFixed64(opts.TunaMinBalance)
+				if err != nil {
+					log.Fatal(err)
+				}
+				if balance.ToFixed64() < minBalance {
+					log.Printf("Wallet balance %s is less than minimal balance to enable tuna %s, tuna will not be enabled", balance.String(), opts.TunaMinBalance)
+					opts.Tuna = false
+				}
+			}
+		}
 
 		tun, err = tunnel.NewTunnel(account, opts.Identifier, "", ssAddr, opts.Tuna, tunnelConfig)
 		if err != nil {

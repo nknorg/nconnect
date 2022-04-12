@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/nknorg/nconnect/util"
+	"github.com/nknorg/nkn/v2/common"
 )
 
 const (
@@ -65,6 +66,7 @@ type Config struct {
 	VPNRoute []string `json:"vpnRoute,omitempty" long:"vpn-route" description:"(client only) VPN routing table destinations, each item should be a valid CIDR. If not given, remote server's local IP addresses will be used."`
 
 	Tuna                        bool     `json:"tuna,omitempty" short:"t" long:"tuna" description:"Enable tuna sessions"`
+	TunaMinBalance              string   `json:"tunaMinBalance,omitempty" long:"tuna-min-balance" description:"(server only) Minimal balance to enable tuna sessions" default:"0.01"`
 	TunaMaxPrice                string   `json:"tunaMaxPrice,omitempty" long:"tuna-max-price" description:"(server only) Tuna max price in unit of NKN/MB. Can also be a url where the price will be get dynamically at launch." default:"0.01"`
 	TunaMinFee                  string   `json:"tunaMinFee,omitempty" long:"tuna-min-fee" description:"(server only) Tuna nanopay minimal txn fee" default:"0.00001"`
 	TunaFeeRatio                float64  `json:"tunaFeeRatio,omitempty" long:"tuna-fee-ratio" description:"(server only) Tuna nanopay txn fee ratio" default:"0.1"`
@@ -144,6 +146,18 @@ func (c *Config) VerifyClient() error {
 }
 
 func (c *Config) VerifyServer() error {
+	_, err := common.StringToFixed64(c.TunaMinBalance)
+	if err != nil {
+		return fmt.Errorf("Parse TunaMinBalance error: %v", err)
+	}
+	_, err = common.StringToFixed64(c.TunaMaxPrice)
+	if err != nil {
+		return fmt.Errorf("Parse TunaMaxPrice error: %v", err)
+	}
+	_, err = common.StringToFixed64(c.TunaMinFee)
+	if err != nil {
+		return fmt.Errorf("Parse TunaMinFee error: %v", err)
+	}
 	return nil
 }
 
