@@ -40,7 +40,7 @@
   "importWrongCurrent": "当前账号的私钥种子不匹配！请确定您已导出并备份当前账号。",
   "importPromptNew": "请输入您要导入的账号的私钥种子：",
   "importSuccess": "导入成功！请重启此设备上的 nConnect 以使用新账号。",
-  "estimatedRemainingData": "预计剩余流量",
+  "estimatedRemainingData": "预计剩余高速流量",
   "currentServerRegion": "当前服务器区域",
   "customized": "自定义",
   "tunaConfigChoiceTitle": "请选择服务器区域",
@@ -51,6 +51,10 @@
   "help": "帮助",
   "china": "中国",
   "asia": "亚洲",
+  "premium": "高速",
+  "chinaHighSpeed": "中国极速",
+  "chinaPlatinum": "中国铂金",
   "download log": "下载日志",
-  "no log available": "没有可用的日志"
+  "no log available": "没有可用的日志",
+  "notEnabled": "未启用"
 }
