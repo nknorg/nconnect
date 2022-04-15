@@ -153,7 +153,7 @@
           <div class="bg-linear-1 pa-4 remaining-data">
             <strong>{{ $t('estimatedRemainingData') }}</strong>
             <div class="text-h3" v-if="tuna"><strong>{{ remainingData }}</strong></div>
-            <div class="text-h3" v-else><strong>{{ $t('unlimited') }}</strong></div>
+            <div class="text-h3" v-else><strong>{{ $t('notEnabled') }}</strong></div>
           </div>
           <v-flex class="mt-4 d-flex justify-end">
             <v-btn class="bg-linear-2 pa-8" text color="black" width="300" target="_blank"

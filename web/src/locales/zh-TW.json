@@ -40,7 +40,7 @@
   "importWrongCurrent": "當前賬號的私鑰種子不匹配！請確定您已導出並備份當前賬號。",
   "importPromptNew": "請輸入您要導入的賬號的私鑰種子：",
   "importSuccess": "導入成功！請重啟此設備上的 nConnect 以使用新賬號。",
-  "estimatedRemainingData": "預計剩餘流量",
+  "estimatedRemainingData": "預計剩餘高速流量",
   "currentServerRegion": "當前服務器區域",
   "customized": "自定義",
   "tunaConfigChoiceTitle": "請選擇服務器區域",
@@ -51,6 +51,10 @@
   "help": "幫助",
   "china": "中國",
   "asia": "亞洲",
+  "premium": "高速",
+  "chinaHighSpeed": "中國極速",
+  "chinaPlatinum": "中國鉑金",
   "download log": "下載日誌",
-  "no log available": "沒有可用的日誌"
+  "no log available": "沒有可用的日誌",
+  "notEnabled": "未啟用"
 }
