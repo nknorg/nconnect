@@ -424,20 +424,21 @@ func main() {
 		ssConfig.Server = ssAddr
 
 		if opts.Tuna {
-			w, err := nkn.NewWallet(account, walletConfig)
+			minBalance, err := common.StringToFixed64(opts.TunaMinBalance)
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			balance, err := w.Balance()
-			if err != nil {
-				log.Println("Fetch balance error:", err)
-			} else {
-				minBalance, err := common.StringToFixed64(opts.TunaMinBalance)
+			if minBalance > 0 {
+				w, err := nkn.NewWallet(account, walletConfig)
 				if err != nil {
 					log.Fatal(err)
 				}
-				if balance.ToFixed64() < minBalance {
+
+				balance, err := w.Balance()
+				if err != nil {
+					log.Println("Fetch balance error:", err)
+				} else if balance.ToFixed64() < minBalance {
 					log.Printf("Wallet balance %s is less than minimal balance to enable tuna %s, tuna will not be enabled", balance.String(), opts.TunaMinBalance)
 					opts.Tuna = false
 				}
