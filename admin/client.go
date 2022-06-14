@@ -42,7 +42,7 @@ func NewClient(account *nkn.Account, clientConfig *nkn.ClientConfig) (*Client, e
 	return c, nil
 }
 
-func (c *Client) RPCCall(addr, method string, params map[string]interface{}, result interface{}) error {
+func (c *Client) RPCCall(addr, method string, params interface{}, result interface{}) error {
 	req, err := json.Marshal(map[string]interface{}{
 		"id":     "nConnect",
 		"method": method,
@@ -64,23 +64,16 @@ func (c *Client) RPCCall(addr, method string, params map[string]interface{}, res
 		return errReplyTimeout
 	}
 
-	resp := make(map[string]*json.RawMessage)
-	err = json.Unmarshal(reply.Data, &resp)
+	resp := &rpcResp{
+		Result: result,
+	}
+	err = json.Unmarshal(reply.Data, resp)
 	if err != nil {
 		return err
-	}
-	if resp["error"] != nil {
-		var errStr string
-		err = json.Unmarshal(*resp["error"], &errStr)
-		if err != nil {
-			return err
-		}
-		return errors.New(errStr)
 	}
 
-	err = json.Unmarshal(*resp["result"], result)
-	if err != nil {
-		return err
+	if len(resp.Error) > 0 {
+		return errors.New(resp.Error)
 	}
 
 	return nil
