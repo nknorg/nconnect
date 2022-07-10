@@ -16,6 +16,5 @@ require (
 	github.com/nknorg/nkngomobile v0.0.0-20220125080321-848ddd2e5157
 	github.com/nknorg/tuna v0.0.0-20220314110655-e94a8631389d
 	github.com/shadowsocks/go-shadowsocks2 v0.1.2
-	github.com/songgao/water v0.0.0-20190725173103-fd331bda3f4b
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
