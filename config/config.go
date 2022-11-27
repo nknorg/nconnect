@@ -23,6 +23,7 @@ const (
 	DefaultTunNameLinux    = "nConnect-tun0"
 	DefaultTunNameNonLinux = "nConnect-tap0"
 	FallbackTunaMaxPrice   = "0.01"
+	DefaultUDPTimeout      = time.Hour * 720
 )
 
 var (
@@ -31,6 +32,18 @@ var (
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
+}
+
+type NConfig struct {
+	Client bool `short:"c" long:"client" description:"Client mode"`
+	Server bool `short:"s" long:"server" description:"Server mode"`
+
+	Config
+	ConfigFile string `short:"f" long:"config-file" default:"config.json" description:"Config file path"`
+
+	Address       bool `long:"address" description:"Print client address (client mode) or admin address (server mode)"`
+	WalletAddress bool `long:"wallet-address" description:"Print wallet address (server only)"`
+	Version       bool `long:"version" description:"Print version"`
 }
 
 type Config struct {
@@ -42,6 +55,7 @@ type Config struct {
 
 	Cipher   string `json:"cipher,omitempty" long:"cipher" description:"Socks proxy cipher. Dummy (no cipher) will not reduce security because NKN tunnel already has end to end encryption." choice:"dummy" choice:"chacha20-ietf-poly1305" choice:"aes-128-gcm" choice:"aes-256-gcm" default:"chacha20-ietf-poly1305"`
 	Password string `json:"password,omitempty" long:"password" description:"Socks proxy password"`
+	UDP      bool   `json:"udp,omitempty" long:"udp" description:"Support udp proxy"`
 
 	DialTimeout       int32 `json:"dialTimeout,omitempty" long:"dial-timeout" description:"dial timeout in milliseconds"`
 	SessionWindowSize int32 `json:"sessionWindowSize,omitempty" long:"session-window-size" description:"tuna session window size (byte)."`

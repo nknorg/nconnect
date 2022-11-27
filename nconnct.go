@@ -1,75 +1,43 @@
-package main
+package nconnect
 
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/eycorsican/go-tun2socks/core"
+	"github.com/eycorsican/go-tun2socks/proxy/socks"
+	"github.com/imdario/mergo"
+	"github.com/nknorg/nconnect/admin"
+	"github.com/nknorg/nconnect/arch"
+	"github.com/nknorg/nconnect/config"
+	"github.com/nknorg/nconnect/ss"
+	"github.com/nknorg/nconnect/util"
+	"github.com/nknorg/ncp-go"
+	"github.com/nknorg/nkn-sdk-go"
+	"github.com/nknorg/nkn-tuna-session"
+	"github.com/nknorg/nkn-tunnel"
+	"github.com/nknorg/nkn/v2/common"
+	"github.com/nknorg/nkn/v2/util/address"
+	"github.com/nknorg/nkngomobile"
+	"github.com/nknorg/tuna/filter"
+	"github.com/nknorg/tuna/geo"
+	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
-	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
 	"strconv"
 	"strings"
 	"syscall"
 	"time"
-
-	"github.com/eycorsican/go-tun2socks/core"
-	"github.com/eycorsican/go-tun2socks/proxy/dnsfallback"
-	"github.com/eycorsican/go-tun2socks/proxy/socks"
-	"github.com/imdario/mergo"
-	"github.com/jessevdk/go-flags"
-	"github.com/nknorg/nconnect/admin"
-	"github.com/nknorg/nconnect/config"
-	"github.com/nknorg/nconnect/ss"
-	"github.com/nknorg/nconnect/util"
-	"github.com/nknorg/ncp-go"
-	"github.com/nknorg/nkn-sdk-go"
-	ts "github.com/nknorg/nkn-tuna-session"
-	tunnel "github.com/nknorg/nkn-tunnel"
-	"github.com/nknorg/nkn/v2/common"
-	"github.com/nknorg/nkn/v2/util/address"
-	"github.com/nknorg/nkngomobile"
-	"github.com/nknorg/tuna"
-	"github.com/nknorg/tuna/filter"
-	"github.com/nknorg/tuna/geo"
-	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 const (
 	mtu = 1500
 )
 
-var opts struct {
-	Client bool `short:"c" long:"client" description:"Client mode"`
-	Server bool `short:"s" long:"server" description:"Server mode"`
-
-	config.Config
-	ConfigFile string `short:"f" long:"config-file" default:"config.json" description:"Config file path"`
-
-	Address       bool `long:"address" description:"Print client address (client mode) or admin address (server mode)"`
-	WalletAddress bool `long:"wallet-address" description:"Print wallet address (server only)"`
-	Version       bool `long:"version" description:"Print version"`
-}
-
-func main() {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Fatalf("Panic: %+v", r)
-		}
-	}()
-
-	_, err := flags.Parse(&opts)
-	if err != nil {
-		if flagsErr, ok := err.(*flags.Error); ok && flagsErr.Type == flags.ErrHelp {
-			os.Exit(0)
-		}
-		log.Fatal(err)
-	}
-
-	err = (&opts.Config).SetPlatformSpecificDefaultValues()
+func Run(opts *config.NConfig) {
+	err := (&opts.Config).SetPlatformSpecificDefaultValues()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -215,8 +183,8 @@ func main() {
 		DialTimeout: opts.DialTimeout,
 	}
 
-	if isValidUrl(opts.TunaMaxPrice) {
-		price, err := getRemotePrice(opts.TunaMaxPrice)
+	if util.IsValidUrl(opts.TunaMaxPrice) {
+		price, err := util.GetRemotePrice(opts.TunaMaxPrice)
 		if err != nil {
 			log.Printf("Get remote price error: %v", err)
 			price = config.FallbackTunaMaxPrice
@@ -225,7 +193,8 @@ func main() {
 		opts.TunaMaxPrice = price
 	}
 
-	tsConfig := &ts.Config{
+	tsConfig := &session.Config{
+		NumTunaListeners:       1,
 		TunaMaxPrice:           opts.TunaMaxPrice,
 		TunaMinNanoPayFee:      opts.TunaMinFee,
 		TunaNanoPayFeeRatio:    opts.TunaFeeRatio,
@@ -250,6 +219,7 @@ func main() {
 		DialConfig:        dialConfig,
 		TunaSessionConfig: tsConfig,
 		Verbose:           opts.Verbose,
+		Udp:               true,
 	}
 
 	port, err := util.GetFreePort()
@@ -261,11 +231,15 @@ func main() {
 
 	ssConfig := &ss.Config{
 		TCP:      true,
-		UDP:      false,
-		UDPSocks: true,
 		Cipher:   opts.Cipher,
 		Password: opts.Password,
-		Verbose:  opts.Verbose,
+
+		Verbose:    opts.Verbose,
+		UDPTimeout: config.DefaultUDPTimeout,
+	}
+
+	if opts.UDP && opts.Client {
+		ssConfig.UDPSocks = true
 	}
 
 	var tun *tunnel.Tunnel
@@ -304,7 +278,7 @@ func main() {
 			}
 			remoteInfoCache, err = c.GetInfo(opts.RemoteAdminAddr)
 			if err != nil {
-				return nil, fmt.Errorf("Get remote server info error: %v. Please make sure server is online and accepting connections from this client address", err)
+				return nil, fmt.Errorf("get remote server info error: %v. Please make sure server is online and accepting connections from this client address", err)
 			}
 			return remoteInfoCache, nil
 		}
@@ -368,7 +342,7 @@ func main() {
 		log.Println("Client socks proxy listen address:", opts.LocalSocksAddr)
 
 		if opts.Tun || opts.VPN {
-			tunDevice, err := OpenTunDevice(opts.TunName, opts.TunAddr, opts.TunGateway, opts.TunMask, opts.TunDNS, true)
+			tunDevice, err := arch.OpenTunDevice(opts.TunName, opts.TunAddr, opts.TunGateway, opts.TunMask, opts.TunDNS, true)
 			if err != nil {
 				log.Fatalf("Failed to open TUN device: %v", err)
 			}
@@ -376,7 +350,7 @@ func main() {
 			core.RegisterOutputFn(tunDevice.Write)
 
 			core.RegisterTCPConnHandler(socks.NewTCPHandler(proxyHost, proxyPort))
-			core.RegisterUDPConnHandler(dnsfallback.NewUDPHandler())
+			core.RegisterUDPConnHandler(socks.NewUDPHandler(proxyHost, proxyPort, 30*time.Second))
 
 			lwipWriter := core.NewLWIPStack()
 
@@ -392,7 +366,7 @@ func main() {
 			if opts.VPN {
 				for _, dest := range vpnCIDR {
 					log.Printf("Adding route %s", dest)
-					out, err := addRouteCmd(dest, opts.TunGateway, opts.TunName)
+					out, err := arch.AddRouteCmd(dest, opts.TunGateway, opts.TunName)
 					if len(out) > 0 {
 						os.Stdout.Write(out)
 					}
@@ -402,7 +376,7 @@ func main() {
 					}
 					defer func(dest *net.IPNet) {
 						log.Printf("Deleting route %s", dest)
-						out, err := deleteRouteCmd(dest, opts.TunGateway, opts.TunName)
+						out, err := arch.DeleteRouteCmd(dest, opts.TunGateway, opts.TunName)
 						if len(out) > 0 {
 							os.Stdout.Write(out)
 						}
@@ -419,6 +393,9 @@ func main() {
 		err = (&opts.Config).VerifyServer()
 		if err != nil {
 			log.Fatal(err)
+		}
+		if opts.UDP {
+			ssConfig.UDP = true
 		}
 
 		ssConfig.Server = ssAddr
@@ -498,40 +475,4 @@ func main() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	<-sigs
-}
-
-// isValidUrl tests a string to determine if it is a well-structured url or not.
-func isValidUrl(toTest string) bool {
-	_, err := url.ParseRequestURI(toTest)
-	if err != nil {
-		return false
-	}
-
-	u, err := url.Parse(toTest)
-	if err != nil || u.Scheme == "" || u.Host == "" {
-		return false
-	}
-
-	return true
-}
-
-func getRemotePrice(url string) (string, error) {
-	client := http.Client{
-		Timeout: 10 * time.Second,
-	}
-	resp, err := client.Get(url)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	price := strings.TrimSpace(string(b))
-	_, _, err = tuna.ParsePrice(price)
-	if err != nil {
-		return "", err
-	}
-	return price, nil
 }
