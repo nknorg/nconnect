@@ -1,0 +1,40 @@
+{
+  "Client": false,
+  "Server": true,
+  "identifier": "77fuek",
+  "seed": "444a1e625c4d5b36f8059832a521e88fb219fa31ddf14da8fe23346f59081fb8",
+  "cipher": "dummy",
+  "udp": true,
+  "logMaxSize": 1,
+  "logMaxBackups": 3,
+  "localSocksAddr": "127.0.0.1:1080",
+  "tunAddr": "10.0.86.2",
+  "tunGateway": "10.0.86.1",
+  "tunMask": "255.255.255.0",
+  "tunDNS": [
+    "1.1.1.1",
+    "8.8.8.8"
+  ],
+  "tunName": "nConnect-tap0",
+  "tuna": true,
+  "tunaMinBalance": "0.01",
+  "tunaMaxPrice": "0.01",
+  "tunaMinFee": "0.00001",
+  "tunaFeeRatio": 0.1,
+  "tunaServiceName": "reverse",
+  "tunaGeoDBPath": ".",
+  "tunaMeasureStoragePath": ".",
+  "adminIdentifier": "nConnect",
+  "webRootPath": "web/dist",
+  "acceptAddrs": [
+    "7aafe088fed1a3d2b161437208ce61e26ed1b2d0b83fcef5ec55c273defac1da$",
+    "7cafe0ae02789f8eb6b293e46b0ac5cf8f92f73042199c8161e5b5f90b13dcb5$"
+  ],
+  "adminAddrs": [
+    "7aafe088fed1a3d2b161437208ce61e26ed1b2d0b83fcef5ec55c273defac1da$"
+  ],
+  "ConfigFile": "config.json",
+  "Address": false,
+  "WalletAddress": false,
+  "Version": false
+}
