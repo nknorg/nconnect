@@ -8,6 +8,7 @@ XGO_MODULE=github.com/nknorg/nconnect
 XGO_BUILD=xgo -ldflags $(LDFLAGS) --targets=$(XGO_TARGET) $(XGOFLAGS)
 BUILD_DIR=build
 BIN_NAME=nConnect
+MAIN=bin/main.go
 ifdef GOARM
 BIN_DIR=$(GOOS)-$(GOARCH)v$(GOARM)
 XGO_TARGET=$(GOOS)/$(GOARCH)-$(GOARM)
@@ -21,7 +22,7 @@ web/dist: $(shell find web/src -type f -not -path "web/src/node_modules/*" -not 
 
 .PHONY: local
 local: web/dist
-	$(BUILD) -o $(BIN_NAME)$(EXT) .
+	$(BUILD) -o $(BIN_NAME)$(EXT) $(MAIN)
 
 .PHONY: local_with_proxy
 local_with_proxy: web/dist

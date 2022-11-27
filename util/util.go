@@ -2,10 +2,16 @@ package util
 
 import (
 	"encoding/json"
+	"github.com/nknorg/tuna"
+	"io/ioutil"
 	"log"
 	"net"
+	"net/http"
+	"net/url"
 	"os/exec"
 	"regexp"
+	"strings"
+	"time"
 )
 
 func GetFreePort() (int, error) {
@@ -88,4 +94,40 @@ func ParseExecError(err error) string {
 		return err.Error()
 	}
 	return ""
+}
+
+// IsValidUrl tests a string to determine if it is a well-structured url or not.
+func IsValidUrl(toTest string) bool {
+	_, err := url.ParseRequestURI(toTest)
+	if err != nil {
+		return false
+	}
+
+	u, err := url.Parse(toTest)
+	if err != nil || u.Scheme == "" || u.Host == "" {
+		return false
+	}
+
+	return true
+}
+
+func GetRemotePrice(url string) (string, error) {
+	client := http.Client{
+		Timeout: 10 * time.Second,
+	}
+	resp, err := client.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	price := strings.TrimSpace(string(b))
+	_, _, err = tuna.ParsePrice(price)
+	if err != nil {
+		return "", err
+	}
+	return price, nil
 }
