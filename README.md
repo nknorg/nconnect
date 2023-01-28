@@ -3,7 +3,7 @@
 [![GitHub license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE) [![Go Report Card](https://goreportcard.com/badge/github.com/nknorg/nconnect)](https://goreportcard.com/report/github.com/nknorg/nconnect) [![Build Status](https://travis-ci.org/nknorg/nconnect.svg?branch=master)](https://travis-ci.org/nknorg/nconnect) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#contributing)
 
 nConnect allows you to securely connect to remote machines without the need of
-any server, public IP address, or publicly exposed ports. It features end to end
+any server, public IP address, or publicly exposed ports. It features end-to-end
 encryption for top level security, and multi-path aggregation for maximum
 throughput.
 
@@ -63,7 +63,7 @@ The minimal arguments to start nConnect in server mode is just
 ./nConnect -s
 ```
 
-But most of the times you might want to start nConnect server with a few useful
+But most of the time you might want to start nConnect server with a few useful
 arguments:
 
 ```shell
@@ -79,7 +79,7 @@ arguments:
   `http://127.0.0.1:8001`. You can visit this address in your browser to change
   various config (e.g. access control), bind with nConnect mobile client, etc.
   Do not make this port public as anyone who can access this endpoint can change
-  your configuration. If you want best security, disable the admin dashboard
+  your configuration. If you want the best security, disable the admin dashboard
   once you have done using it.
 
 #### Access Control
@@ -155,7 +155,7 @@ In the console you should see one or more `Adding route <local-ip>/32`. You can
 then connect to server machine using any one of these local IP addresses as if
 they are in the same local network, e.g. `ssh user@<local-ip>`.
 
-By default all local IP addresses on the server machine will be added to routes,
+By default, all local IP addresses on the server machine will be added to routes,
 but you can manually specify which IP or IP range you would like to route
 through the VPN using `--vpn-route` arguments. Use `./nConnect -h` for all available arguments.
 
@@ -184,7 +184,7 @@ connections routed via this device will be tunneled to nConnect server. You will
 need to modify system routing table yourself to determine what traffic should be
 routed through the TUN device.
 
-You can also change the name, IP, etc of the TUN device. Use `./nConnect -h` for
+You can also change the name, IP, gateway, network mask and DNS resolvers of the TUN device. Use `./nConnect -h` for
 all available arguments.
 
 If you start multiple nConnect clients in TUN device mode, make sure to use
@@ -222,13 +222,26 @@ nConnect server side. You can get your client address using:
 The address typically contains one or more dot, with the part after last dot
 being your client public key.
 
+### UDP support
+
+You can enable UDP support when starting nConnect server with tuna mode, 
+
+```shell
+./nConnect -s --tuna --udp
+```
+
+### Use nConnect as library
+
+You can also use nConnect as library. Please check [socks5_proxy_test.go](tests/socks5_proxy_test.go) for usages.
+
+
 ### Use pre-built Docker image
 
-*Prerequirement*: Have working docker software installed. For help with that
+*Pre-requirement*: Have working docker software installed. For help with that
 *visit [official docker
 *docs](https://docs.docker.com/install/#supported-platforms)
 
-We host latest Docker image on our official Docker Hub account. You can get
+We host the latest Docker image on our official Docker Hub account. You can get
 it by
 
 ```shell
