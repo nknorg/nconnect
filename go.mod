@@ -82,8 +82,8 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
-replace github.com/nknorg/tuna v0.0.0-20230128070346-2e1102d13fcb => github.com/nknorg/tuna v0.0.0-20230128070346-2e1102d13fcb
-
-replace github.com/nknorg/nkn-tuna-session v0.2.5 => github.com/nknorg/nkn-tuna-session v0.2.6-0.20230129080815-6bcf65132ef1
-
-replace github.com/nknorg/nkn-tunnel v0.3.4 => github.com/nknorg/nkn-tunnel v0.3.5-0.20230129081143-f866961b9676
+//replace github.com/nknorg/tuna v0.0.0-20230128070346-2e1102d13fcb => github.com/nknorg/tuna v0.0.0-20230128070346-2e1102d13fcb
+//
+//replace github.com/nknorg/nkn-tuna-session v0.2.5 => github.com/nknorg/nkn-tuna-session v0.2.6-0.20230129080815-6bcf65132ef1
+//
+//replace github.com/nknorg/nkn-tunnel v0.3.4 => github.com/nknorg/nkn-tunnel v0.3.5-0.20230129081143-f866961b9676
