@@ -6,16 +6,15 @@ require (
 	github.com/eycorsican/go-tun2socks v1.16.11
 	github.com/gin-contrib/gzip v0.0.3
 	github.com/gin-gonic/gin v1.7.0
-	github.com/imdario/mergo v0.3.9
+	github.com/imdario/mergo v0.3.13
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/nknorg/ncp-go v1.0.4-0.20220224111535-206abfb10fe8
-	github.com/nknorg/nkn-sdk-go v1.4.0
-	github.com/nknorg/nkn-tuna-session v0.2.5-0.20220316092834-0446308e0a84
-	github.com/nknorg/nkn-tunnel v0.3.4
+	github.com/nknorg/nkn-sdk-go v1.4.2
+	github.com/nknorg/nkn-tuna-session v0.2.6-0.20230219074047-bb0097705d49
+	github.com/nknorg/nkn-tunnel v0.3.5-0.20230219074420-3301ef55258c
 	github.com/nknorg/nkn/v2 v2.1.8
-	github.com/nknorg/nkngomobile v0.0.0-20220125080321-848ddd2e5157
-	github.com/nknorg/tuna v0.0.0-20220314110655-e94a8631389d
+	github.com/nknorg/nkngomobile v0.0.0-20220615081414-671ad1afdfa9
+	github.com/nknorg/tuna v0.0.0-20230219073730-da9de3fdb6e8
 	github.com/shadowsocks/go-shadowsocks2 v0.1.2
-	golang.org/x/sys v0.5.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
