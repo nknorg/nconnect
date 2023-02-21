@@ -341,11 +341,13 @@ func getInfo(conf *config.Config, tun *tunnel.Tunnel) (*GetInfoJSON, error) {
 	}
 	tunaPubAddrs := tun.TunaPubAddrs()
 	if tunaPubAddrs != nil {
-		info.InPrice = make([]string, len(tunaPubAddrs.Addrs))
-		info.OutPrice = make([]string, len(tunaPubAddrs.Addrs))
-		for i := range tunaPubAddrs.Addrs {
-			info.InPrice[i] = tunaPubAddrs.Addrs[i].InPrice
-			info.OutPrice[i] = tunaPubAddrs.Addrs[i].OutPrice
+		info.InPrice = make([]string, 0, len(tunaPubAddrs.Addrs))
+		info.OutPrice = make([]string, 0, len(tunaPubAddrs.Addrs))
+		for _, addr := range tunaPubAddrs.Addrs {
+			if len(addr.IP) > 0 {
+				info.InPrice = append(info.InPrice, addr.InPrice)
+				info.OutPrice = append(info.OutPrice, addr.OutPrice)
+			}
 		}
 	}
 	if len(conf.Tags) > 0 {
