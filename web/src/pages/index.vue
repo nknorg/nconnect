@@ -186,6 +186,7 @@
 
 <script>
 import Qrcode from 'qrcode'
+import Cookies from "js-cookie"
 import * as rpc from '../assets/rpc'
 
 const tunaConfigChoicesAddr = '/static/tuna-config-choices.json';
@@ -282,6 +283,7 @@ export default {
   methods: {
     onChangeSwitchLanguage(event) {
       this.$i18n.locale = event
+      Cookies.set('language', event)
     },
     async updateAdminToken() {
       try {
