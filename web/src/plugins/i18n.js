@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import VueI18n from 'vue-i18n'
+import Cookies from 'js-cookie'
 import en from '~/locales/en.json'
 import zh from '~/locales/zh-CN.json'
 import zhTW from '~/locales/zh-TW.json'
@@ -15,7 +16,7 @@ export default ({ app, store }) => {
     if (!!navLang) lang = navLang.substr(0, 2)
   }
   app.i18n = new VueI18n({
-    locale: lang,
+    locale: Cookies.get('language') || lang,
     fallbackLocale: 'en',
     messages,
   });
