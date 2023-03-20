@@ -207,6 +207,7 @@ func main() {
 
 	clientConfig := &nkn.ClientConfig{
 		SeedRPCServerAddr: seedRPCServerAddr,
+		ConnectRetries:    opts.ConnectRetries,
 	}
 	walletConfig := &nkn.WalletConfig{
 		SeedRPCServerAddr: seedRPCServerAddr,
