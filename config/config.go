@@ -36,25 +36,36 @@ func init() {
 type Config struct {
 	path string
 
-	Identifier        string   `json:"identifier" long:"identifier" description:"NKN client identifier. A random one will be generated and saved to config.json if not provided."`
-	Seed              string   `json:"seed" long:"seed" description:"NKN client secret seed. A random one will be generated and saved to config.json if not provided."`
-	SeedRPCServerAddr []string `json:"seedRPCServerAddr,omitempty" long:"rpc" description:"Seed RPC server address"`
+	// Account config
+	Identifier string `json:"identifier" long:"identifier" description:"NKN client identifier. A random one will be generated and saved to config.json if not provided."`
+	Seed       string `json:"seed" long:"seed" description:"NKN client secret seed. A random one will be generated and saved to config.json if not provided."`
 
+	// NKN Client config
+	SeedRPCServerAddr []string `json:"seedRPCServerAddr,omitempty" long:"rpc" description:"Seed RPC server address"`
+	ConnectRetries    int32    `json:"connectRetries,omitempty" long:"connect-retries" description:"client connect retries, a negative value means unlimited retries."`
+
+	// Cipher config
 	Cipher   string `json:"cipher,omitempty" long:"cipher" description:"Socks proxy cipher. Dummy (no cipher) will not reduce security because NKN tunnel already has end to end encryption." choice:"dummy" choice:"chacha20-ietf-poly1305" choice:"aes-128-gcm" choice:"aes-256-gcm" default:"chacha20-ietf-poly1305"`
 	Password string `json:"password,omitempty" long:"password" description:"Socks proxy password"`
 
+	// Session config
 	DialTimeout       int32 `json:"dialTimeout,omitempty" long:"dial-timeout" description:"dial timeout in milliseconds"`
 	SessionWindowSize int32 `json:"sessionWindowSize,omitempty" long:"session-window-size" description:"tuna session window size (byte)."`
 
+	// Log config
 	LogFileName        string `json:"log,omitempty" long:"log" description:"Log file path. Will write log to stdout if not provided."`
 	LogMaxSize         int    `json:"logMaxSize,omitempty" long:"log-max-size" description:"Maximum size in megabytes of the log file before it gets rotated." default:"1"`
 	LogMaxBackups      int    `json:"logMaxBackups,omitempty" long:"log-max-backups" description:"Maximum number of old log files to retain." default:"3"`
 	LogAPIResponseSize int    `json:"logAPIResponseSize,omitempty" long:"log-api-response-size" description:"(server only) Maximum size in bytes of get log api response. If log size is greater than this value, only the lastest part of the log will be returned."`
 
+	// Remote address
 	RemoteAdminAddr  string `json:"remoteAdminAddr,omitempty" short:"a" long:"remote-admin-addr" description:"(client only) Remote server admin address"`
 	RemoteTunnelAddr string `json:"remoteTunnelAddr,omitempty" short:"r" long:"remote-tunnel-addr" description:"(client only) Remote server tunnel address, not needed if remote server admin address is given"`
-	LocalSocksAddr   string `json:"localSocksAddr,omitempty" short:"l" long:"local-socks-addr" description:"(client only) Local socks proxy listen address" default:"127.0.0.1:1080"`
 
+	// Socks proxy config
+	LocalSocksAddr string `json:"localSocksAddr,omitempty" short:"l" long:"local-socks-addr" description:"(client only) Local socks proxy listen address" default:"127.0.0.1:1080"`
+
+	// TUN/TAP device config
 	Tun        bool     `json:"tun,omitempty" long:"tun" description:"(client only) Enable TUN device, might require root privilege"`
 	TunAddr    string   `json:"tunAddr,omitempty" long:"tun-addr" description:"(client only) TUN device IP address" default:"10.0.86.2"`
 	TunGateway string   `json:"tunGateway,omitempty" long:"tun-gateway" description:"(client only) TUN device gateway" default:"10.0.86.1"`
@@ -62,9 +73,11 @@ type Config struct {
 	TunDNS     []string `json:"tunDNS,omitempty" long:"tun-dns" description:"(client only) DNS resolvers for the TUN device (Windows only)" default:"1.1.1.1" default:"8.8.8.8"`
 	TunName    string   `json:"tunName,omitempty" long:"tun-name" description:"(client only) TUN device name, will be ignored on MacOS. Default is nConnect-tun0 on Linux and nConnect-tap0 on Windows."`
 
+	// VPN mode config
 	VPN      bool     `json:"vpn,omitempty" long:"vpn" description:"(client only) Enable VPN mode, might require root privilege. TUN device will be enabled when VPN mode is enabled."`
 	VPNRoute []string `json:"vpnRoute,omitempty" long:"vpn-route" description:"(client only) VPN routing table destinations, each item should be a valid CIDR. If not given, remote server's local IP addresses will be used."`
 
+	// Tuna config
 	Tuna                        bool     `json:"tuna,omitempty" short:"t" long:"tuna" description:"Enable tuna sessions"`
 	TunaMinBalance              string   `json:"tunaMinBalance,omitempty" long:"tuna-min-balance" description:"(server only) Minimal balance to enable tuna sessions" default:"0.01"`
 	TunaMaxPrice                string   `json:"tunaMaxPrice,omitempty" long:"tuna-max-price" description:"(server only) Tuna max price in unit of NKN/MB. Can also be a url where the price will be get dynamically at launch." default:"0.01"`
@@ -81,14 +94,14 @@ type Config struct {
 	TunaDisableMeasureBandwidth bool     `json:"tunaDisableMeasureBandwidth,omitempty" long:"tuna-disable-measure-bandwidth" description:"(server only) Disable Tuna measure bandwidth when selecting service nodes"`
 	TunaMeasureStoragePath      string   `json:"tunaMeasureStoragePath,omitempty" long:"tuna-measure-storage-path" description:"(server only) Path to store Tuna measurement results" default:"."`
 
+	// Admin config
 	AdminIdentifier     string `json:"adminIdentifier,omitempty" long:"admin-identifier" description:"(server only) Admin NKN client identifier prefix" default:"nConnect"`
 	AdminHTTPAddr       string `json:"adminHttpAddr,omitempty" long:"admin-http" description:"(server only) Admin web GUI listen address (e.g. 127.0.0.1:8000)"`
 	DisableAdminHTTPAPI bool   `json:"disableAdminHttpApi,omitempty" long:"disable-admin-http-api" description:"(server only) Disable admin http api so admin web GUI only show static assets"`
 	WebRootPath         string `json:"webRootPath,omitempty" long:"web-root-path" description:"(server only) Web root path" default:"web/dist"`
 
-	Tags []string `json:"tags,omitempty" long:"tags" description:"(server only) Tags that will be included in get info api"`
-
-	Verbose bool `json:"verbose,omitempty" short:"v" long:"verbose" description:"Verbose mode, show logs on dialing/accepting connections"`
+	Tags    []string `json:"tags,omitempty" long:"tags" description:"(server only) Tags that will be included in get info api"`
+	Verbose bool     `json:"verbose,omitempty" short:"v" long:"verbose" description:"Verbose mode, show logs on dialing/accepting connections"`
 
 	lock        sync.RWMutex
 	AcceptAddrs []string `json:"acceptAddrs"`
