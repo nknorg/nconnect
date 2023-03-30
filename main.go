@@ -303,9 +303,16 @@ func main() {
 			if err != nil {
 				return nil, err
 			}
-			remoteInfoCache, err = c.GetInfo(opts.RemoteAdminAddr)
+			for retry := 0; retry < 3; retry++ {
+				remoteInfoCache, err = c.GetInfo(opts.RemoteAdminAddr)
+				if err != nil {
+					log.Printf("Get remote server info error: %v", err)
+					continue
+				}
+				break
+			}
 			if err != nil {
-				return nil, fmt.Errorf("Get remote server info error: %v. Please make sure server is online and accepting connections from this client address", err)
+				return nil, fmt.Errorf("failed to get remote server info, please make sure server is online and accepting connections from this client address")
 			}
 			return remoteInfoCache, nil
 		}
