@@ -3,7 +3,7 @@
 USE_PROXY=GOPROXY=https://goproxy.io
 VERSION:=$(shell git describe --abbrev=7 --dirty --always --tags)
 LDFLAGS="-s -w -X github.com/nknorg/nconnect/config.Version=$(VERSION)"
-BUILD=go build -ldflags $(LDFLAGS)
+BUILD=CGO_ENABLED=1 go build -ldflags $(LDFLAGS)
 XGO_MODULE=github.com/nknorg/nconnect
 XGO_BUILD=xgo -ldflags $(LDFLAGS) --targets=$(XGO_TARGET) $(XGOFLAGS)
 BUILD_DIR=build
