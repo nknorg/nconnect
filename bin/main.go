@@ -1,11 +1,12 @@
 package main
 
 import (
+	"log"
+	"os"
+
 	"github.com/jessevdk/go-flags"
 	"github.com/nknorg/nconnect"
 	"github.com/nknorg/nconnect/config"
-	"log"
-	"os"
 )
 
 func main() {
@@ -15,7 +16,7 @@ func main() {
 		}
 	}()
 
-	var opts config.NConfig
+	var opts config.Opts
 	_, err := flags.Parse(&opts)
 	if err != nil {
 		if flagsErr, ok := err.(*flags.Error); ok && flagsErr.Type == flags.ErrHelp {

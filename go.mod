@@ -6,12 +6,12 @@ require (
 	github.com/eycorsican/go-tun2socks v1.16.11
 	github.com/gin-contrib/gzip v0.0.3
 	github.com/gin-gonic/gin v1.7.7
-	github.com/imdario/mergo v0.3.13
+	github.com/imdario/mergo v0.3.15
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/nknorg/ncp-go v1.0.6-0.20230228002512-f4cd1740bebd
-	github.com/nknorg/nkn-sdk-go v1.4.5
-	github.com/nknorg/nkn-tuna-session v0.2.6-0.20230328055742-9a596c57b4bb
-	github.com/nknorg/nkn-tunnel v0.3.5-0.20230328060135-8eb315c90047
+	github.com/nknorg/nkn-sdk-go v1.4.6-0.20230404044330-ad192f36d07e
+	github.com/nknorg/nkn-tuna-session v0.2.6-0.20230415032955-7a3fc7be9634
+	github.com/nknorg/nkn-tunnel v0.3.5-0.20230418225220-c505086e1505
 	github.com/nknorg/nkn/v2 v2.2.0
 	github.com/nknorg/nkngomobile v0.0.0-20220615081414-671ad1afdfa9
 	github.com/nknorg/tuna v0.0.0-20230328054959-0bc6eb5bf369
@@ -21,6 +21,7 @@ require (
 )
 
 require (
+	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/gaukas/godicttls v0.0.3 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
@@ -60,6 +61,7 @@ require (
 	github.com/rdegges/go-ipify v0.0.0-20150526035502-2d94a6a86c40 // indirect
 	github.com/refraction-networking/utls v1.3.2 // indirect
 	github.com/riobard/go-bloom v0.0.0-20200213042214-218e1707c495 // indirect
+	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/songgao/water v0.0.0-20190725173103-fd331bda3f4b // indirect
 	github.com/tdewolff/minify v2.3.6+incompatible // indirect
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
@@ -81,9 +83,3 @@ require (
 	google.golang.org/protobuf v1.29.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
-
-//replace github.com/nknorg/tuna v0.0.0-20230128070346-2e1102d13fcb => github.com/nknorg/tuna v0.0.0-20230128070346-2e1102d13fcb
-//
-//replace github.com/nknorg/nkn-tuna-session v0.2.5 => github.com/nknorg/nkn-tuna-session v0.2.6-0.20230129080815-6bcf65132ef1
-//
-//replace github.com/nknorg/nkn-tunnel v0.3.4 => github.com/nknorg/nkn-tunnel v0.3.5-0.20230129081143-f866961b9676
