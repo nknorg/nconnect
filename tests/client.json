@@ -1,13 +1,12 @@
 {
   "Client": true,
   "Server": false,
-  "identifier": "test-client",
-  "seed": "",
+  "identifier": "alice",
+  "seed": "e68e046d13dd911594576ba0f4a196e9666790dc492071ad9ea5972c0b940435",
   "cipher": "dummy",
-  "udp": true,
   "logMaxSize": 1,
   "logMaxBackups": 3,
-  "remoteAdminAddr": "nConnect.77fuek.7cafe0ae02789f8eb6b293e46b0ac5cf8f92f73042199c8161e5b5f90b13dcb5",
+  "remoteAdminAddr": "nConnect.bob.7cafe0ae02789f8eb6b293e46b0ac5cf8f92f73042199c8161e5b5f90b13dcb5",
   "localSocksAddr": "127.0.0.1:1080",
   "tunAddr": "10.0.86.2",
   "tunGateway": "10.0.86.1",
@@ -17,6 +16,7 @@
     "8.8.8.8"
   ],
   "tuna": true,
+  "udp": true,
   "tunaMinBalance": "0.01",
   "tunaMaxPrice": "0.01",
   "tunaMinFee": "0.00001",
@@ -27,7 +27,7 @@
   "webRootPath": "web/dist",
   "acceptAddrs": null,
   "adminAddrs": null,
-  "ConfigFile": "config.json",
+  "ConfigFile": "client_save.json",
   "Address": false,
   "WalletAddress": false,
   "Version": false

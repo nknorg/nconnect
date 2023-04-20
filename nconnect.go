@@ -23,7 +23,7 @@ import (
 	"github.com/nknorg/nconnect/util"
 	"github.com/nknorg/ncp-go"
 	"github.com/nknorg/nkn-sdk-go"
-	session "github.com/nknorg/nkn-tuna-session"
+	ts "github.com/nknorg/nkn-tuna-session"
 	tunnel "github.com/nknorg/nkn-tunnel"
 	"github.com/nknorg/nkn/v2/common"
 	"github.com/nknorg/nkn/v2/util/address"
@@ -37,7 +37,7 @@ const (
 	mtu = 1500
 )
 
-func Run(opts *config.NConfig) {
+func Run(opts *config.Opts) {
 	err := (&opts.Config).SetPlatformSpecificDefaultValues()
 	if err != nil {
 		log.Fatal(err)
@@ -194,8 +194,7 @@ func Run(opts *config.NConfig) {
 		opts.TunaMaxPrice = price
 	}
 
-	tsConfig := &session.Config{
-		NumTunaListeners:       1,
+	tsConfig := &ts.Config{
 		TunaMaxPrice:           opts.TunaMaxPrice,
 		TunaMinNanoPayFee:      opts.TunaMinFee,
 		TunaNanoPayFeeRatio:    opts.TunaFeeRatio,
@@ -220,7 +219,9 @@ func Run(opts *config.NConfig) {
 		DialConfig:        dialConfig,
 		TunaSessionConfig: tsConfig,
 		Verbose:           opts.Verbose,
-		Udp:               true,
+		UDP:               opts.UDP,
+		UDPIdleTime:       opts.UDPIdleTime,
+		TunaNode:          opts.TunaNode,
 	}
 
 	port, err := util.GetFreePort()
@@ -237,6 +238,7 @@ func Run(opts *config.NConfig) {
 
 		Verbose:    opts.Verbose,
 		UDPTimeout: config.DefaultUDPTimeout,
+		UDP:        opts.UDP,
 	}
 
 	if opts.UDP && opts.Client {
@@ -394,9 +396,6 @@ func Run(opts *config.NConfig) {
 		err = (&opts.Config).VerifyServer()
 		if err != nil {
 			log.Fatal(err)
-		}
-		if opts.UDP {
-			ssConfig.UDP = true
 		}
 
 		ssConfig.Server = ssAddr

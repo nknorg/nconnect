@@ -15,6 +15,7 @@ import (
 
 	"github.com/nknorg/nconnect/util"
 	"github.com/nknorg/nkn/v2/common"
+	"github.com/nknorg/tuna/types"
 )
 
 const (
@@ -34,7 +35,7 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-type NConfig struct {
+type Opts struct {
 	Client bool `short:"c" long:"client" description:"Client mode"`
 	Server bool `short:"s" long:"server" description:"Server mode"`
 
@@ -44,6 +45,8 @@ type NConfig struct {
 	Address       bool `long:"address" description:"Print client address (client mode) or admin address (server mode)"`
 	WalletAddress bool `long:"wallet-address" description:"Print wallet address (server only)"`
 	Version       bool `long:"version" description:"Print version"`
+
+	TunaNode *types.Node
 }
 
 type Config struct {
@@ -60,7 +63,6 @@ type Config struct {
 	// Cipher config
 	Cipher   string `json:"cipher,omitempty" long:"cipher" description:"Socks proxy cipher. Dummy (no cipher) will not reduce security because NKN tunnel already has end to end encryption." choice:"dummy" choice:"chacha20-ietf-poly1305" choice:"aes-128-gcm" choice:"aes-256-gcm" default:"chacha20-ietf-poly1305"`
 	Password string `json:"password,omitempty" long:"password" description:"Socks proxy password"`
-	UDP      bool   `json:"udp,omitempty" long:"udp" description:"Support udp proxy"`
 
 	// Session config
 	DialTimeout       int32 `json:"dialTimeout,omitempty" long:"dial-timeout" description:"dial timeout in milliseconds"`
@@ -107,6 +109,10 @@ type Config struct {
 	TunaGeoDBPath               string   `json:"tunaGeoDBPath,omitempty" long:"tuna-geo-db-path" description:"(server only) Path to store Tuna geo db" default:"."`
 	TunaDisableMeasureBandwidth bool     `json:"tunaDisableMeasureBandwidth,omitempty" long:"tuna-disable-measure-bandwidth" description:"(server only) Disable Tuna measure bandwidth when selecting service nodes"`
 	TunaMeasureStoragePath      string   `json:"tunaMeasureStoragePath,omitempty" long:"tuna-measure-storage-path" description:"(server only) Path to store Tuna measurement results" default:"."`
+
+	// UDP config
+	UDP         bool  `json:"udp,omitempty" long:"udp" description:"Support udp proxy"`
+	UDPIdleTime int32 `json:"udpIdleTime,omitempty" long:"udp-idle-time" description:"UDP connections will be purged after idle time (in seconds). 0 is for no purge" default:"0"`
 
 	// Admin config
 	AdminIdentifier     string `json:"adminIdentifier,omitempty" long:"admin-identifier" description:"(server only) Admin NKN client identifier prefix" default:"nConnect"`
