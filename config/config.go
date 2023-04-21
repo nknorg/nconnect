@@ -15,7 +15,6 @@ import (
 
 	"github.com/nknorg/nconnect/util"
 	"github.com/nknorg/nkn/v2/common"
-	"github.com/nknorg/tuna/types"
 )
 
 const (
@@ -45,8 +44,6 @@ type Opts struct {
 	Address       bool `long:"address" description:"Print client address (client mode) or admin address (server mode)"`
 	WalletAddress bool `long:"wallet-address" description:"Print wallet address (server only)"`
 	Version       bool `long:"version" description:"Print version"`
-
-	TunaNode *types.Node
 }
 
 type Config struct {

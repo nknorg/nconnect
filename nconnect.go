@@ -7,10 +7,8 @@ import (
 	"log"
 	"net"
 	"os"
-	"os/signal"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/eycorsican/go-tun2socks/core"
@@ -30,6 +28,7 @@ import (
 	"github.com/nknorg/nkngomobile"
 	"github.com/nknorg/tuna/filter"
 	"github.com/nknorg/tuna/geo"
+	"github.com/nknorg/tuna/types"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
@@ -37,15 +36,27 @@ const (
 	mtu = 1500
 )
 
-func Run(opts *config.Opts) {
+type nconnect struct {
+	opts    *config.Opts
+	account *nkn.Account
+
+	walletConfig *nkn.WalletConfig
+	clientConfig *nkn.ClientConfig
+	tunnelConfig *tunnel.Config
+	ssConfig     *ss.Config
+	persistConf  *config.Config
+
+	adminClientCache *admin.Client
+	remoteInfoCache  *admin.GetInfoJSON
+
+	tunnel   *tunnel.Tunnel
+	tunaNode *types.Node // It is used to connect specific tuna node, mainly is for testing.
+}
+
+func NewNconnect(opts *config.Opts) (*nconnect, error) {
 	err := (&opts.Config).SetPlatformSpecificDefaultValues()
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	if opts.Version {
-		fmt.Println(config.Version)
-		os.Exit(0)
+		return nil, err
 	}
 
 	if opts.Client == opts.Server {
@@ -54,12 +65,12 @@ func Run(opts *config.Opts) {
 
 	persistConf, err := config.LoadOrNewConfig(opts.ConfigFile)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	err = mergo.Merge(&opts.Config, persistConf)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	if len(opts.LogFileName) > 0 {
@@ -72,12 +83,12 @@ func Run(opts *config.Opts) {
 
 	seed, err := hex.DecodeString(opts.Seed)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	account, err := nkn.NewAccount(seed)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	shouldSave := false
@@ -96,7 +107,7 @@ func Run(opts *config.Opts) {
 	if shouldSave {
 		err = persistConf.Save()
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 	}
 
@@ -221,15 +232,7 @@ func Run(opts *config.Opts) {
 		Verbose:           opts.Verbose,
 		UDP:               opts.UDP,
 		UDPIdleTime:       opts.UDPIdleTime,
-		TunaNode:          opts.TunaNode,
 	}
-
-	port, err := util.GetFreePort()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	ssAddr := "127.0.0.1:" + strconv.Itoa(port)
 
 	ssConfig := &ss.Config{
 		TCP:      true,
@@ -245,219 +248,255 @@ func Run(opts *config.Opts) {
 		ssConfig.UDPSocks = true
 	}
 
-	var tun *tunnel.Tunnel
+	nc := &nconnect{
+		opts:         opts,
+		account:      account,
+		clientConfig: clientConfig,
+		tunnelConfig: tunnelConfig,
+		ssConfig:     ssConfig,
+		walletConfig: walletConfig,
+		persistConf:  persistConf,
+	}
 
-	if opts.Client {
-		err = (&opts.Config).VerifyClient()
+	return nc, nil
+}
+
+// Lazy create admin client to avoid unnecessary client creation.
+func (nc *nconnect) getAdminClient() (*admin.Client, error) {
+	if nc.adminClientCache != nil {
+		return nc.adminClientCache, nil
+	}
+	c, err := admin.NewClient(nc.account, nc.clientConfig)
+	if err != nil {
+		return nil, err
+	}
+	// Wait for more sub-clients to connect
+	time.Sleep(time.Second)
+	nc.adminClientCache = c
+
+	return nc.adminClientCache, nil
+}
+
+// Lazy get remote info to avoid unnecessary rpc call.
+func (nc *nconnect) getRemoteInfo() (*admin.GetInfoJSON, error) {
+	if nc.remoteInfoCache != nil {
+		return nc.remoteInfoCache, nil
+	}
+	c, err := nc.getAdminClient()
+	if err != nil {
+		return nil, err
+	}
+	nc.remoteInfoCache, err = c.GetInfo(nc.opts.RemoteAdminAddr)
+	if err != nil {
+		return nil, fmt.Errorf("get remote server info error: %v. make sure server is online and accepting connections from this client address", err)
+	}
+
+	return nc.remoteInfoCache, nil
+}
+
+func (nc *nconnect) StartClient() error {
+	err := nc.opts.VerifyClient()
+	if err != nil {
+		return err
+	}
+
+	remoteTunnelAddr := nc.opts.RemoteTunnelAddr
+	if len(remoteTunnelAddr) == 0 {
+		remoteInfo, err := nc.getRemoteInfo()
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
+		remoteTunnelAddr = remoteInfo.Addr
+	}
 
-		// Lazy create admin client to avoid unnecessary client creation.
-		var adminClientCache *admin.Client
-		getAdminClient := func() (*admin.Client, error) {
-			if adminClientCache != nil {
-				return adminClientCache, nil
-			}
-			c, err := admin.NewClient(account, clientConfig)
+	var vpnCIDR []*net.IPNet
+	if nc.opts.VPN {
+		vpnRoutes := nc.opts.VPNRoute
+		if len(vpnRoutes) == 0 {
+			remoteInfo, err := nc.getRemoteInfo()
 			if err != nil {
-				return nil, err
+				return err
 			}
-			// Wait for more sub-clients to connect
-			time.Sleep(time.Second)
-			adminClientCache = c
-			return adminClientCache, nil
-		}
-
-		// Lazy get remote info to avoid unnecessary rpc call.
-		var remoteInfoCache *admin.GetInfoJSON
-		getRemoteInfo := func() (*admin.GetInfoJSON, error) {
-			if remoteInfoCache != nil {
-				return remoteInfoCache, nil
-			}
-			c, err := getAdminClient()
-			if err != nil {
-				return nil, err
-			}
-			remoteInfoCache, err = c.GetInfo(opts.RemoteAdminAddr)
-			if err != nil {
-				return nil, fmt.Errorf("get remote server info error: %v. Please make sure server is online and accepting connections from this client address", err)
-			}
-			return remoteInfoCache, nil
-		}
-
-		remoteTunnelAddr := opts.RemoteTunnelAddr
-		if len(remoteTunnelAddr) == 0 {
-			remoteInfo, err := getRemoteInfo()
-			if err != nil {
-				log.Fatal(err)
-			}
-			remoteTunnelAddr = remoteInfo.Addr
-		}
-
-		var vpnCIDR []*net.IPNet
-		if opts.VPN {
-			vpnRoutes := opts.VPNRoute
-			if len(vpnRoutes) == 0 {
-				remoteInfo, err := getRemoteInfo()
-				if err != nil {
-					log.Fatal(err)
-				}
-				if len(remoteInfo.LocalIP.Ipv4) > 0 {
-					vpnRoutes = make([]string, 0, len(remoteInfo.LocalIP.Ipv4))
-					for _, ip := range remoteInfo.LocalIP.Ipv4 {
-						if ip == opts.TunAddr || ip == opts.TunGateway {
-							log.Printf("Skipping server's local IP %s in routes", ip)
-							continue
-						}
-						vpnRoutes = append(vpnRoutes, fmt.Sprintf("%s/32", ip))
+			if len(remoteInfo.LocalIP.Ipv4) > 0 {
+				vpnRoutes = make([]string, 0, len(remoteInfo.LocalIP.Ipv4))
+				for _, ip := range remoteInfo.LocalIP.Ipv4 {
+					if ip == nc.opts.TunAddr || ip == nc.opts.TunGateway {
+						log.Printf("Skipping server's local IP %s in routes", ip)
+						continue
 					}
-				}
-			}
-			if len(vpnRoutes) > 0 {
-				vpnCIDR = make([]*net.IPNet, len(vpnRoutes))
-				for i, cidr := range vpnRoutes {
-					_, cidr, err := net.ParseCIDR(cidr)
-					if err != nil {
-						log.Fatalf("Parse CIDR %s error: %v", cidr, err)
-					}
-					vpnCIDR[i] = cidr
+					vpnRoutes = append(vpnRoutes, fmt.Sprintf("%s/32", ip))
 				}
 			}
 		}
-
-		proxyAddr, err := net.ResolveTCPAddr("tcp", opts.LocalSocksAddr)
-		if err != nil {
-			log.Fatalf("Invalid proxy server address: %v", err)
-		}
-		proxyHost := proxyAddr.IP.String()
-		proxyPort := uint16(proxyAddr.Port)
-
-		ssConfig.Client = ssAddr
-		ssConfig.Socks = opts.LocalSocksAddr
-
-		tun, err = tunnel.NewTunnel(account, opts.Identifier, ssAddr, remoteTunnelAddr, opts.Tuna, tunnelConfig)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		log.Println("Client NKN address:", tun.Addr().String())
-		log.Println("Client socks proxy listen address:", opts.LocalSocksAddr)
-
-		if opts.Tun || opts.VPN {
-			tunDevice, err := arch.OpenTunDevice(opts.TunName, opts.TunAddr, opts.TunGateway, opts.TunMask, opts.TunDNS, true)
-			if err != nil {
-				log.Fatalf("Failed to open TUN device: %v", err)
-			}
-
-			core.RegisterOutputFn(tunDevice.Write)
-
-			core.RegisterTCPConnHandler(socks.NewTCPHandler(proxyHost, proxyPort))
-			core.RegisterUDPConnHandler(socks.NewUDPHandler(proxyHost, proxyPort, 30*time.Second))
-
-			lwipWriter := core.NewLWIPStack()
-
-			go func() {
-				_, err := io.CopyBuffer(lwipWriter, tunDevice, make([]byte, mtu))
+		if len(vpnRoutes) > 0 {
+			vpnCIDR = make([]*net.IPNet, len(vpnRoutes))
+			for i, cidr := range vpnRoutes {
+				_, cidr, err := net.ParseCIDR(cidr)
 				if err != nil {
-					log.Fatalf("Failed to write data to network stack: %v", err)
+					return fmt.Errorf("parse CIDR %s error: %v", cidr, err)
 				}
-			}()
+				vpnCIDR[i] = cidr
+			}
+		}
+	}
 
-			log.Println("Started tun2socks")
+	proxyAddr, err := net.ResolveTCPAddr("tcp", nc.opts.LocalSocksAddr)
+	if err != nil {
+		return fmt.Errorf("invalid proxy server address: %v", err)
+	}
+	proxyHost := proxyAddr.IP.String()
+	proxyPort := uint16(proxyAddr.Port)
 
-			if opts.VPN {
-				for _, dest := range vpnCIDR {
-					log.Printf("Adding route %s", dest)
-					out, err := arch.AddRouteCmd(dest, opts.TunGateway, opts.TunName)
+	port, err := util.GetFreePort()
+	if err != nil {
+		return err
+	}
+
+	ssAddr := "127.0.0.1:" + strconv.Itoa(port)
+	nc.ssConfig.Client = ssAddr
+	nc.ssConfig.Socks = nc.opts.LocalSocksAddr
+
+	tunnel, err := tunnel.NewTunnel(nc.account, nc.opts.Identifier, ssAddr, remoteTunnelAddr, nc.opts.Tuna, nc.tunnelConfig)
+	if err != nil {
+		return err
+	}
+	nc.tunnel = tunnel
+
+	log.Println("Client NKN address:", tunnel.Addr().String())
+	log.Println("Client socks proxy listen address:", nc.opts.LocalSocksAddr)
+
+	if nc.opts.Tun || nc.opts.VPN {
+		tunDevice, err := arch.OpenTunDevice(nc.opts.TunName, nc.opts.TunAddr, nc.opts.TunGateway, nc.opts.TunMask, nc.opts.TunDNS, true)
+		if err != nil {
+			return fmt.Errorf("failed to open TUN device: %v", err)
+		}
+
+		core.RegisterOutputFn(tunDevice.Write)
+
+		core.RegisterTCPConnHandler(socks.NewTCPHandler(proxyHost, proxyPort))
+		core.RegisterUDPConnHandler(socks.NewUDPHandler(proxyHost, proxyPort, 30*time.Second))
+
+		lwipWriter := core.NewLWIPStack()
+
+		go func() {
+			_, err := io.CopyBuffer(lwipWriter, tunDevice, make([]byte, mtu))
+			if err != nil {
+				log.Fatalf("Failed to write data to network stack: %v", err)
+			}
+		}()
+
+		log.Println("Started tun2socks")
+
+		if nc.opts.VPN {
+			for _, dest := range vpnCIDR {
+				log.Printf("Adding route %s", dest)
+				out, err := arch.AddRouteCmd(dest, nc.opts.TunGateway, nc.opts.TunName)
+				if len(out) > 0 {
+					os.Stdout.Write(out)
+				}
+				if err != nil {
+					os.Stdout.Write([]byte(util.ParseExecError(err)))
+					os.Exit(1)
+				}
+				defer func(dest *net.IPNet) {
+					log.Printf("Deleting route %s", dest)
+					out, err := arch.DeleteRouteCmd(dest, nc.opts.TunGateway, nc.opts.TunName)
 					if len(out) > 0 {
 						os.Stdout.Write(out)
 					}
 					if err != nil {
 						os.Stdout.Write([]byte(util.ParseExecError(err)))
-						os.Exit(1)
 					}
-					defer func(dest *net.IPNet) {
-						log.Printf("Deleting route %s", dest)
-						out, err := arch.DeleteRouteCmd(dest, opts.TunGateway, opts.TunName)
-						if len(out) > 0 {
-							os.Stdout.Write(out)
-						}
-						if err != nil {
-							os.Stdout.Write([]byte(util.ParseExecError(err)))
-						}
-					}(dest)
-				}
+				}(dest)
 			}
 		}
 	}
 
-	if opts.Server {
-		err = (&opts.Config).VerifyServer()
+	nc.startSSAndTunnel()
+
+	return nil
+}
+
+func (nc *nconnect) StartServer() error {
+	err := nc.opts.VerifyServer()
+	if err != nil {
+		return err
+	}
+
+	port, err := util.GetFreePort()
+	if err != nil {
+		return err
+	}
+	ssAddr := "127.0.0.1:" + strconv.Itoa(port)
+	nc.ssConfig.Server = ssAddr
+
+	if nc.opts.Tuna {
+		minBalance, err := common.StringToFixed64(nc.opts.TunaMinBalance)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
-		ssConfig.Server = ssAddr
+		if minBalance > 0 {
+			w, err := nkn.NewWallet(nc.account, nc.walletConfig)
+			if err != nil {
+				return err
+			}
 
-		if opts.Tuna {
-			minBalance, err := common.StringToFixed64(opts.TunaMinBalance)
+			balance, err := w.Balance()
+			if err != nil {
+				log.Println("Fetch balance error:", err)
+			} else if balance.ToFixed64() < minBalance {
+				log.Printf("Wallet balance %s is less than minimal balance to enable tuna %s, tuna will not be enabled",
+					balance.String(), nc.opts.TunaMinBalance)
+				nc.opts.Tuna = false
+			}
+		}
+	}
+
+	if nc.tunaNode != nil {
+		nc.tunnelConfig.TunaNode = nc.tunaNode
+	}
+	tunnel, err := tunnel.NewTunnel(nc.account, nc.opts.Identifier, "", ssAddr, nc.opts.Tuna, nc.tunnelConfig)
+	if err != nil {
+		return err
+	}
+	nc.tunnel = tunnel
+	log.Println("Tunnel listen address:", tunnel.FromAddr())
+
+	if len(nc.opts.AdminIdentifier) > 0 {
+		go func() {
+			identifier := nc.opts.AdminIdentifier
+			if len(nc.opts.Identifier) > 0 {
+				identifier += "." + nc.opts.Identifier
+			}
+			err := admin.StartNKNServer(nc.account, identifier, nc.clientConfig, tunnel, nc.persistConf, &nc.opts.Config)
 			if err != nil {
 				log.Fatal(err)
 			}
-
-			if minBalance > 0 {
-				w, err := nkn.NewWallet(account, walletConfig)
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				balance, err := w.Balance()
-				if err != nil {
-					log.Println("Fetch balance error:", err)
-				} else if balance.ToFixed64() < minBalance {
-					log.Printf("Wallet balance %s is less than minimal balance to enable tuna %s, tuna will not be enabled", balance.String(), opts.TunaMinBalance)
-					opts.Tuna = false
-				}
-			}
-		}
-
-		tun, err = tunnel.NewTunnel(account, opts.Identifier, "", ssAddr, opts.Tuna, tunnelConfig)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		log.Println("Tunnel listen address:", tun.FromAddr())
-
-		if len(opts.AdminIdentifier) > 0 {
-			go func() {
-				identifier := opts.AdminIdentifier
-				if len(opts.Identifier) > 0 {
-					identifier += "." + opts.Identifier
-				}
-				err := admin.StartNKNServer(account, identifier, clientConfig, tun, persistConf, &opts.Config)
-				if err != nil {
-					log.Fatal(err)
-				}
-				os.Exit(0)
-			}()
-			log.Println("Admin listening address:", opts.AdminIdentifier+"."+tun.FromAddr())
-		}
-
-		if len(opts.AdminHTTPAddr) > 0 {
-			go func() {
-				err := admin.StartWebServer(opts.AdminHTTPAddr, tun, persistConf, &opts.Config)
-				if err != nil {
-					log.Fatal(err)
-				}
-				os.Exit(0)
-			}()
-			log.Println("Admin web dashboard listening address:", opts.AdminHTTPAddr)
-		}
+			os.Exit(0)
+		}()
+		log.Println("Admin listening address:", nc.opts.AdminIdentifier+"."+tunnel.FromAddr())
 	}
 
+	if len(nc.opts.AdminHTTPAddr) > 0 {
+		go func() {
+			err := admin.StartWebServer(nc.opts.AdminHTTPAddr, tunnel, nc.persistConf, &nc.opts.Config)
+			if err != nil {
+				log.Fatal(err)
+			}
+			os.Exit(0)
+		}()
+		log.Println("Admin web dashboard listening address:", nc.opts.AdminHTTPAddr)
+	}
+
+	nc.startSSAndTunnel()
+
+	return nil
+}
+
+func (nc *nconnect) startSSAndTunnel() {
 	go func() {
-		err := ss.Start(ssConfig)
+		err := ss.Start(nc.ssConfig)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -465,14 +504,14 @@ func Run(opts *config.Opts) {
 	}()
 
 	go func() {
-		err := tun.Start()
+		err := nc.tunnel.Start()
 		if err != nil {
 			log.Fatal(err)
 		}
 		os.Exit(0)
 	}()
+}
 
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	<-sigs
+func (nc *nconnect) SetTunaNode(node *types.Node) {
+	nc.tunaNode = node
 }
