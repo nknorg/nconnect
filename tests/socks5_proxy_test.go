@@ -85,11 +85,11 @@ func TestTCPSocks5Proxy(t *testing.T) {
 
 // go test -v -run=TestUDPSocks5Proxy
 func TestUDPSocks5Proxy(t *testing.T) {
-	for i := 0; i < 5; i++ {
+	for i := 1; i <= 5; i++ {
 		err := brook.Socks5Test("127.0.0.1:1080", "", "", "http3.ooo", "137.184.237.95", "8.8.8.8:53")
 		if err != nil {
 			fmt.Printf("TestUDPSocks5Proxy try %v err: %v\n", i, err)
-			time.Sleep(time.Second)
+			time.Sleep(time.Duration(i) * time.Second)
 		} else {
 			break
 		}

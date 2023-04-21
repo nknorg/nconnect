@@ -31,15 +31,18 @@ func startNconnect(configFile string, n *types.Node) error {
 		return err
 	}
 
-	// fmt.Printf("opts: %+v\n", opts)
-	opts.TunaNode = n
+	nc, _ := nconnect.NewNconnect(opts)
+	if opts.Server {
+		nc.SetTunaNode(n)
+		nc.StartServer()
+	} else {
+		nc.StartClient()
+	}
 
-	nconnect.Run(opts)
 	return nil
 }
 
 func startTunaNode() (*types.Node, error) {
-	// Set up tuna
 	tunaSeed, _ := hex.DecodeString(seedHex)
 	acc, err := nkn.NewAccount(tunaSeed)
 	if err != nil {
@@ -80,11 +83,13 @@ func runReverseEntry(seed []byte) error {
 	if err != nil {
 		return err
 	}
+
 	entryConfig := new(tuna.EntryConfiguration)
 	err = util.ReadJSON("config.reverse.entry.json", entryConfig)
 	if err != nil {
 		return err
 	}
+
 	err = tuna.StartReverse(entryConfig, entryWallet)
 	if err != nil {
 		return err
