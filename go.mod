@@ -10,7 +10,7 @@ require (
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/nknorg/ncp-go v1.0.6-0.20230228002512-f4cd1740bebd
 	github.com/nknorg/nkn-sdk-go v1.4.6-0.20230404044330-ad192f36d07e
-	github.com/nknorg/nkn-tuna-session v0.2.6-0.20230415032955-7a3fc7be9634
+	github.com/nknorg/nkn-tuna-session v0.2.6-0.20230425072236-3b542d25068a
 	github.com/nknorg/nkn-tunnel v0.3.5-0.20230418225220-c505086e1505
 	github.com/nknorg/nkn/v2 v2.2.0
 	github.com/nknorg/nkngomobile v0.0.0-20220615081414-671ad1afdfa9

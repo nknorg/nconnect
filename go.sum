@@ -96,8 +96,8 @@ github.com/nknorg/ncp-go v1.0.6-0.20230228002512-f4cd1740bebd h1:ZAXKeWKjkbS9QQh
 github.com/nknorg/ncp-go v1.0.6-0.20230228002512-f4cd1740bebd/go.mod h1:T7ThlxmBjVIv3Ll3gJOHbQTuAFN3ZCYWvbux6JOX5wQ=
 github.com/nknorg/nkn-sdk-go v1.4.6-0.20230404044330-ad192f36d07e h1:lWKUEfqOJ9NImCX60Bden+Y6VgRDhlx4gc6B09S32RQ=
 github.com/nknorg/nkn-sdk-go v1.4.6-0.20230404044330-ad192f36d07e/go.mod h1:mnI1+17p2cI+5wv+3CWRyCjSALqUg5k1jTaWC2h0f/M=
-github.com/nknorg/nkn-tuna-session v0.2.6-0.20230415032955-7a3fc7be9634 h1:rJLBTXnxZM1Gi0KgjWtzQZ4T/Dbj1uB6uJAwmtNxx9I=
-github.com/nknorg/nkn-tuna-session v0.2.6-0.20230415032955-7a3fc7be9634/go.mod h1:XTSeZ7WVFQ+bI8KJoJQ56CG8+9QUFZt/MKogrwHub4o=
+github.com/nknorg/nkn-tuna-session v0.2.6-0.20230425072236-3b542d25068a h1:TtQsa49GcJ5CwyCdvmJQOUKCQlY+ynCkAAHmUvxCW7M=
+github.com/nknorg/nkn-tuna-session v0.2.6-0.20230425072236-3b542d25068a/go.mod h1:XTSeZ7WVFQ+bI8KJoJQ56CG8+9QUFZt/MKogrwHub4o=
 github.com/nknorg/nkn-tunnel v0.3.5-0.20230418225220-c505086e1505 h1:N/PPFap5KGs04UCiMBKxA28jMOCIxpIDZSZI+8EU5e8=
 github.com/nknorg/nkn-tunnel v0.3.5-0.20230418225220-c505086e1505/go.mod h1:HLQCn2AtCNs+vHQwhlZW5Nz8BNaTq3vtp7dy7wbbpfg=
 github.com/nknorg/nkn/v2 v2.2.0 h1:sXOawvVF/T3bBTuWbzBCyrGuxldA3be+f+BDjoWcOEA=
