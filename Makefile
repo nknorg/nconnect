@@ -4,11 +4,11 @@ USE_PROXY=GOPROXY=https://goproxy.io
 VERSION:=$(shell git describe --abbrev=7 --dirty --always --tags)
 LDFLAGS="-s -w -X github.com/nknorg/nconnect/config.Version=$(VERSION)"
 BUILD=CGO_ENABLED=1 go build -ldflags $(LDFLAGS)
-XGO_MODULE=github.com/nknorg/nconnect
+MAIN=./bin
+XGO_MODULE=github.com/nknorg/nconnect/bin
 XGO_BUILD=xgo -ldflags $(LDFLAGS) --targets=$(XGO_TARGET) $(XGOFLAGS)
 BUILD_DIR=build
 BIN_NAME=nConnect
-MAIN=bin/main.go
 ifdef GOARM
 BIN_DIR=$(GOOS)-$(GOARCH)v$(GOARM)
 XGO_TARGET=$(GOOS)/$(GOARCH)-$(GOARM)
@@ -26,7 +26,7 @@ local: web/dist
 
 .PHONY: local_with_proxy
 local_with_proxy: web/dist
-	$(USE_PROXY) $(BUILD) -o $(BIN_NAME)$(EXT) .
+	$(USE_PROXY) $(BUILD) -o $(BIN_NAME)$(EXT) $(MAIN)
 
 .PHONY: local_or_with_proxy
 local_or_with_proxy:
