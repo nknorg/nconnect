@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/jessevdk/go-flags"
 	"github.com/nknorg/nconnect"
@@ -50,8 +48,4 @@ func main() {
 			log.Fatal(err)
 		}
 	}
-
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	<-sigs
 }

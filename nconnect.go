@@ -7,8 +7,10 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/eycorsican/go-tun2socks/core"
@@ -413,6 +415,7 @@ func (nc *nconnect) StartClient() error {
 	}
 
 	nc.startSSAndTunnel()
+	nc.waitForSignal()
 
 	return nil
 }
@@ -490,6 +493,7 @@ func (nc *nconnect) StartServer() error {
 	}
 
 	nc.startSSAndTunnel()
+	nc.waitForSignal()
 
 	return nil
 }
@@ -510,6 +514,12 @@ func (nc *nconnect) startSSAndTunnel() {
 		}
 		os.Exit(0)
 	}()
+}
+
+func (nc *nconnect) waitForSignal() {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	<-sigs
 }
 
 func (nc *nconnect) SetTunaNode(node *types.Node) {
