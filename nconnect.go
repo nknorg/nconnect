@@ -284,10 +284,16 @@ func (nc *nconnect) getRemoteInfo() (*admin.GetInfoJSON, error) {
 	if nc.remoteInfoCache != nil {
 		return nc.remoteInfoCache, nil
 	}
+
+	if len(nc.opts.RemoteAdminAddr) == 0 {
+		return nil, fmt.Errorf("remote admin address is empty")
+	}
+
 	c, err := nc.getAdminClient()
 	if err != nil {
 		return nil, err
 	}
+
 	nc.remoteInfoCache, err = c.GetInfo(nc.opts.RemoteAdminAddr)
 	if err != nil {
 		return nil, fmt.Errorf("get remote server info error: %v. make sure server is online and accepting connections from this client address", err)
