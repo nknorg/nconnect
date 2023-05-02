@@ -38,5 +38,6 @@
   "ConfigFile": "server_save.json",
   "Address": false,
   "WalletAddress": false,
-  "Version": false
+  "Version": false,
+  "verbose": false
 }
