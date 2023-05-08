@@ -17,6 +17,8 @@ require (
 	github.com/nknorg/tuna v0.0.0-20230328054959-0bc6eb5bf369
 	github.com/shadowsocks/go-shadowsocks2 v0.1.2
 	github.com/txthinking/brook v0.0.0-20230418095906-76ced63f1803
+	github.com/txthinking/socks5 v0.0.0-20230307062227-0e1677eca4ba
+	golang.org/x/net v0.8.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
 
@@ -67,7 +69,6 @@ require (
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/txthinking/crypto v0.0.0-20210716135230-de9624a415a4 // indirect
 	github.com/txthinking/runnergroup v0.0.0-20230211072751-d11f16258c86 // indirect
-	github.com/txthinking/socks5 v0.0.0-20230307062227-0e1677eca4ba // indirect
 	github.com/txthinking/x v0.0.0-20220929041811-1b4d914e9133 // indirect
 	github.com/ugorji/go/codec v1.1.7 // indirect
 	github.com/urfave/negroni v1.0.0 // indirect
@@ -76,7 +77,6 @@ require (
 	golang.org/x/exp v0.0.0-20221205204356-47842c84f3db // indirect
 	golang.org/x/mobile v0.0.0-20230301163155-e0f57694e12c // indirect
 	golang.org/x/mod v0.8.0 // indirect
-	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/tools v0.6.0 // indirect

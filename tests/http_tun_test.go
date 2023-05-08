@@ -19,7 +19,6 @@ func TestHttpByTun(t *testing.T) {
 	}
 
 	tuna, udp, tun := true, true, false
-	go StartWebServer()
 
 	go func() {
 		err := startNconnect("server.json", tuna, udp, tun, tunaNode)
