@@ -29,7 +29,7 @@ func DnsByTun() {
 	time.Sleep(15 * time.Second)
 
 	for i := 1; i <= 10; i++ {
-		err := brook.Socks5Test("127.0.0.1:1080", "", "", "http3.ooo", "137.184.237.95", "8.8.8.8:53")
+		err := brook.Socks5Test(proxyAddr, "", "", "http3.ooo", "137.184.237.95", "8.8.8.8:53")
 		if err != nil {
 			fmt.Printf("TestDNSProxy try %v err: %v\n", i, err)
 			time.Sleep(time.Duration(i) * time.Second)

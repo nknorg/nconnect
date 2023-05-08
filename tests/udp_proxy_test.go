@@ -20,8 +20,6 @@ func TestUDPByProxy(t *testing.T) {
 		return
 	}
 
-	go StartUdpServer()
-
 	tuna, udp, tun := true, true, false
 	go func() {
 		err := startNconnect("server.json", tuna, udp, tun, tunaNode)
@@ -49,7 +47,7 @@ func TestUDPByProxy(t *testing.T) {
 }
 
 func StartUdpServer() error {
-	a, err := net.ResolveUDPAddr("udp", serverAddr)
+	a, err := net.ResolveUDPAddr("udp", udpServerAddr)
 	if err != nil {
 		return err
 	}
@@ -58,7 +56,7 @@ func StartUdpServer() error {
 		return err
 	}
 
-	fmt.Printf("UDP server is listening at %v\n", serverAddr)
+	fmt.Printf("UDP server is listening at %v\n", udpServerAddr)
 
 	b := make([]byte, 1024)
 	for {
@@ -91,7 +89,7 @@ func StartUDPClient() error {
 		ch <- udpClientExited
 		return err
 	}
-	uc, err := s5c.Dial("udp", serverAddr)
+	uc, err := s5c.Dial("udp", udpServerAddr)
 	if err != nil {
 		fmt.Println("StartUDPClient.s5c.Dial err: ", err)
 		ch <- udpClientExited

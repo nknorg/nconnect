@@ -13,7 +13,6 @@ import (
 
 // go test -v -run=TestTCPByProxy
 func TestTCPByProxy(t *testing.T) {
-	go StartTcpServer()
 
 	tuna, udp, tun := true, true, false
 	go func() {
@@ -40,11 +39,11 @@ func TestTCPByProxy(t *testing.T) {
 }
 
 func StartTcpServer() error {
-	tcpServer, err := net.Listen("tcp", serverAddr)
+	tcpServer, err := net.Listen("tcp", tcpServerAddr)
 	if err != nil {
 		return err
 	}
-	fmt.Println("TCP Server is listening at ", serverAddr)
+	fmt.Println("TCP Server is listening at ", tcpServerAddr)
 	ch <- tcpServerIsReady
 
 	for {
@@ -85,7 +84,7 @@ func StartTCPClient() error {
 		return err
 	}
 
-	conn, err := dailer.Dial("tcp", serverAddr)
+	conn, err := dailer.Dial("tcp", tcpServerAddr)
 	if err != nil {
 		fmt.Printf("StartTCPClient, dailer.Dial err: %v\n", err)
 		return err

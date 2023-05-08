@@ -51,6 +51,11 @@ func startNconnect(configFile string, tuna, udp, tun bool, n *types.Node) error 
 		opts.Config.VPN = true
 	}
 
+	if opts.Client {
+		port++
+		proxyAddr = fmt.Sprintf("127.0.0.1:%v", port)
+		opts.LocalSocksAddr = proxyAddr
+	}
 	nc, _ := nconnect.NewNconnect(opts)
 	if opts.Server {
 		nc.SetTunaNode(n)

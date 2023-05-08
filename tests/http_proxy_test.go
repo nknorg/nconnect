@@ -15,7 +15,6 @@ import (
 // go test -v -run=TestHttpByProxy
 func TestHttpByProxy(t *testing.T) {
 	tuna, udp, tun := true, true, false
-	go StartWebServer()
 
 	go func() {
 		err := startNconnect("server.json", tuna, udp, tun, nil)
@@ -43,8 +42,8 @@ func TestHttpByProxy(t *testing.T) {
 
 func StartWebServer() error {
 	http.HandleFunc("/httpEcho", httpEcho)
-	fmt.Println("WEB server is serving at ", serverAddr)
-	if err := http.ListenAndServe(serverAddr, nil); err != nil {
+	fmt.Println("WEB server is serving at ", httpServerAddr)
+	if err := http.ListenAndServe(httpServerAddr, nil); err != nil {
 		ch <- webServerExited
 		log.Fatal(err)
 	}
@@ -71,6 +70,7 @@ func httpEcho(w http.ResponseWriter, r *http.Request) {
 }
 
 func StartWebClient() error {
+	socksProxy := "socks5://" + proxyAddr
 	proxy := func(_ *http.Request) (*url.URL, error) {
 		return url.Parse(socksProxy)
 	}

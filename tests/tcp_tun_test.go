@@ -10,7 +10,6 @@ import (
 
 // go test -v -run=TestTCPByTun
 func TestTCPByTun(t *testing.T) {
-	go StartTcpServer()
 
 	tuna, udp, tun := true, true, false
 	go func() {
@@ -39,7 +38,7 @@ func TestTCPByTun(t *testing.T) {
 }
 
 func StartTCPTunClient() error {
-	conn, err := net.Dial("tcp", serverAddr)
+	conn, err := net.Dial("tcp", tcpServerAddr)
 	if err != nil {
 		fmt.Printf("StartTCPClient, dailer.Dial err: %v\n", err)
 		return err

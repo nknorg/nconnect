@@ -14,8 +14,6 @@ func TestUDPByTun(t *testing.T) {
 		return
 	}
 
-	go StartUdpServer()
-
 	tuna, udp, tun := true, true, false
 	go func() {
 		err := startNconnect("server.json", tuna, udp, tun, tunaNode)
