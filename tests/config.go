@@ -14,18 +14,4 @@ const (
 	httpServiceUrl = "http://" + httpServerAddr + "/httpEcho"
 
 	tunaNodeStarted = "tuna node is started"
-
-	webServerIsReady = "web server is ready"
-	webServerExited  = "web server exited"
-	webClientExited  = "web client exited"
-
-	tcpServerIsReady = "tcp server is ready"
-	tcpServerExited  = "tcp server exited"
-	tcpClientExited  = "tcp client exited"
-
-	udpServerIsReady = "udp server is ready"
-	udpServerExited  = "udp server exited"
-	udpClientExited  = "udp client exited"
-
-	exited = "exited"
 )

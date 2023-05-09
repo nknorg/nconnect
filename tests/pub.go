@@ -52,9 +52,9 @@ func startNconnect(configFile string, tuna, udp, tun bool, n *types.Node) error 
 	}
 
 	if opts.Client {
-		port++
 		proxyAddr = fmt.Sprintf("127.0.0.1:%v", port)
 		opts.LocalSocksAddr = proxyAddr
+		port++
 	}
 	nc, _ := nconnect.NewNconnect(opts)
 	if opts.Server {
