@@ -5,6 +5,7 @@ github.com/andybalholm/brotli v1.0.4/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHG
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
 github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMnBNeIyt5eFwwo7qiLfzFZmjNmxjkiQlU=
+github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -74,7 +75,9 @@ github.com/json-iterator/go v1.1.9/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/u
 github.com/klauspost/compress v1.15.15 h1:EF27CXIuDsYJ6mmvtBRlEuB2UVOqHG1tAXgZ7yIO+lw=
 github.com/klauspost/compress v1.15.15/go.mod h1:ZcK2JAFqKOpnBlxcLsJzYfrS9X1akm9fHZNnD9+Vo/4=
 github.com/kr/pretty v0.3.1 h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=
+github.com/kr/pretty v0.3.1/go.mod h1:hoEshYVHaxMs3cyo3Yncou5ZscifuDolrwPKZanG3xk=
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
+github.com/kr/text v0.2.0/go.mod h1:eLer722TekiGuMkidMxC/pM04lWEeraHUUmBw8l2grE=
 github.com/krolaw/dhcp4 v0.0.0-20190909130307-a50d88189771 h1:t2c2B9g1ZVhMYduqmANSEGVD3/1WlsrEYNPtVoFlENk=
 github.com/krolaw/dhcp4 v0.0.0-20190909130307-a50d88189771/go.mod h1:0AqAH3ZogsCrvrtUpvc6EtVKbc3w6xwZhkvGLuqyi3o=
 github.com/leodido/go-urn v1.2.0 h1:hpXL4XnriNwQ/ABnpepYM/1vCLWNDfUNts8dX3xTG6Y=
@@ -96,16 +99,16 @@ github.com/nknorg/ncp-go v1.0.6-0.20230228002512-f4cd1740bebd h1:ZAXKeWKjkbS9QQh
 github.com/nknorg/ncp-go v1.0.6-0.20230228002512-f4cd1740bebd/go.mod h1:T7ThlxmBjVIv3Ll3gJOHbQTuAFN3ZCYWvbux6JOX5wQ=
 github.com/nknorg/nkn-sdk-go v1.4.6-0.20230404044330-ad192f36d07e h1:lWKUEfqOJ9NImCX60Bden+Y6VgRDhlx4gc6B09S32RQ=
 github.com/nknorg/nkn-sdk-go v1.4.6-0.20230404044330-ad192f36d07e/go.mod h1:mnI1+17p2cI+5wv+3CWRyCjSALqUg5k1jTaWC2h0f/M=
-github.com/nknorg/nkn-tuna-session v0.2.6-0.20230415032955-7a3fc7be9634 h1:rJLBTXnxZM1Gi0KgjWtzQZ4T/Dbj1uB6uJAwmtNxx9I=
-github.com/nknorg/nkn-tuna-session v0.2.6-0.20230415032955-7a3fc7be9634/go.mod h1:XTSeZ7WVFQ+bI8KJoJQ56CG8+9QUFZt/MKogrwHub4o=
-github.com/nknorg/nkn-tunnel v0.3.5-0.20230418225220-c505086e1505 h1:N/PPFap5KGs04UCiMBKxA28jMOCIxpIDZSZI+8EU5e8=
-github.com/nknorg/nkn-tunnel v0.3.5-0.20230418225220-c505086e1505/go.mod h1:HLQCn2AtCNs+vHQwhlZW5Nz8BNaTq3vtp7dy7wbbpfg=
+github.com/nknorg/nkn-tuna-session v0.2.6-0.20230512052928-f91bbbdcdaf6 h1:S+HzmSp4Yd97+X9xZ5AmcQgkbstEry+hfl8O42dX/kA=
+github.com/nknorg/nkn-tuna-session v0.2.6-0.20230512052928-f91bbbdcdaf6/go.mod h1:47W1/1axI4aOkQKtkjjRHW1x2SYrdCRI49LdPWf9vMc=
+github.com/nknorg/nkn-tunnel v0.3.5-0.20230512210146-4b6e5700365c h1:NKPl1qHZv5Lca+n/BtwyIlOOSar9ekQKa0z4/FCTJ4w=
+github.com/nknorg/nkn-tunnel v0.3.5-0.20230512210146-4b6e5700365c/go.mod h1:rOxPIUgtFwsZG1DEJM6mm/AfH3Z+le+oSEv8WhZ2LQA=
 github.com/nknorg/nkn/v2 v2.2.0 h1:sXOawvVF/T3bBTuWbzBCyrGuxldA3be+f+BDjoWcOEA=
 github.com/nknorg/nkn/v2 v2.2.0/go.mod h1:yv3jkg0aOtN9BDHS4yerNSZJtJNBfGvlaD5K6wL6U3E=
 github.com/nknorg/nkngomobile v0.0.0-20220615081414-671ad1afdfa9 h1:Gr37j7Ttvcn8g7TdC5fs6Y6IJKdmfqCvj03UbsrS77o=
 github.com/nknorg/nkngomobile v0.0.0-20220615081414-671ad1afdfa9/go.mod h1:zNY9NCyBcJCCDrXhwOjKarkW5cngPs/Z82xVNy/wvEA=
-github.com/nknorg/tuna v0.0.0-20230328054959-0bc6eb5bf369 h1:opgrfRMF/a10nJAcUrehC/rFvRZopKSn0GwsTv+V0wY=
-github.com/nknorg/tuna v0.0.0-20230328054959-0bc6eb5bf369/go.mod h1:Ngge8vIVM0DPmy6xCT19/zXR3y7FsgiWsyX4V+Uq848=
+github.com/nknorg/tuna v0.0.0-20230405223335-eb60c60c5953 h1:nF2hRLsUZ+m6kB+LkLVdzlMKU2oFR2Q1qWtHw+0zBiQ=
+github.com/nknorg/tuna v0.0.0-20230405223335-eb60c60c5953/go.mod h1:Ngge8vIVM0DPmy6xCT19/zXR3y7FsgiWsyX4V+Uq848=
 github.com/onsi/ginkgo/v2 v2.2.0 h1:3ZNA3L1c5FYDFTTxbFeVGGD8jYvjYauHD30YgLxVsNI=
 github.com/onsi/ginkgo/v2 v2.2.0/go.mod h1:MEH45j8TBi6u9BMogfbp0stKC5cdGjumZj5Y7AG4VIk=
 github.com/onsi/gomega v1.20.1 h1:PA/3qinGoukvymdIDV8pii6tiZgC8kbmJO6Z5+b002Q=
@@ -119,6 +122,7 @@ github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 h1:onHthvaw9LFnH4t2D
 github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58/go.mod h1:DXv8WO4yhMYhSNPKjeNKa5WY9YCIEBRbNzFFPJbWO6Y=
 github.com/phuslu/iploc v1.0.20230201 h1:AMhy7j8z0N5iI0jaqh514KTDEB7wVdQJ4Y4DJPCvKBU=
 github.com/phuslu/iploc v1.0.20230201/go.mod h1:gsgExGWldwv1AEzZm+Ki9/vGfyjkL33pbSr9HGpt2Xg=
+github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e/go.mod h1:pJLUxLENpZxwdsKMEsNbx1VGcRFpLqf3715MtcvvzbA=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
@@ -137,6 +141,7 @@ github.com/refraction-networking/utls v1.3.2 h1:o+AkWB57mkcoW36ET7uJ002CpBWHu0KP
 github.com/refraction-networking/utls v1.3.2/go.mod h1:fmoaOww2bxzzEpIKOebIsnBvjQpqP7L2vcm/9KUfm/E=
 github.com/riobard/go-bloom v0.0.0-20200213042214-218e1707c495 h1:p7xbxYTzzfXghR1kpsJDeoVVRRWAotKc8u7FP/N48rU=
 github.com/riobard/go-bloom v0.0.0-20200213042214-218e1707c495/go.mod h1:HgjTstvQsPGkxUsCd2KWxErBblirPizecHcpD3ffK+s=
+github.com/rogpeppe/go-internal v1.9.0/go.mod h1:WtVeX8xhTBvf0smdhujwtBcq4Qrzq/fJaraNFVN+nFs=
 github.com/rogpeppe/go-internal v1.10.0 h1:TMyTOH3F/DB16zRVcYyreMH6GnZZrwQVAoYjRBZyWFQ=
 github.com/rogpeppe/go-internal v1.10.0/go.mod h1:UQnix2H7Ngw/k4C5ijL5+65zddjncjaFoBhdsK/akog=
 github.com/shadowsocks/go-shadowsocks2 v0.1.2 h1:R8Ula/Z9duCmHyD89mGT4Do4nkRA6jnqIO8shn1PmTg=
