@@ -218,6 +218,7 @@ func NewNconnect(opts *config.Opts) (*nconnect, error) {
 		TunaGeoDBPath:          opts.TunaGeoDBPath,
 		TunaMeasureBandwidth:   !opts.TunaDisableMeasureBandwidth,
 		TunaMeasureStoragePath: opts.TunaMeasureStoragePath,
+		TunaMinBalance:         opts.TunaMinBalance,
 	}
 
 	if opts.SessionWindowSize > 0 {

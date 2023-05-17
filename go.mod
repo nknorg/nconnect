@@ -10,11 +10,11 @@ require (
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/nknorg/ncp-go v1.0.6-0.20230228002512-f4cd1740bebd
 	github.com/nknorg/nkn-sdk-go v1.4.6-0.20230404044330-ad192f36d07e
-	github.com/nknorg/nkn-tuna-session v0.2.6-0.20230415032955-7a3fc7be9634
-	github.com/nknorg/nkn-tunnel v0.3.5-0.20230418225220-c505086e1505
+	github.com/nknorg/nkn-tuna-session v0.2.6-0.20230512052928-f91bbbdcdaf6
+	github.com/nknorg/nkn-tunnel v0.3.5-0.20230512210146-4b6e5700365c
 	github.com/nknorg/nkn/v2 v2.2.0
 	github.com/nknorg/nkngomobile v0.0.0-20220615081414-671ad1afdfa9
-	github.com/nknorg/tuna v0.0.0-20230328054959-0bc6eb5bf369
+	github.com/nknorg/tuna v0.0.0-20230405223335-eb60c60c5953
 	github.com/shadowsocks/go-shadowsocks2 v0.1.2
 	github.com/txthinking/brook v0.0.0-20230418095906-76ced63f1803
 	github.com/txthinking/socks5 v0.0.0-20230307062227-0e1677eca4ba
@@ -42,6 +42,7 @@ require (
 	github.com/jpillora/backoff v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/klauspost/compress v1.15.15 // indirect
+	github.com/kr/pretty v0.3.1 // indirect
 	github.com/krolaw/dhcp4 v0.0.0-20190909130307-a50d88189771 // indirect
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect
