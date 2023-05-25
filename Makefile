@@ -9,6 +9,7 @@ XGO_MODULE=github.com/nknorg/nconnect/bin
 XGO_BUILD=xgo -ldflags $(LDFLAGS) --targets=$(XGO_TARGET) $(XGOFLAGS)
 BUILD_DIR=build
 BIN_NAME=nConnect
+
 ifdef GOARM
 BIN_DIR=$(GOOS)-$(GOARCH)v$(GOARM)
 XGO_TARGET=$(GOOS)/$(GOARCH)-$(GOARM)
@@ -17,16 +18,23 @@ BIN_DIR=$(GOOS)-$(GOARCH)
 XGO_TARGET=$(GOOS)/$(GOARCH)
 endif
 
+LOCAL_EXT=$(EXT)
+ifeq ($(OS),Windows_NT)
+	ifeq ($(LOCAL_EXT),)
+		LOCAL_EXT=.exe
+	endif
+endif
+
 web/dist: $(shell find web/src -type f -not -path "web/src/node_modules/*" -not -path "web/src/dist/*")
 	-@cd web/src && yarn && yarn generate && rm -rf ./dist/index.html.html && rm -rf ../dist && cp -a ./dist ../dist
 
 .PHONY: local
 local: web/dist
-	$(BUILD) -o $(BIN_NAME)$(EXT) $(MAIN)
+	$(BUILD) -o $(BIN_NAME)$(LOCAL_EXT) $(MAIN)
 
 .PHONY: local_with_proxy
 local_with_proxy: web/dist
-	$(USE_PROXY) $(BUILD) -o $(BIN_NAME)$(EXT) $(MAIN)
+	$(USE_PROXY) ${MAKE} local
 
 .PHONY: local_or_with_proxy
 local_or_with_proxy:
