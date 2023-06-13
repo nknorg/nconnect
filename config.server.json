@@ -1,0 +1,14 @@
+{
+    "Client": false,
+    "Server": true,
+    "identifier": "",
+    "seed": "",
+    "remoteAdminAddr": [],
+    "localSocksAddr": "",
+    "tuna": true,
+    "udp": true,
+    "adminIdentifier": "nConnect",
+    "webRootPath": "web/dist",
+    "acceptAddrs": [],
+    "adminAddrs": []
+}

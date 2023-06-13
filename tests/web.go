@@ -13,8 +13,8 @@ import (
 
 func StartWebServer() error {
 	http.HandleFunc("/httpEcho", httpEcho)
-	fmt.Println("WEB server is serving at ", httpServerAddr)
-	if err := http.ListenAndServe(httpServerAddr, nil); err != nil {
+	fmt.Println("WEB server is serving at ", httpPort)
+	if err := http.ListenAndServe(httpPort, nil); err != nil {
 		log.Fatal(err)
 	}
 
@@ -38,7 +38,9 @@ func httpEcho(w http.ResponseWriter, r *http.Request) {
 	w.Write(b)
 }
 
-func StartWebClient() error {
+func StartWebClient(httpServUrl string) error {
+	fmt.Printf("http request to: %v\n", httpServUrl)
+
 	socksProxy := "socks5://" + proxyAddr
 	proxy := func(_ *http.Request) (*url.URL, error) {
 		return url.Parse(socksProxy)
@@ -56,14 +58,14 @@ func StartWebClient() error {
 	user := &Person{Name: "http_boy", Age: 0}
 	b := new(bytes.Buffer)
 
-	for i := 0; i < rounds; i++ {
+	for i := 0; i < numMsgs; i++ {
 		user.Age++
 		err := json.NewEncoder(b).Encode(user)
 		if err != nil {
 			fmt.Printf("StartWebClient.Encode err: %v\n", err)
 			break
 		}
-		req, err := http.NewRequest(http.MethodPost, httpServiceUrl, b)
+		req, err := http.NewRequest(http.MethodPost, httpServUrl, b)
 		req.Header.Set("Content-type", "application/json")
 
 		if err != nil {
@@ -87,13 +89,15 @@ func StartWebClient() error {
 		respUser := &Person{}
 		err = json.Unmarshal(body, respUser)
 		if err != nil {
-			fmt.Printf("StartWebClient.json.Unmarshal err: %v\n", err)
+			fmt.Printf("StartWebClient.json.Unmarshal %v err: %v\n", string(body), err)
 			break
 		}
 
 		if respUser.Age != user.Age {
 			fmt.Printf("StartWebClient got wrong response, sent %+v, recv %+v\n", user, respUser)
 			break
+		} else {
+			fmt.Printf("StartWebClient got echo: %+v\n", respUser)
 		}
 	}
 
@@ -102,7 +106,7 @@ func StartWebClient() error {
 	return nil
 }
 
-func StartTunWebClient() error {
+func StartTunWebClient(httpServUrl string) error {
 	httpClient := &http.Client{
 		Timeout: 10 * time.Second,
 	}
@@ -117,7 +121,7 @@ func StartTunWebClient() error {
 			fmt.Printf("StartWebClient.Encode err: %v\n", err)
 			break
 		}
-		req, err := http.NewRequest(http.MethodPost, httpServiceUrl, b)
+		req, err := http.NewRequest(http.MethodPost, httpServUrl, b)
 		req.Header.Set("Content-type", "application/json")
 
 		if err != nil {

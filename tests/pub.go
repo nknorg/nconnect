@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/nknorg/nconnect"
 	"github.com/nknorg/nconnect/config"
@@ -19,17 +18,6 @@ import (
 )
 
 var ch chan string = make(chan string, 4)
-
-func waitFor(ch chan string, status string) {
-	fmt.Println("waiting for ", status)
-	for {
-		str := <-ch
-		fmt.Println("waitFor got: ", str)
-		if strings.Contains(str, status) {
-			break
-		}
-	}
-}
 
 func startNconnect(configFile string, tuna, udp, tun bool, n *types.Node) error {
 	b, err := os.ReadFile(configFile)
@@ -56,15 +44,16 @@ func startNconnect(configFile string, tuna, udp, tun bool, n *types.Node) error 
 		opts.LocalSocksAddr = proxyAddr
 		port++
 	}
+	fmt.Printf("opts.RemoteAdminAddr: %+v\n", opts.RemoteAdminAddr)
+
 	nc, _ := nconnect.NewNconnect(opts)
 	if opts.Server {
 		nc.SetTunaNode(n)
-		nc.StartServer()
+		err = nc.StartServer()
 	} else {
-		nc.StartClient()
+		err = nc.StartClient()
 	}
-
-	return nil
+	return err
 }
 
 func StartNconnectServerWithTunaNode(tuna, udp, tun bool) {

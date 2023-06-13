@@ -48,11 +48,12 @@ type nconnect struct {
 	ssConfig     *ss.Config
 	persistConf  *config.Config
 
-	adminClientCache *admin.Client
-	remoteInfoCache  *admin.GetInfoJSON
+	adminClientCache   *admin.Client
+	remoteInfoCache    map[string]*admin.GetInfoJSON // map remote admin address to remote info
+	remoteInfoByTunnel map[string]*admin.GetInfoJSON // map tunnel address to remote info
 
-	tunnel   *tunnel.Tunnel
-	tunaNode *types.Node // It is used to connect specific tuna node, mainly is for testing.
+	tunnels  []*tunnel.Tunnel
+	tunaNode *types.Node // It is used to connect specified tuna node, mainly is for testing.
 }
 
 func NewNconnect(opts *config.Opts) (*nconnect, error) {
@@ -245,6 +246,8 @@ func NewNconnect(opts *config.Opts) (*nconnect, error) {
 		Verbose:    opts.Verbose,
 		UDPTimeout: config.DefaultUDPTimeout,
 		UDP:        opts.UDP,
+
+		TargetToClient: make(map[string]string),
 	}
 
 	if opts.UDP && opts.Client {
@@ -259,6 +262,9 @@ func NewNconnect(opts *config.Opts) (*nconnect, error) {
 		ssConfig:     ssConfig,
 		walletConfig: walletConfig,
 		persistConf:  persistConf,
+
+		remoteInfoCache:    make(map[string]*admin.GetInfoJSON),
+		remoteInfoByTunnel: make(map[string]*admin.GetInfoJSON),
 	}
 
 	return nc, nil
@@ -281,13 +287,9 @@ func (nc *nconnect) getAdminClient() (*admin.Client, error) {
 }
 
 // Lazy get remote info to avoid unnecessary rpc call.
-func (nc *nconnect) getRemoteInfo() (*admin.GetInfoJSON, error) {
-	if nc.remoteInfoCache != nil {
-		return nc.remoteInfoCache, nil
-	}
-
-	if len(nc.opts.RemoteAdminAddr) == 0 {
-		return nil, fmt.Errorf("remote admin address is empty")
+func (nc *nconnect) getRemoteInfo(remoteAdminAddr string) (*admin.GetInfoJSON, error) {
+	if info, ok := nc.remoteInfoCache[remoteAdminAddr]; ok {
+		return info, nil
 	}
 
 	c, err := nc.getAdminClient()
@@ -295,12 +297,15 @@ func (nc *nconnect) getRemoteInfo() (*admin.GetInfoJSON, error) {
 		return nil, err
 	}
 
-	nc.remoteInfoCache, err = c.GetInfo(nc.opts.RemoteAdminAddr)
+	remoteInfoCache, err := c.GetInfo(remoteAdminAddr)
 	if err != nil {
 		return nil, fmt.Errorf("get remote server info error: %v. make sure server is online and accepting connections from this client address", err)
 	}
 
-	return nc.remoteInfoCache, nil
+	nc.remoteInfoCache[remoteAdminAddr] = remoteInfoCache
+	nc.remoteInfoByTunnel[remoteInfoCache.Addr] = remoteInfoCache
+
+	return remoteInfoCache, nil
 }
 
 func (nc *nconnect) StartClient() error {
@@ -311,29 +316,38 @@ func (nc *nconnect) StartClient() error {
 
 	remoteTunnelAddr := nc.opts.RemoteTunnelAddr
 	if len(remoteTunnelAddr) == 0 {
-		remoteInfo, err := nc.getRemoteInfo()
-		if err != nil {
-			return err
+		for _, remoteAdminAddr := range nc.opts.RemoteAdminAddr {
+			remoteInfo, err := nc.getRemoteInfo(remoteAdminAddr)
+			if err != nil {
+				log.Printf("getRemoteInfo %v err: %v", remoteAdminAddr, err)
+				continue
+			}
+			remoteTunnelAddr = append(remoteTunnelAddr, remoteInfo.Addr)
 		}
-		remoteTunnelAddr = remoteInfo.Addr
+	}
+	if len(remoteTunnelAddr) == 0 {
+		return fmt.Errorf("no remote tunnel address, start client fail")
 	}
 
 	var vpnCIDR []*net.IPNet
 	if nc.opts.VPN {
 		vpnRoutes := nc.opts.VPNRoute
 		if len(vpnRoutes) == 0 {
-			remoteInfo, err := nc.getRemoteInfo()
-			if err != nil {
-				return err
-			}
-			if len(remoteInfo.LocalIP.Ipv4) > 0 {
-				vpnRoutes = make([]string, 0, len(remoteInfo.LocalIP.Ipv4))
-				for _, ip := range remoteInfo.LocalIP.Ipv4 {
-					if ip == nc.opts.TunAddr || ip == nc.opts.TunGateway {
-						log.Printf("Skipping server's local IP %s in routes", ip)
-						continue
+			for _, remoteAdminAddr := range nc.opts.RemoteAdminAddr {
+				remoteInfo, err := nc.getRemoteInfo(remoteAdminAddr)
+				if err != nil {
+					log.Printf("getRemoteInfo %v err: %v", remoteAdminAddr, err)
+					continue
+				}
+				if len(remoteInfo.LocalIP.Ipv4) > 0 {
+					vpnRoutes = make([]string, 0, len(remoteInfo.LocalIP.Ipv4))
+					for _, ip := range remoteInfo.LocalIP.Ipv4 {
+						if ip == nc.opts.TunAddr || ip == nc.opts.TunGateway {
+							log.Printf("Skipping server's local IP %s in routes", ip)
+							continue
+						}
+						vpnRoutes = append(vpnRoutes, fmt.Sprintf("%s/32", ip))
 					}
-					vpnRoutes = append(vpnRoutes, fmt.Sprintf("%s/32", ip))
 				}
 			}
 		}
@@ -356,22 +370,33 @@ func (nc *nconnect) StartClient() error {
 	proxyHost := proxyAddr.IP.String()
 	proxyPort := uint16(proxyAddr.Port)
 
-	port, err := util.GetFreePort()
+	var from, to []string
+	for _, remote := range remoteTunnelAddr {
+		port, err := util.GetFreePort()
+		if err != nil {
+			return err
+		}
+
+		ssAddr := "127.0.0.1:" + strconv.Itoa(port)
+		from = append(from, ssAddr)
+		to = append(to, remote)
+
+		if remoteInfo, ok := nc.remoteInfoByTunnel[remote]; ok {
+			for _, addr := range remoteInfo.LocalIP.Ipv4 {
+				nc.ssConfig.TargetToClient[addr] = ssAddr
+			}
+		}
+	}
+	tunnels, err := tunnel.NewTunnels(nc.account, nc.opts.Identifier, from, to, nc.opts.Tuna, nc.tunnelConfig)
 	if err != nil {
 		return err
 	}
+	nc.tunnels = tunnels
 
-	ssAddr := "127.0.0.1:" + strconv.Itoa(port)
-	nc.ssConfig.Client = ssAddr
 	nc.ssConfig.Socks = nc.opts.LocalSocksAddr
+	nc.ssConfig.Client = from[0]
+	nc.ssConfig.DefaultClient = from[0] // the first config is the default client
 
-	tunnel, err := tunnel.NewTunnel(nc.account, nc.opts.Identifier, ssAddr, remoteTunnelAddr, nc.opts.Tuna, nc.tunnelConfig)
-	if err != nil {
-		return err
-	}
-	nc.tunnel = tunnel
-
-	log.Println("Client NKN address:", tunnel.Addr().String())
 	log.Println("Client socks proxy listen address:", nc.opts.LocalSocksAddr)
 
 	if nc.opts.Tun || nc.opts.VPN {
@@ -466,12 +491,12 @@ func (nc *nconnect) StartServer() error {
 	if nc.tunaNode != nil {
 		nc.tunnelConfig.TunaNode = nc.tunaNode
 	}
-	tunnel, err := tunnel.NewTunnel(nc.account, nc.opts.Identifier, "", ssAddr, nc.opts.Tuna, nc.tunnelConfig)
+	t, err := tunnel.NewTunnel(nc.account, nc.opts.Identifier, "", ssAddr, nc.opts.Tuna, nc.tunnelConfig)
 	if err != nil {
 		return err
 	}
-	nc.tunnel = tunnel
-	log.Println("Tunnel listen address:", tunnel.FromAddr())
+	nc.tunnels = append(nc.tunnels, t)
+	log.Println("Tunnel listen address:", t.FromAddr())
 
 	if len(nc.opts.AdminIdentifier) > 0 {
 		go func() {
@@ -479,18 +504,18 @@ func (nc *nconnect) StartServer() error {
 			if len(nc.opts.Identifier) > 0 {
 				identifier += "." + nc.opts.Identifier
 			}
-			err := admin.StartNKNServer(nc.account, identifier, nc.clientConfig, tunnel, nc.persistConf, &nc.opts.Config)
+			err := admin.StartNKNServer(nc.account, identifier, nc.clientConfig, t, nc.persistConf, &nc.opts.Config)
 			if err != nil {
 				log.Fatal(err)
 			}
 			os.Exit(0)
 		}()
-		log.Println("Admin listening address:", nc.opts.AdminIdentifier+"."+tunnel.FromAddr())
+		log.Println("Admin listening address:", nc.opts.AdminIdentifier+"."+t.FromAddr())
 	}
 
 	if len(nc.opts.AdminHTTPAddr) > 0 {
 		go func() {
-			err := admin.StartWebServer(nc.opts.AdminHTTPAddr, tunnel, nc.persistConf, &nc.opts.Config)
+			err := admin.StartWebServer(nc.opts.AdminHTTPAddr, t, nc.persistConf, &nc.opts.Config)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -514,13 +539,15 @@ func (nc *nconnect) startSSAndTunnel() {
 		os.Exit(0)
 	}()
 
-	go func() {
-		err := nc.tunnel.Start()
-		if err != nil {
-			log.Fatal(err)
-		}
-		os.Exit(0)
-	}()
+	for _, t := range nc.tunnels {
+		go func(t *tunnel.Tunnel) {
+			err := t.Start()
+			if err != nil {
+				log.Fatal(err)
+			}
+			os.Exit(0)
+		}(t)
+	}
 }
 
 func (nc *nconnect) waitForSignal() {

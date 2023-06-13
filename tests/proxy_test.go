@@ -19,7 +19,9 @@ func TestProxy(t *testing.T) {
 	time.Sleep(15 * time.Second)
 
 	dnsQuery()
-	StartWebClient()
-	StartTCPClient()
-	StartUDPClient()
+	for _, server := range servers {
+		StartWebClient("http://" + server + httpPort + "/httpEcho")
+		StartTCPClient(server + tcpPort)
+		StartUDPClient(server + udpPort)
+	}
 }

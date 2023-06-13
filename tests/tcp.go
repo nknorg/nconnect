@@ -10,11 +10,11 @@ import (
 )
 
 func StartTcpServer() error {
-	tcpServer, err := net.Listen("tcp", tcpServerAddr)
+	tcpServer, err := net.Listen("tcp", tcpPort)
 	if err != nil {
 		return err
 	}
-	fmt.Println("TCP Server is listening at ", tcpServerAddr)
+	fmt.Println("TCP Server is listening at ", tcpPort)
 
 	for {
 		conn, err := tcpServer.Accept()
@@ -28,7 +28,7 @@ func StartTcpServer() error {
 				fmt.Printf("StartTcpServer, Read err %v\n", err)
 				break
 			}
-
+			fmt.Printf("TCP Server got: %v\n", string(b[:n]))
 			_, err = conn.Write(b[:n])
 			if err != nil {
 				fmt.Printf("StartTcpServer, write err %v\n", err)
@@ -38,7 +38,7 @@ func StartTcpServer() error {
 	}
 }
 
-func StartTCPClient() error {
+func StartTCPClient(serverAddr string) error {
 	auth := proxy.Auth{User: "", Password: ""}
 	dailer, err := proxy.SOCKS5("tcp", proxyAddr, &auth, &net.Dialer{
 		Timeout:   60 * time.Second,
@@ -49,14 +49,15 @@ func StartTCPClient() error {
 		return err
 	}
 
-	conn, err := dailer.Dial("tcp", tcpServerAddr)
+	conn, err := dailer.Dial("tcp", serverAddr)
 	if err != nil {
 		fmt.Printf("StartTCPClient, dailer.Dial err: %v\n", err)
 		return err
 	}
+	fmt.Printf("StartTCPClient, dail to %v  success\n", serverAddr)
 
 	user := &Person{Name: "tcp_boy", Age: 0}
-	for i := 0; i < rounds; i++ {
+	for i := 0; i < numMsgs; i++ {
 		user.Age++
 		b1, _ := json.Marshal(user)
 		_, err = conn.Write(b1)
@@ -82,20 +83,21 @@ func StartTCPClient() error {
 			fmt.Printf("StartTCPClient, got wrong response, sent %+v, recv %+v\n", user, respUser)
 			break
 		}
+		fmt.Printf("Got echo %+v\n", respUser)
 	}
 
 	return nil
 }
 
-func StartTCPTunClient() error {
-	conn, err := net.Dial("tcp", tcpServerAddr)
+func StartTCPTunClient(serverAddr string) error {
+	conn, err := net.Dial("tcp", serverAddr)
 	if err != nil {
 		fmt.Printf("StartTCPClient, dailer.Dial err: %v\n", err)
 		return err
 	}
 
 	user := &Person{Name: "tcp_boy", Age: 0}
-	for i := 0; i < rounds; i++ {
+	for i := 0; i < numMsgs; i++ {
 		user.Age++
 		b1, _ := json.Marshal(user)
 		_, err = conn.Write(b1)

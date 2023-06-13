@@ -232,8 +232,7 @@ You can enable UDP support when starting nConnect server with tuna mode,
 
 ### Use nConnect as library
 
-You can also use nConnect as library. Please check [socks5_proxy_test.go](tests/socks5_proxy_test.go) for usages.
-
+You can also use nConnect as library. Please check [proxy_test.go](tests/proxy_test.go) for usages.
 
 ### Use pre-built Docker image
 
@@ -255,6 +254,44 @@ docker run --rm -it --net=host -v ${PWD}:/nConnect/data nknorg/nconnect
 ```
 
 followed by the command line argument you want to add.
+
+## nConnect Client Connects to Multi Servers
+
+Now nConnect client can connect to multi servers. You can edit `config.json` to add multi servers admin address:
+
+```
+
+{
+  "Client": true,
+  "Server": false,
+  "identifier": "alice",
+  "seed": "",
+  "remoteAdminAddr": [
+      "nConnect.bob1.7cafe0ae02789f8eb6b293e46b0ac5cf8f92f73042199c8161e5b5f90b13dcb5",
+      "nConnect.bob2.7cafe0ae02789f8eb6b293e46b0ac5cf8f92f73042199c8161e5b5f90b13dcb5",
+      "nConnect.bob3.7cafe0ae02789f8eb6b293e46b0ac5cf8f92f73042199c8161e5b5f90b13dcb5",
+  ],
+  "localSocksAddr": "127.0.0.1:1080",
+}
+
+```
+
+After config multi `remoteAdminAddr`, the nConnect client will add routing infomation to each Servers' local IP. So you can access all the servers by their local IP address.
+
+Specifically, the first  item in the `remoteAdminAddr` will become the default server which will get the forwarded data which targets are beyond all these servers' local IP address. Such as access to website by domain, or some other applications.
+
+You can use command argument to connects to multi servers too. Use multi times argument `-a` to pass multi servers addresses:
+
+```
+
+$ nConnect -c -a server-address1 -a server-address2 -a server-address3
+
+```
+
+
+## Use `config.json` to Simplify Command Arguments
+
+You can use `config.json` to simpliy command arguments. Move config.client.json or config.server.json as `config.json` and edit it before starting your nConnect client or server. After saving `config.json`, you can start nConnect simply.
 
 ## Contributing
 
