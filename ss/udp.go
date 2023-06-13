@@ -22,6 +22,7 @@ const udpBufSize = 64 * 1024
 
 // Listen on laddr for UDP packets, encrypt and send to server to reach target.
 func udpLocal(laddr, server, target string, shadow func(net.PacketConn) net.PacketConn) error {
+	server = getClient(target)
 	srvAddr, err := net.ResolveUDPAddr("udp", server)
 	if err != nil {
 		return fmt.Errorf("UDP server address error: %v", err)
@@ -72,11 +73,6 @@ func udpLocal(laddr, server, target string, shadow func(net.PacketConn) net.Pack
 
 // Listen on laddr for Socks5 UDP packets, encrypt and send to server to reach target.
 func udpSocksLocal(laddr, server string, shadow func(net.PacketConn) net.PacketConn) error {
-	srvAddr, err := net.ResolveUDPAddr("udp", server)
-	if err != nil {
-		return fmt.Errorf("UDP server address error: %v", err)
-	}
-
 	c, err := net.ListenPacket("udp", laddr)
 	if err != nil {
 		return fmt.Errorf("UDP local listen error: %v", err)
@@ -103,6 +99,13 @@ func udpSocksLocal(laddr, server string, shadow func(net.PacketConn) net.PacketC
 			logf("UDP socks tunnel %s <-> %s <-> %s", laddr, server, socks.Addr(buf[3:]))
 			pc = shadow(pc)
 			nm.Add(raddr, c, pc, socksClient)
+		}
+
+		dest := socks.Addr(buf[3:])
+		server = getClient(dest.String())
+		srvAddr, err := net.ResolveUDPAddr("udp", server)
+		if err != nil {
+			return fmt.Errorf("UDP server address error: %v", err)
 		}
 
 		_, err = pc.WriteTo(buf[3:n], srvAddr)

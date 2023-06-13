@@ -6,7 +6,7 @@
   "cipher": "dummy",
   "logMaxSize": 1,
   "logMaxBackups": 3,
-  "remoteAdminAddr": "nConnect.bob.7cafe0ae02789f8eb6b293e46b0ac5cf8f92f73042199c8161e5b5f90b13dcb5",
+  "remoteAdminAddr": ["nConnect.bob.7cafe0ae02789f8eb6b293e46b0ac5cf8f92f73042199c8161e5b5f90b13dcb5"],
   "localSocksAddr": "127.0.0.1:1080",
   "tunAddr": "10.0.86.2",
   "tunGateway": "10.0.86.1",

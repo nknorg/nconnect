@@ -11,7 +11,7 @@ import (
 )
 
 func StartUdpServer() error {
-	a, err := net.ResolveUDPAddr("udp", udpServerAddr)
+	a, err := net.ResolveUDPAddr("udp", udpPort)
 	if err != nil {
 		return err
 	}
@@ -20,7 +20,7 @@ func StartUdpServer() error {
 		return err
 	}
 
-	fmt.Printf("UDP server is listening at %v\n", udpServerAddr)
+	fmt.Printf("UDP server is listening at %v\n", udpPort)
 
 	b := make([]byte, 1024)
 	for {
@@ -41,12 +41,12 @@ func StartUdpServer() error {
 	return nil
 }
 
-func StartUDPClient() error {
+func StartUDPClient(serverAddr string) error {
 	s5c, err := socks5.NewClient(proxyAddr, "", "", 0, 60)
 	if err != nil {
 		return err
 	}
-	uc, err := s5c.Dial("udp", udpServerAddr)
+	uc, err := s5c.Dial("udp", serverAddr)
 	if err != nil {
 		fmt.Println("StartUDPClient.s5c.Dial err: ", err)
 		return err
@@ -54,7 +54,7 @@ func StartUDPClient() error {
 	defer uc.Close()
 
 	user := &Person{Name: "udp_boy", Age: 0}
-	for i := 0; i < rounds; i++ {
+	for i := 0; i < numMsgs; i++ {
 		user.Age++
 		send, _ := json.Marshal(user)
 		if _, err := uc.Write(send); err != nil {
@@ -71,6 +71,8 @@ func StartUDPClient() error {
 		if !bytes.Equal(recv[:n], send) {
 			fmt.Printf("StartUDPClient.recv %v is not as same as sent %v\n", string(recv[:n]), string(send))
 			break
+		} else {
+			fmt.Printf("StartUDPClient got echo: %v\n", string(recv[:n]))
 		}
 	}
 

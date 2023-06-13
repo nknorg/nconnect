@@ -67,6 +67,7 @@ func tcpLocal(addr, server string, shadow func(net.Conn) net.Conn, getAddr func(
 				return
 			}
 
+			server = getClient(tgt.String())
 			rc, err := net.Dial("tcp", server)
 			if err != nil {
 				logf("failed to connect to server %v: %v", server, err)

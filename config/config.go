@@ -72,8 +72,8 @@ type Config struct {
 	LogAPIResponseSize int    `json:"logAPIResponseSize,omitempty" long:"log-api-response-size" description:"(server only) Maximum size in bytes of get log api response. If log size is greater than this value, only the lastest part of the log will be returned."`
 
 	// Remote address
-	RemoteAdminAddr  string `json:"remoteAdminAddr,omitempty" short:"a" long:"remote-admin-addr" description:"(client only) Remote server admin address"`
-	RemoteTunnelAddr string `json:"remoteTunnelAddr,omitempty" short:"r" long:"remote-tunnel-addr" description:"(client only) Remote server tunnel address, not needed if remote server admin address is given"`
+	RemoteAdminAddr  []string `json:"remoteAdminAddr,omitempty" short:"a" long:"remote-admin-addr" description:"(client only) Remote server admin address"`
+	RemoteTunnelAddr []string `json:"remoteTunnelAddr,omitempty" short:"r" long:"remote-tunnel-addr" description:"(client only) Remote server tunnel address, not needed if remote server admin address is given"`
 
 	// Socks proxy config
 	LocalSocksAddr string `json:"localSocksAddr,omitempty" short:"l" long:"local-socks-addr" description:"(client only) Local socks proxy listen address" default:"127.0.0.1:1080"`

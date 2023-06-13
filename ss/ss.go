@@ -30,6 +30,9 @@ type Config struct {
 	Verbose    bool
 	UDPTimeout time.Duration
 	TCPCork    bool
+
+	TargetToClient map[string]string // map target ip to local tunnel port
+	DefaultClient  string            // the default client for the targets are not in Target2Client map
 }
 
 var config struct {
@@ -46,6 +49,9 @@ func Start(flags *Config) error {
 	config.Verbose = flags.Verbose
 	config.UDPTimeout = flags.UDPTimeout
 	config.TCPCork = flags.TCPCork
+
+	routes.TargetToClient = flags.TargetToClient
+	routes.DefaultClient = flags.DefaultClient
 
 	var key []byte
 	if flags.Key != "" {
