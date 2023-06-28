@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"runtime"
@@ -31,7 +30,7 @@ var (
 )
 
 func init() {
-	rand.Seed(time.Now().UnixNano())
+	rand.NewSource(time.Now().UnixNano())
 }
 
 type Opts struct {
@@ -133,12 +132,15 @@ func NewConfig() *Config {
 }
 
 func LoadOrNewConfig(path string) (*Config, error) {
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
 			c := NewConfig()
 			c.path = path
-			c.save()
+			err := c.save()
+			if err != nil {
+				return nil, err
+			}
 			return c, nil
 		}
 		return nil, err
@@ -178,15 +180,15 @@ func (c *Config) VerifyClient() error {
 func (c *Config) VerifyServer() error {
 	_, err := common.StringToFixed64(c.TunaMinBalance)
 	if err != nil {
-		return fmt.Errorf("Parse TunaMinBalance error: %v", err)
+		return fmt.Errorf("parse TunaMinBalance error: %v", err)
 	}
 	_, err = common.StringToFixed64(c.TunaMaxPrice)
 	if err != nil {
-		return fmt.Errorf("Parse TunaMaxPrice error: %v", err)
+		return fmt.Errorf("parse TunaMaxPrice error: %v", err)
 	}
 	_, err = common.StringToFixed64(c.TunaMinFee)
 	if err != nil {
-		return fmt.Errorf("Parse TunaMinFee error: %v", err)
+		return fmt.Errorf("parse TunaMinFee error: %v", err)
 	}
 	return nil
 }
@@ -296,7 +298,7 @@ func (c *Config) save() error {
 		return err
 	}
 
-	err = ioutil.WriteFile(c.path, b, 0666)
+	err = os.WriteFile(c.path, b, 0666)
 	if err != nil {
 		return err
 	}
