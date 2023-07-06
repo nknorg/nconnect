@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"os"
+	"time"
 
+	"github.com/cakturk/go-netstat/netstat"
 	"github.com/nknorg/nconnect"
 	"github.com/nknorg/nconnect/config"
 	nkn "github.com/nknorg/nkn-sdk-go"
@@ -40,9 +43,11 @@ func startNconnect(configFile string, tuna, udp, tun bool, n *types.Node) error 
 	}
 
 	if opts.Client {
-		proxyAddr = fmt.Sprintf("127.0.0.1:%v", port)
-		opts.LocalSocksAddr = proxyAddr
-		port++
+		port, err := getFreePort(port)
+		if err != nil {
+			return err
+		}
+		opts.LocalSocksAddr = fmt.Sprintf("127.0.0.1:%v", port)
 	}
 	fmt.Printf("opts.RemoteAdminAddr: %+v\n", opts.RemoteAdminAddr)
 
@@ -54,22 +59,6 @@ func startNconnect(configFile string, tuna, udp, tun bool, n *types.Node) error 
 		err = nc.StartClient()
 	}
 	return err
-}
-
-func StartNconnectServerWithTunaNode(tuna, udp, tun bool) {
-	tunaNode, err := getTunaNode()
-	if err != nil {
-		fmt.Printf("getTunaNode err %v\n", err)
-		return
-	}
-
-	go func() {
-		err := startNconnect("server.json", tuna, udp, tun, tunaNode)
-		if err != nil {
-			fmt.Printf("start nconnect server err: %v\n", err)
-			return
-		}
-	}()
 }
 
 func getTunaNode() (*types.Node, error) {
@@ -134,4 +123,60 @@ func runReverseEntry(seed []byte) error {
 type Person struct {
 	Name string
 	Age  int
+}
+
+func getFreePort(port int) (int, error) {
+	for i := 0; i < 100; i++ {
+		addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("127.0.0.1:%v", port))
+		if err != nil {
+			return 0, err
+		}
+
+		l, err := net.ListenTCP("tcp", addr)
+		if err != nil {
+			port++
+			continue
+		}
+
+		defer l.Close()
+
+		return l.Addr().(*net.TCPAddr).Port, nil
+	}
+	return 0, fmt.Errorf("can't find free port")
+}
+
+func waitSSAndTunaReady() error {
+	ssIsReady := false
+	for i := 0; i < 100; i++ {
+		tabs, err := netstat.TCPSocks(func(s *netstat.SockTabEntry) bool {
+			return s.State == netstat.Listen && s.LocalAddr.Port == uint16(port)
+		})
+		if err != nil {
+			fmt.Printf("waitSSAndTunaReady err: %v\n", err)
+		}
+		if len(tabs) >= 1 {
+			ssIsReady = true
+			break
+		}
+		time.Sleep(2 * time.Second)
+	}
+
+	if !ssIsReady {
+		return fmt.Errorf("ss is not ready after 200 seconds, give up")
+	}
+
+	for i := 0; i < 100; i++ {
+		tabs, err := netstat.TCPSocks(func(s *netstat.SockTabEntry) bool {
+			return s.State == netstat.Established && s.RemoteAddr.Port == 30020
+		})
+		if err != nil {
+			fmt.Printf("waitSSAndTunaReady err: %v\n", err)
+		}
+		time.Sleep(2 * time.Second)
+		if len(tabs) >= 1 {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("tuna is not connected after 200 seconds, give up")
 }

@@ -4,24 +4,37 @@ import (
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
-// go test -v -run=TestTun
+// go test -v -run=TestTun -tun
 func TestTun(t *testing.T) {
+	fmt.Println("Make sure run this case at root or administrator shell")
+
+	if !(*tun) {
+		t.Skip("Skip TestTun, if you want to run this test, please use: go test -v -tun .")
+	}
+
 	tuna, udp, tun := true, true, true
 	go func() {
 		err := startNconnect("client.json", tuna, udp, tun, nil)
-		if err != nil {
-			fmt.Printf("start nconnect client err: %v\n", err)
-			return
-		}
+		require.NoError(t, err)
 	}()
-	time.Sleep(20 * time.Second)
 
-	dnsQuery()
+	time.Sleep(10 * time.Second)
+
+	err := waitSSAndTunaReady()
+	require.NoError(t, err)
+
+	err = dnsQuery()
+	require.NoError(t, err)
 	for _, server := range servers {
-		StartTunWebClient("http://" + server + httpPort + "/httpEcho")
-		StartTCPClient(server + tcpPort)
-		StartUDPClient(server + udpPort)
+		err := StartTunWebClient("http://" + server + httpPort + "/httpEcho")
+		require.NoError(t, err)
+		err = StartTCPClient(server + tcpPort)
+		require.NoError(t, err)
+		err = StartUDPClient(server + udpPort)
+		require.NoError(t, err)
 	}
 }

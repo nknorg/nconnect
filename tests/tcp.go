@@ -17,29 +17,32 @@ func StartTcpServer() error {
 	fmt.Println("TCP Server is listening at ", tcpPort)
 
 	for {
-		conn, err := tcpServer.Accept()
+		c, err := tcpServer.Accept()
 		if err != nil {
 			return err
 		}
-		b := make([]byte, 1024)
-		for {
-			n, err := conn.Read(b)
-			if err != nil {
-				fmt.Printf("StartTcpServer, Read err %v\n", err)
-				break
+		go func(conn net.Conn) {
+			b := make([]byte, 1024)
+			for {
+				n, err := conn.Read(b)
+				if err != nil {
+					fmt.Printf("StartTcpServer, Read err %v\n", err)
+					break
+				}
+				fmt.Printf("TCP Server got: %v\n", string(b[:n]))
+				_, err = conn.Write(b[:n])
+				if err != nil {
+					fmt.Printf("StartTcpServer, write err %v\n", err)
+					break
+				}
 			}
-			fmt.Printf("TCP Server got: %v\n", string(b[:n]))
-			_, err = conn.Write(b[:n])
-			if err != nil {
-				fmt.Printf("StartTcpServer, write err %v\n", err)
-				break
-			}
-		}
+		}(c)
 	}
 }
 
 func StartTCPClient(serverAddr string) error {
 	auth := proxy.Auth{User: "", Password: ""}
+	proxyAddr := fmt.Sprintf("127.0.0.1:%v", port)
 	dailer, err := proxy.SOCKS5("tcp", proxyAddr, &auth, &net.Dialer{
 		Timeout:   60 * time.Second,
 		KeepAlive: 30 * time.Second,
@@ -54,7 +57,7 @@ func StartTCPClient(serverAddr string) error {
 		fmt.Printf("StartTCPClient, dailer.Dial err: %v\n", err)
 		return err
 	}
-	fmt.Printf("StartTCPClient, dail to %v  success\n", serverAddr)
+	fmt.Printf("StartTCPClient, dail to %v success\n", serverAddr)
 
 	user := &Person{Name: "tcp_boy", Age: 0}
 	for i := 0; i < numMsgs; i++ {
@@ -63,25 +66,24 @@ func StartTCPClient(serverAddr string) error {
 		_, err = conn.Write(b1)
 		if err != nil {
 			fmt.Printf("StartTCPClient, conn.Write err: %v\n", err)
-			break
+			return err
 		}
 
 		b2 := make([]byte, 1024)
 		n, err := conn.Read(b2)
 		if err != nil {
 			fmt.Printf("StartTCPClient, conn.Read err: %v\n", err)
-			break
+			return err
 		}
 		respUser := &Person{}
 		err = json.Unmarshal(b2[:n], respUser)
 		if err != nil {
 			fmt.Printf("StartTCPClient, json.Unmarshal err: %v\n", err)
-			break
+			return err
 		}
 
 		if respUser.Age != user.Age {
-			fmt.Printf("StartTCPClient, got wrong response, sent %+v, recv %+v\n", user, respUser)
-			break
+			return fmt.Errorf("StartTCPClient, got wrong response, sent %+v, recv %+v", user, respUser)
 		}
 		fmt.Printf("Got echo %+v\n", respUser)
 	}
@@ -103,25 +105,24 @@ func StartTCPTunClient(serverAddr string) error {
 		_, err = conn.Write(b1)
 		if err != nil {
 			fmt.Printf("StartTCPClient, conn.Write err: %v\n", err)
-			break
+			return err
 		}
 
 		b2 := make([]byte, 1024)
 		n, err := conn.Read(b2)
 		if err != nil {
 			fmt.Printf("StartTCPClient, conn.Read err: %v\n", err)
-			break
+			return err
 		}
 		respUser := &Person{}
 		err = json.Unmarshal(b2[:n], respUser)
 		if err != nil {
 			fmt.Printf("StartTCPClient, json.Unmarshal err: %v\n", err)
-			break
+			return err
 		}
 
 		if respUser.Age != user.Age {
-			fmt.Printf("StartTCPClient, got wrong response, sent %+v, recv %+v\n", user, respUser)
-			break
+			return fmt.Errorf("StartTCPClient, got wrong response, sent %+v, recv %+v", user, respUser)
 		}
 	}
 

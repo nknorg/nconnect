@@ -1,17 +1,67 @@
 package tests
 
 import (
+	"flag"
+	"fmt"
+	"log"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/nknorg/tuna/types"
 )
 
-func TestMain(m *testing.M) {
-	go StartTcpServer()
-	go StartWebServer()
-	go StartUdpServer()
+var remoteTuna = flag.Bool("remoteTuna", false, "use remote tuna node")
+var tun = flag.Bool("tun", false, "use tun device")
 
-	go StartNconnectServerWithTunaNode(true, true, false)
+func TestMain(m *testing.M) {
+	flag.Parse()
+	if *remoteTuna {
+		fmt.Println("We are using remote tuna node")
+	} else {
+		fmt.Println("Using local tuna node. If want to use remote tuna node, please run: go test -v -remoteTuna .")
+	}
+
+	go func() {
+		err := StartTcpServer()
+		if err != nil {
+			log.Fatalf("StartTcpServer err %v", err)
+			return
+		}
+	}()
+	go func() {
+		err := StartWebServer()
+		if err != nil {
+			log.Fatalf("StartWebServer err %v", err)
+			return
+		}
+	}()
+	go func() {
+		err := StartUdpServer()
+		if err != nil {
+			log.Fatalf("StartUdpServer err %v", err)
+			return
+		}
+	}()
+
+	var tunaNode *types.Node
+	var err error
+	if !(*remoteTuna) {
+		tunaNode, err = getTunaNode()
+		if err != nil {
+			log.Fatalf("getTunaNode err %v", err)
+			return
+		}
+	}
+
+	go func() {
+		err := startNconnect("server.json", true, true, false, tunaNode)
+		if err != nil {
+			log.Fatalf("start nconnect server err: %v", err)
+			return
+		}
+	}()
+
 	time.Sleep(15 * time.Second)
 
 	exitVal := m.Run()

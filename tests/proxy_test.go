@@ -1,9 +1,10 @@
 package tests
 
 import (
-	"fmt"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 // go test -v -run=TestProxy
@@ -11,17 +12,22 @@ func TestProxy(t *testing.T) {
 	tuna, udp, tun := true, true, false
 	go func() {
 		err := startNconnect("client.json", tuna, udp, tun, nil)
-		if err != nil {
-			fmt.Printf("start nconnect client err: %v\n", err)
-			return
-		}
+		require.NoError(t, err)
 	}()
-	time.Sleep(15 * time.Second)
 
-	dnsQuery()
+	time.Sleep(5 * time.Second)
+
+	err := waitSSAndTunaReady()
+	require.NoError(t, err)
+
+	err = dnsQuery()
+	require.NoError(t, err)
 	for _, server := range servers {
-		StartWebClient("http://" + server + httpPort + "/httpEcho")
-		StartTCPClient(server + tcpPort)
-		StartUDPClient(server + udpPort)
+		err := StartWebClient("http://" + server + httpPort + "/httpEcho")
+		require.NoError(t, err)
+		err = StartTCPClient(server + tcpPort)
+		require.NoError(t, err)
+		err = StartUDPClient(server + udpPort)
+		require.NoError(t, err)
 	}
 }
