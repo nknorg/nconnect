@@ -3,6 +3,7 @@ module github.com/nknorg/nconnect
 go 1.20
 
 require (
+	github.com/cakturk/go-netstat v0.0.0-20200220111822-e5b49efee7a5
 	github.com/eycorsican/go-tun2socks v1.16.11
 	github.com/gin-contrib/gzip v0.0.3
 	github.com/gin-gonic/gin v1.9.0
@@ -16,6 +17,7 @@ require (
 	github.com/nknorg/nkngomobile v0.0.0-20220615081414-671ad1afdfa9
 	github.com/nknorg/tuna v0.0.0-20230405223335-eb60c60c5953
 	github.com/shadowsocks/go-shadowsocks2 v0.1.2
+	github.com/stretchr/testify v1.8.1
 	github.com/txthinking/brook v0.0.0-20230418095906-76ced63f1803
 	github.com/txthinking/socks5 v0.0.0-20230307062227-0e1677eca4ba
 	golang.org/x/net v0.8.0
@@ -27,6 +29,7 @@ require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/bytedance/sonic v1.8.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gaukas/godicttls v0.0.3 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
@@ -62,6 +65,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
 	github.com/phuslu/iploc v1.0.20230201 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/quic-go/qtls-go1-18 v0.2.0 // indirect
 	github.com/quic-go/qtls-go1-19 v0.2.0 // indirect
 	github.com/quic-go/qtls-go1-20 v0.1.0 // indirect

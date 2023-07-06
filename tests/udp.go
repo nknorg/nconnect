@@ -27,21 +27,20 @@ func StartUdpServer() error {
 		n, addr, err := udpServer.ReadFromUDP(b)
 		if err != nil {
 			fmt.Printf("StartUdpServer.ReadFromUDP err: %v\n", err)
-			break
+			return err
 		}
 
 		time.Sleep(100 * time.Millisecond)
 		_, _, err = udpServer.WriteMsgUDP(b[:n], nil, addr)
 		if err != nil {
 			fmt.Printf("StartUdpServer.WriteMsgUDP err: %v\n", err)
-			break
+			return err
 		}
 	}
-
-	return nil
 }
 
 func StartUDPClient(serverAddr string) error {
+	proxyAddr := fmt.Sprintf("127.0.0.1:%v", port)
 	s5c, err := socks5.NewClient(proxyAddr, "", "", 0, 60)
 	if err != nil {
 		return err
@@ -59,18 +58,17 @@ func StartUDPClient(serverAddr string) error {
 		send, _ := json.Marshal(user)
 		if _, err := uc.Write(send); err != nil {
 			fmt.Println("StartUDPClient.Write err ", err)
-			break
+			return err
 		}
 
 		recv := make([]byte, 512)
 		n, err := uc.Read(recv)
 		if err != nil {
 			fmt.Println("StartUDPClient.Read err ", err)
-			break
+			return err
 		}
 		if !bytes.Equal(recv[:n], send) {
-			fmt.Printf("StartUDPClient.recv %v is not as same as sent %v\n", string(recv[:n]), string(send))
-			break
+			return fmt.Errorf("StartUDPClient.recv %v is not as same as sent %v", string(recv[:n]), string(send))
 		} else {
 			fmt.Printf("StartUDPClient got echo: %v\n", string(recv[:n]))
 		}

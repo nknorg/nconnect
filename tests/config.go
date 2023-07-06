@@ -1,7 +1,6 @@
 package tests
 
 var port int = 1080
-var proxyAddr string = "127.0.0.1:1080"
 
 const (
 	numMsgs = 10

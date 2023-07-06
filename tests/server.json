@@ -23,6 +23,7 @@
   "tunaFeeRatio": 0.1,
   "tunaServiceName": "reverse",
   "tunaGeoDBPath": ".",
+  "tunaDisableMeasureBandwidth": false,
   "tunaMeasureStoragePath": ".",
   "adminIdentifier": "nConnect",
   "webRootPath": "web/dist",

@@ -22,6 +22,7 @@
   "tunaMinFee": "0.00001",
   "tunaFeeRatio": 0.1,
   "tunaGeoDBPath": ".",
+  "tunaDisableMeasureBandwidth": false,
   "tunaMeasureStoragePath": ".",
   "adminIdentifier": "nConnect",
   "webRootPath": "web/dist",
