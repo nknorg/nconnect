@@ -559,3 +559,7 @@ func (nc *nconnect) waitForSignal() {
 func (nc *nconnect) SetTunaNode(node *types.Node) {
 	nc.tunaNode = node
 }
+
+func (nc *nconnect) GetTunnels() []*tunnel.Tunnel {
+	return nc.tunnels
+}

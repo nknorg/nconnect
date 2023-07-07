@@ -24,7 +24,7 @@ func TestTun(t *testing.T) {
 
 	time.Sleep(10 * time.Second)
 
-	err := waitSSAndTunaReady()
+	err := waitForSSProxReady()
 	require.NoError(t, err)
 
 	err = dnsQuery()

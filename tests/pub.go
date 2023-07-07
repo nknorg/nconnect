@@ -9,7 +9,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/cakturk/go-netstat/netstat"
 	"github.com/nknorg/nconnect"
 	"github.com/nknorg/nconnect/config"
 	nkn "github.com/nknorg/nkn-sdk-go"
@@ -52,12 +51,28 @@ func startNconnect(configFile string, tuna, udp, tun bool, n *types.Node) error 
 	fmt.Printf("opts.RemoteAdminAddr: %+v\n", opts.RemoteAdminAddr)
 
 	nc, _ := nconnect.NewNconnect(opts)
-	if opts.Server {
-		nc.SetTunaNode(n)
-		err = nc.StartServer()
-	} else {
-		err = nc.StartClient()
+	go func() {
+		if opts.Server {
+			nc.SetTunaNode(n)
+			err = nc.StartServer()
+			if err != nil {
+				log.Fatalf("start nconnect server err: %v", err)
+			}
+		} else {
+			err = nc.StartClient()
+			if err != nil {
+				log.Fatalf("start nconnect client err: %v", err)
+			}
+		}
+	}()
+
+	time.Sleep(3 * time.Second) // wait for nconnect to create tunnels
+
+	tunnels := nc.GetTunnels()
+	for _, tunnel := range tunnels {
+		<-tunnel.TunaSessionClient().OnConnect()
 	}
+
 	return err
 }
 
@@ -145,38 +160,17 @@ func getFreePort(port int) (int, error) {
 	return 0, fmt.Errorf("can't find free port")
 }
 
-func waitSSAndTunaReady() error {
-	ssIsReady := false
+func waitForSSProxReady() error {
 	for i := 0; i < 100; i++ {
-		tabs, err := netstat.TCPSocks(func(s *netstat.SockTabEntry) bool {
-			return s.State == netstat.Listen && s.LocalAddr.Port == uint16(port)
-		})
+		conn, err := net.Dial("tcp", fmt.Sprintf("127.0.0.1:%v", port))
 		if err != nil {
-			fmt.Printf("waitSSAndTunaReady err: %v\n", err)
+			fmt.Printf("waitForSSProxReady err: %v\n", err)
+			time.Sleep(2 * time.Second)
 		}
-		if len(tabs) >= 1 {
-			ssIsReady = true
-			break
-		}
-		time.Sleep(2 * time.Second)
-	}
-
-	if !ssIsReady {
-		return fmt.Errorf("ss is not ready after 200 seconds, give up")
-	}
-
-	for i := 0; i < 100; i++ {
-		tabs, err := netstat.TCPSocks(func(s *netstat.SockTabEntry) bool {
-			return s.State == netstat.Established && s.RemoteAddr.Port == 30020
-		})
-		if err != nil {
-			fmt.Printf("waitSSAndTunaReady err: %v\n", err)
-		}
-		time.Sleep(2 * time.Second)
-		if len(tabs) >= 1 {
+		if conn != nil {
+			conn.Close()
 			return nil
 		}
 	}
-
-	return fmt.Errorf("tuna is not connected after 200 seconds, give up")
+	return fmt.Errorf("ss is not ready after 200 seconds, give up")
 }
