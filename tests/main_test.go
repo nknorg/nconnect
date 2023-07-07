@@ -11,7 +11,7 @@ import (
 	"github.com/nknorg/tuna/types"
 )
 
-var remoteTuna = flag.Bool("remoteTuna", false, "use remote tuna node")
+var remoteTuna = flag.Bool("remoteTuna", false, "use remote tuna nodes")
 var tun = flag.Bool("tun", false, "use tun device")
 
 func TestMain(m *testing.M) {
@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 	if *remoteTuna {
 		fmt.Println("We are using remote tuna node")
 	} else {
-		fmt.Println("Using local tuna node. If want to use remote tuna node, please run: go test -v -remoteTuna .")
+		fmt.Println("Using local tuna node. If want to use remote tuna nodes, please run: go test -v -remoteTuna .")
 	}
 
 	go func() {
@@ -54,15 +54,13 @@ func TestMain(m *testing.M) {
 		}
 	}
 
-	go func() {
-		err := startNconnect("server.json", true, true, false, tunaNode)
-		if err != nil {
-			log.Fatalf("start nconnect server err: %v", err)
-			return
-		}
-	}()
+	err = startNconnect("server.json", true, true, false, tunaNode)
+	if err != nil {
+		log.Fatalf("start nconnect server err: %v", err)
+		return
+	}
 
-	time.Sleep(15 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	exitVal := m.Run()
 	os.Exit(exitVal)

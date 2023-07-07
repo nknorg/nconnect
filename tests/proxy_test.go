@@ -17,7 +17,7 @@ func TestProxy(t *testing.T) {
 
 	time.Sleep(5 * time.Second)
 
-	err := waitSSAndTunaReady()
+	err := waitForSSProxReady()
 	require.NoError(t, err)
 
 	err = dnsQuery()

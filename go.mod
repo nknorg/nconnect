@@ -3,7 +3,6 @@ module github.com/nknorg/nconnect
 go 1.20
 
 require (
-	github.com/cakturk/go-netstat v0.0.0-20200220111822-e5b49efee7a5
 	github.com/eycorsican/go-tun2socks v1.16.11
 	github.com/gin-contrib/gzip v0.0.3
 	github.com/gin-gonic/gin v1.9.0
