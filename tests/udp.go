@@ -20,6 +20,7 @@ func StartUdpServer() error {
 		return err
 	}
 
+	defer udpServer.Close()
 	fmt.Printf("UDP server is listening at %v\n", udpPort)
 
 	b := make([]byte, 1024)

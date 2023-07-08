@@ -22,6 +22,7 @@ func StartTcpServer() error {
 			return err
 		}
 		go func(conn net.Conn) {
+			defer conn.Close()
 			b := make([]byte, 1024)
 			for {
 				n, err := conn.Read(b)
@@ -57,6 +58,8 @@ func StartTCPClient(serverAddr string) error {
 		fmt.Printf("StartTCPClient, dailer.Dial err: %v\n", err)
 		return err
 	}
+
+	defer conn.Close()
 	fmt.Printf("StartTCPClient, dail to %v success\n", serverAddr)
 
 	user := &Person{Name: "tcp_boy", Age: 0}

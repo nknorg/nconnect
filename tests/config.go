@@ -7,9 +7,9 @@ const (
 
 	seedHex = "e68e046d13dd911594576ba0f4a196e9666790dc492071ad9ea5972c0b940435"
 
-	tcpPort  = ":54321"
-	httpPort = ":54322"
-	udpPort  = ":54323"
+	tcpPort  = ":20001"
+	httpPort = ":20002"
+	udpPort  = ":20003"
 
 	tunaNodeStarted = "tuna node is started"
 )
