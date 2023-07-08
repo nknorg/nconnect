@@ -52,16 +52,24 @@ func (c *Client) RPCCall(addr, method string, params interface{}, result interfa
 		return err
 	}
 
-	onReply, err := c.Send(nkn.NewStringArray(addr), req, nil)
+	var onReply *nkn.OnMessage
+	var reply *nkn.Message
+Loop:
+	for i := 0; i < 3; i++ { // retry 3 times if timeout
+		onReply, err = c.Send(nkn.NewStringArray(addr), req, nil)
+		if err != nil {
+			return err
+		}
+
+		select {
+		case reply = <-onReply.C:
+			break Loop
+		case <-time.After(c.replyTimeout):
+			err = errReplyTimeout
+		}
+	}
 	if err != nil {
 		return err
-	}
-
-	var reply *nkn.Message
-	select {
-	case reply = <-onReply.C:
-	case <-time.After(c.replyTimeout):
-		return errReplyTimeout
 	}
 
 	resp := &rpcResp{

@@ -42,7 +42,7 @@ func startNconnect(configFile string, tuna, udp, tun bool, n *types.Node) error 
 	}
 
 	if opts.Client {
-		port, err := getFreePort(port)
+		port, err = getFreePort(port)
 		if err != nil {
 			return err
 		}
@@ -66,7 +66,7 @@ func startNconnect(configFile string, tuna, udp, tun bool, n *types.Node) error 
 		}
 	}()
 
-	time.Sleep(3 * time.Second) // wait for nconnect to create tunnels
+	time.Sleep(5 * time.Second) // wait for nconnect to create tunnels
 
 	tunnels := nc.GetTunnels()
 	for _, tunnel := range tunnels {
@@ -140,16 +140,16 @@ type Person struct {
 	Age  int
 }
 
-func getFreePort(port int) (int, error) {
+func getFreePort(p int) (int, error) {
 	for i := 0; i < 100; i++ {
-		addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("127.0.0.1:%v", port))
+		addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("127.0.0.1:%v", p))
 		if err != nil {
 			return 0, err
 		}
 
 		l, err := net.ListenTCP("tcp", addr)
 		if err != nil {
-			port++
+			p++
 			continue
 		}
 
@@ -164,8 +164,8 @@ func waitForSSProxReady() error {
 	for i := 0; i < 100; i++ {
 		conn, err := net.Dial("tcp", fmt.Sprintf("127.0.0.1:%v", port))
 		if err != nil {
-			fmt.Printf("waitForSSProxReady err: %v\n", err)
 			time.Sleep(2 * time.Second)
+			continue
 		}
 		if conn != nil {
 			conn.Close()
