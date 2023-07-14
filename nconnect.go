@@ -209,17 +209,18 @@ func NewNconnect(opts *config.Opts) (*nconnect, error) {
 	}
 
 	tsConfig := &ts.Config{
-		TunaMaxPrice:           opts.TunaMaxPrice,
-		TunaMinNanoPayFee:      opts.TunaMinFee,
-		TunaNanoPayFeeRatio:    opts.TunaFeeRatio,
-		TunaIPFilter:           &geo.IPFilter{Allow: allowedIP, Disallow: disallowedIP},
-		TunaNknFilter:          &filter.NknFilter{Allow: allowedNknAddrs, Disallow: disallowedNknAddrs},
-		TunaServiceName:        opts.TunaServiceName,
-		TunaDownloadGeoDB:      !opts.TunaDisableDownloadGeoDB,
-		TunaGeoDBPath:          opts.TunaGeoDBPath,
-		TunaMeasureBandwidth:   !opts.TunaDisableMeasureBandwidth,
-		TunaMeasureStoragePath: opts.TunaMeasureStoragePath,
-		TunaMinBalance:         opts.TunaMinBalance,
+		TunaMaxPrice:                 opts.TunaMaxPrice,
+		TunaMinNanoPayFee:            opts.TunaMinFee,
+		TunaNanoPayFeeRatio:          opts.TunaFeeRatio,
+		TunaIPFilter:                 &geo.IPFilter{Allow: allowedIP, Disallow: disallowedIP},
+		TunaNknFilter:                &filter.NknFilter{Allow: allowedNknAddrs, Disallow: disallowedNknAddrs},
+		TunaServiceName:              opts.TunaServiceName,
+		TunaDownloadGeoDB:            !opts.TunaDisableDownloadGeoDB,
+		TunaGeoDBPath:                opts.TunaGeoDBPath,
+		TunaMeasureBandwidth:         !opts.TunaDisableMeasureBandwidth,
+		TunaMeasureStoragePath:       opts.TunaMeasureStoragePath,
+		TunaMeasurementBytesDownLink: opts.TunaMeasureBandwidthBytes,
+		TunaMinBalance:               opts.TunaMinBalance,
 	}
 
 	if opts.SessionWindowSize > 0 {
