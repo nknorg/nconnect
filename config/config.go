@@ -105,6 +105,7 @@ type Config struct {
 	TunaGeoDBPath               string   `json:"tunaGeoDBPath,omitempty" long:"tuna-geo-db-path" description:"(server only) Path to store Tuna geo db" default:"."`
 	TunaDisableMeasureBandwidth bool     `json:"tunaDisableMeasureBandwidth,omitempty" long:"tuna-disable-measure-bandwidth" description:"(server only) Disable Tuna measure bandwidth when selecting service nodes"`
 	TunaMeasureStoragePath      string   `json:"tunaMeasureStoragePath,omitempty" long:"tuna-measure-storage-path" description:"(server only) Path to store Tuna measurement results" default:"."`
+	TunaMeasureBandwidthBytes   int32    `json:"tunaMeasureBandwidthBytes,omitempty" long:"tuna-measure-bandwidth-bytes" description:"(server only) Tuna measure bandwidth bytes to transmit when selecting service nodes" default:"1"`
 
 	// UDP config
 	UDP         bool  `json:"udp,omitempty" long:"udp" description:"Support udp proxy"`
