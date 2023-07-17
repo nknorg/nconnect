@@ -46,7 +46,7 @@ var (
 	}
 )
 
-type rpcReq struct {
+type RpcReq struct {
 	ID      string                 `json:"id"`
 	JSONRPC string                 `json:"jsonrpc"`
 	Method  string                 `json:"method"`
@@ -54,7 +54,7 @@ type rpcReq struct {
 	Token   string                 `json:"token"`
 }
 
-type rpcResp struct {
+type RpcResp struct {
 	Result interface{} `json:"result,omitempty"`
 	Error  string      `json:"error,omitempty"`
 }
@@ -107,8 +107,8 @@ type getLogJSON struct {
 	MaxSize int `json:"maxSize"`
 }
 
-func handleRequest(req *rpcReq, persistConf, mergedConf *config.Config, tun *tunnel.Tunnel, rpcPerm permission) *rpcResp {
-	resp := &rpcResp{}
+func handleRequest(req *RpcReq, persistConf, mergedConf *config.Config, tun *tunnel.Tunnel, rpcPerm permission) *RpcResp {
+	resp := &RpcResp{}
 
 	if rpcPermissions[req.Method]&rpcPerm == 0 {
 		resp.Error = errPermissionDenied.Error()

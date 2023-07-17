@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// var tun = flag.Bool("tun", false, "use tun device")
+
 // go test -v -run=TestTun -tun
 func TestTun(t *testing.T) {
 	fmt.Println("Make sure run this case at root or administrator shell")

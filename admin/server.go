@@ -23,7 +23,7 @@ func StartNKNServer(account *nkn.Account, identifier string, clientConfig *nkn.C
 	for {
 		msg := <-m.OnMessage.C
 
-		req := &rpcReq{}
+		req := &RpcReq{}
 		err := json.Unmarshal(msg.Data, req)
 		if err != nil {
 			log.Println("Unmarshal client request error:", err)

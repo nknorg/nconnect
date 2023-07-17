@@ -49,6 +49,7 @@ func tcpLocal(addr, server string, shadow func(net.Conn) net.Conn, getAddr func(
 
 				// UDP: keep the connection until disconnect then free the UDP socket
 				if err == socks.InfoUDPAssociate {
+					logf("it is socks.InfoUDPAssociate, tgt is %s", tgt.String())
 					buf := make([]byte, 1024)
 					// block here
 					for {
@@ -57,7 +58,7 @@ func tcpLocal(addr, server string, shadow func(net.Conn) net.Conn, getAddr func(
 							continue
 						}
 						if err != nil {
-							logf("UDP Associate End.")
+							// logf("UDP Associate End.")
 							return
 						}
 					}
@@ -73,6 +74,7 @@ func tcpLocal(addr, server string, shadow func(net.Conn) net.Conn, getAddr func(
 				logf("failed to connect to server %v: %v", server, err)
 				return
 			}
+
 			defer rc.Close()
 			tc := rc.(*net.TCPConn)
 			if config.TCPCork {

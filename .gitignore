@@ -3,6 +3,7 @@
 .DS_Store
 build
 nConnect
+nConnect.exe
 config.json
 aws-ip.json
 gcp-ip.json
@@ -10,3 +11,9 @@ geolite2-country.mmdb
 *.favorite-node.json
 *.avoid-node.json
 *.log
+*.exe
+config.member.json
+member.json
+network.json
+config.manager.json
+config.member.json

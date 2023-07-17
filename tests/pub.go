@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -17,6 +18,7 @@ import (
 	"github.com/nknorg/tuna/pb"
 	"github.com/nknorg/tuna/types"
 	"github.com/nknorg/tuna/util"
+	"google.golang.org/protobuf/proto"
 )
 
 var ch chan string = make(chan string, 4)
@@ -48,7 +50,6 @@ func startNconnect(configFile string, tuna, udp, tun bool, n *types.Node) error 
 		}
 		opts.LocalSocksAddr = fmt.Sprintf("127.0.0.1:%v", port)
 	}
-	fmt.Printf("opts.RemoteAdminAddr: %+v\n", opts.RemoteAdminAddr)
 
 	nc, _ := nconnect.NewNconnect(opts)
 	go func() {
@@ -68,37 +69,48 @@ func startNconnect(configFile string, tuna, udp, tun bool, n *types.Node) error 
 
 	time.Sleep(5 * time.Second) // wait for nconnect to create tunnels
 
-	tunnels := nc.GetTunnels()
-	for _, tunnel := range tunnels {
-		<-tunnel.TunaSessionClient().OnConnect()
+	tunnels := nc.GetClientTunnels()
+	for _, t := range tunnels {
+		if ts := t.TunaSessionClient(); ts != nil {
+			<-ts.OnConnect()
+		}
 	}
 
 	return err
 }
 
-func getTunaNode() (*types.Node, error) {
+func getTunaNode(ip string) (*types.Node, error) {
 	tunaSeed, _ := hex.DecodeString(seedHex)
 	acc, err := nkn.NewAccount(tunaSeed)
 	if err != nil {
 		return nil, err
 	}
 
-	go runReverseEntry(tunaSeed)
+	if ip == "127.0.0.1" {
+		go runReverseEntry(tunaSeed)
+	}
 
 	md := &pb.ServiceMetadata{
-		Ip:              "127.0.0.1",
+		Ip:              ip, // "127.0.0.1",
 		TcpPort:         30020,
 		UdpPort:         30021,
 		ServiceId:       0,
 		Price:           "0.0",
 		BeneficiaryAddr: "",
 	}
+
+	metadataRaw, err := proto.Marshal(md)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	metadata := base64.StdEncoding.EncodeToString(metadataRaw)
+
 	n := &types.Node{
 		Delay:       0,
 		Bandwidth:   0,
 		Metadata:    md,
 		Address:     hex.EncodeToString(acc.PublicKey),
-		MetadataRaw: "CgkxMjcuMC4wLjEQxOoBGMXqAToFMC4wMDE=",
+		MetadataRaw: metadata, // "CgkxMjcuMC4wLjEQxOoBGMXqAToFMC4wMDE=",
 	}
 
 	return n, nil

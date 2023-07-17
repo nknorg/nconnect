@@ -5,7 +5,7 @@ import (
 	"os/exec"
 )
 
-func AddRouteCmd(dest *net.IPNet, gateway, devName string) ([]byte, error) {
+func addRouteCmd(dest *net.IPNet, gateway, devName string) ([]byte, error) {
 	out, err := exec.Command("ip", "route", "add", dest.String(), "via", gateway, "dev", devName).Output()
 	if err == nil {
 		return out, nil
@@ -21,7 +21,7 @@ func AddRouteCmd(dest *net.IPNet, gateway, devName string) ([]byte, error) {
 	return exec.Command("route", "-n", "change", dest.String(), "gw", gateway).Output()
 }
 
-func DeleteRouteCmd(dest *net.IPNet, gateway, devName string) ([]byte, error) {
+func deleteRouteCmd(dest *net.IPNet, gateway, devName string) ([]byte, error) {
 	out, err := exec.Command("ip", "route", "del", dest.String(), "via", gateway, "dev", devName).Output()
 	if err == nil {
 		return out, nil

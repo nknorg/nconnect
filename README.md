@@ -17,11 +17,11 @@ tunneling, thus benefits from all the advantages of
 [nkn-tunnel](https://github.com/nknorg/nkn-tunnel):
 
 - Network agnostic: Neither sender nor receiver needs to have public IP address
-  or port forwarding. NKN tunnel only establish outbound (websocket)
-  connections, so Internet access is all they need on both side.
+  or port forwarding. NKN tunnel only establishes outbound (websocket)
+  connections, so Internet access is all they need on both sides.
 
 - Top level security: All data are end to end authenticated and encrypted. No
-  one else in the world except sender and receiver can see or modify the content
+  one else in the world except the sender and receiver can see or modify the content
   of the data. The same public key is used for both routing and encryption,
   eliminating the possibility of man in the middle attack.
 
@@ -257,10 +257,9 @@ followed by the command line argument you want to add.
 
 ## nConnect Client Connects to Multi Servers
 
-Now nConnect client can connect to multi servers. You can edit `config.json` to add multi servers admin address:
+Now nConnect client can connect to multiple servers. You can edit `config.json` to add multiple servers admin addresses:
 
 ```
-
 {
   "Client": true,
   "Server": false,
@@ -276,22 +275,203 @@ Now nConnect client can connect to multi servers. You can edit `config.json` to 
 
 ```
 
-After config multi `remoteAdminAddr`, the nConnect client will add routing infomation to each Servers' local IP. So you can access all the servers by their local IP address.
+After config multi `remoteAdminAddr`, the nConnect client will add routing information to each Server's local IP. So you can access all the servers by their local IP address.
 
-Specifically, the first  item in the `remoteAdminAddr` will become the default server which will get the forwarded data which targets are beyond all these servers' local IP address. Such as access to website by domain, or some other applications.
+Specifically, the first item in the `remoteAdminAddr` will become the default server which will get the forwarded data whose targets are beyond all these servers' local IP addresses. Such as access to the website by domain, or some other applications.
 
-You can use command argument to connects to multi servers too. Use multi times argument `-a` to pass multi servers addresses:
-
-```
-
-$ nConnect -c -a server-address1 -a server-address2 -a server-address3
+You can use command argument to connect to multiple servers too. Use multi times argument `-a` to pass multi servers addresses:
 
 ```
+nConnect -c -a server-address1 -a server-address2 -a server-address3
 
+```
 
 ## Use `config.json` to Simplify Command Arguments
 
-You can use `config.json` to simpliy command arguments. Move config.client.json or config.server.json as `config.json` and edit it before starting your nConnect client or server. After saving `config.json`, you can start nConnect simply.
+You can use `config.json` to simplify command arguments. Copy config.client.json or config.server.json as `config.json` and edit it before starting your nConnect client or server. After saving `config.json`, you can start nConnect simply.
+
+## Set up a Virtual Private Network by nConnect
+Yes, nConnect supports setting up a virtual private network. It means many computers can join a nConnect virtual network, and access each other just like all nodes are in a local network no matter where they are.
+
+In nConnect private virtual network, there are two types of nodes:
+
+* **manager node**
+The manager node is the network administrative node that configures network parameters and authorizes network members. It is just like a registry portal and privilege management center.
+
+Based on NKN decentralized network, you can set up nConnect manager node anywhere and only need to connect to the internet. Each nConnect manager has an NKN address, which is used to identify this node and used for other members to register into the network.
+
+* **member node**
+The member nodes are the members of the network. All member nodes need to register with the network manager first. After the manager node authorizes the member's `join network` request, the member node will have a network-specific IP and mask. All the member nodes (not including the manager node) can communicate by their network-specific IP no matter where they are. And the data transmitted between network members are encrypted, and high secured.
+
+To set up a nConnect network, you need firstly to start a network manager node. 
+
+### Start a network manager
+To start the network manager, we copy `config.network.json` to `config.manager.json`:
+
+```
+cp config.network.josn config.manager.json
+
+```
+
+Then edit config.json, enable `NetworkManager`, and give a value to "identifier", just like below:
+
+```
+{
+    "identifier": "manager",
+    "AdminHTTPAddr": "127.0.0.1:8000",
+}
+
+```
+
+> If you want to access your manager web page from another computer, you may set `AdminHTTPAddr` in a public IP instead of `127.0.0.1`. But it is not safe and not recommanded. After finishing your network configuration, had better change it back to `127.0.0.1`. It means people can access this web page only from this computer.
+
+Then start nConnect as a network manager with parameter `-m -f config.manager.json` :
+
+```
+./nConnect -m -f config.manager.json
+
+```
+
+After nConnect network manager starts, you can see a console printed message:
+
+```
+nConnect network manager is listening at: manager.0ec192083....
+Network manager web serve at:  http://127.0.0.1:8000/network
+```
+
+Copy this listening address: `manager.0ec192083....`, it is the manager's address. Other member nodes need this address to join this network.
+After the manager starts, you can visit the web service `http://127.0.0.1:8000/network` (default), to config, to manage the network.
+
+If you want to access nConnect manager from a public IP, you may configure `AdminHTTPAddr` with your computer's public IP.  But do remember that other people can access your manager web page too. After configuring your network, you had better disable `AdminHTTPADDR` and set it to "127.0.0.0" or empty.
+
+### Start network member and join the network
+On another computer, you can start a network member, and let it join the nConnect which you start above.
+First, you copy `config.network.json` to `config.member.json`
+
+```
+cp config.network.json config.member.json
+
+```
+
+Then edit `config.member.json` to edit `identifier`, `managerAddress` and `nodeName`.
+
+```
+{
+    "identifier": "alice",
+    "managerAddress": "manager.0ec192083....",
+    "nodeName": "alice",
+    "seed": "...",
+    "AdminHTTPAddr": "127.0.0.1:8000",
+}
+
+```
+
+Set `managerAddress` as your network manager's listening address, and identify your node name `nodeName`. Each network member should have a different `nodeName`.
+The field `seed` is the seed of the wallet which you use to pay for the `tuna` fee. Please keep it secured. If your wallet has zero balance, then nConnect Server cannot start at `tuna` mode.
+
+> On Unix-like systems you may need to preface commands with `sudo`, while on Windows you will need to use an `administrator-mode` command prompt. 
+
+Then you can start this node to join the network:
+
+```
+sudo ./nConnect -n -s -c -f config.member.json --tuna --vpn --udp
+```
+
+or 
+
+```
+./nConnect.exe -n -s -c -f config.member.json --tuna --vpn --udp
+```
+
+`-n` means this is a network member `node`
+For a network member, you may start both `-c` client, and `-s` server, which means you can access other nodes, and other nodes can access you too. 
+Or you can only set `-c`, which means you can access other nodes, but you don't want other nodes to access you.
+Or you can only set `-s`, which means you can only be accessed, and you don't want to access other nodes.
+
+> A nice tips, when you start nConnect with parameters `-s`, `-tuna`, it means you start nConnect Server and connect to `TUNA` service providers, you need make sure your seed's wallet have NKN tokens, which is used for paying `TUNA` service. And don't worry, it's definitely a low cost for data transmitting compare to other type tunneling service.
+
+#### How to join nConnect network without NKN balance
+
+If you only want to join the nConnect network as a client, it means you can access other member nodes, but other nodes needn't access your node. You can start nConnect without parameter `-s`, which means it will not start nConnect server, and won't spend any NKN tokens.
+
+This is especially useful when you only want to test the network functions and works for most network members.
+
+This is to start a node to join the network without starting nConnect server, and needn't spend any NKN tokens.
+
+```
+sudo ./nConnect -n -c -f config.member.json --tuna --vpn --udp
+```
+
+or 
+
+```
+./nConnect.exe -n -c -f config.member.json --tuna --vpn --udp
+```
+
+### Manage the network
+
+When a network member starts, it first will send a `JoinNetwork` message to the network manager.
+After the network administrator should open the manager's web administrate page `http://127.0.0.1:8000/network` (default), to configure the network name, IP range, netmask, and gateway.
+
+There are two lists on the manager's web page:
+
+* Waiting for Authorization
+  This lists all the nodes which are waiting for authorization to join this network. The administrator can accept it or reject it.
+  Only authorized nodes can become network members and will get a network-specific IP address.
+  When authorizing a node, it will pop up a dialog to set this node's permission to other nodes which decides if all members or only some of them can access this node.
+
+* Network Members
+  In the network members list, the administrator can reset nodes' access permission and remove a node from the network (authorization).
+
+If you don't see your node information in `Waiting for Authorization`, please click the `Refresh` button to fetch updated data from the manager.
+
+### Test your network
+
+To test your network, you can run a TCP/UDP server on a member node, and run a TCP/UDP client on another member node to do some echo tests.
+
+* Start a TCP and UDP server, so another node can access your node
+
+```
+go run tests/tools/main.go -server
+```
+
+* Start a TCP client to access another node if you know his IP, such as making an echo test to `10.0.86.3` node:
+
+```
+go run tests/tools/main.go -serverAddr 10.0.86.3
+```
+
+* Start a UDP client to access another node if you know his IP, such as making an echo test to `10.0.86.3` node:
+
+```
+go run tests/tools/main.go -serverAddr 10.0.86.3 -udp
+```
+
+You should see both the server and client's echo test messages.
+
+### Interact with the nConnect node by command line interface
+
+Now we provide a command line interface to interact with the running nConnect process.
+
+```
+./nConnect -i <cmd>
+```
+The <cmd> can be:
+
+```
+help:        this help
+join:        join network
+leave:       leave network
+status:      get network status
+list:       list nodes I can access and nodes which can access me.
+```
+
+You can input these sub-commands to interact with the nConnect network member:
+
+* join: to join a network that is configured with a manager address;
+* leave: to leave a network;
+* status: to show your nConnect network member information, such as your node's IP information.
+* list: to list nodes I can access and nodes that can access me.
 
 ## Contributing
 

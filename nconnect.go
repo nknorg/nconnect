@@ -2,23 +2,23 @@ package nconnect
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
-	"github.com/eycorsican/go-tun2socks/core"
-	"github.com/eycorsican/go-tun2socks/proxy/socks"
 	"github.com/imdario/mergo"
 	"github.com/nknorg/nconnect/admin"
 	"github.com/nknorg/nconnect/arch"
 	"github.com/nknorg/nconnect/config"
+	"github.com/nknorg/nconnect/network"
 	"github.com/nknorg/nconnect/ss"
 	"github.com/nknorg/nconnect/util"
 	"github.com/nknorg/ncp-go"
@@ -34,26 +34,31 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-const (
-	mtu = 1500
-)
-
 type nconnect struct {
 	opts    *config.Opts
 	account *nkn.Account
 
-	walletConfig *nkn.WalletConfig
-	clientConfig *nkn.ClientConfig
-	tunnelConfig *tunnel.Config
-	ssConfig     *ss.Config
-	persistConf  *config.Config
+	walletConfig   *nkn.WalletConfig
+	clientConfig   *nkn.ClientConfig
+	tunnelConfig   *tunnel.Config
+	ssClientConfig *ss.Config
+	ssServerConfig *ss.Config
+	persistConf    *config.Config
 
 	adminClientCache   *admin.Client
+	sync.RWMutex                                     // lock for maps
 	remoteInfoCache    map[string]*admin.GetInfoJSON // map remote admin address to remote info
 	remoteInfoByTunnel map[string]*admin.GetInfoJSON // map tunnel address to remote info
 
-	tunnels  []*tunnel.Tunnel
+	clientTunnels []*tunnel.Tunnel // tunnels for client mode
+	serverTunnel  *tunnel.Tunnel   // tunnel for server mode
+	serverReady   chan struct{}    // channel to notify server is ready
+
 	tunaNode *types.Node // It is used to connect specified tuna node, mainly is for testing.
+
+	networkMember  *network.Member
+	networkTunnels map[string]*tunnel.Tunnel // tunnels for network nodes
+	routeCIDRs     []*net.IPNet              // CIDRs for routing traffic through network nodes
 }
 
 func NewNconnect(opts *config.Opts) (*nconnect, error) {
@@ -62,8 +67,10 @@ func NewNconnect(opts *config.Opts) (*nconnect, error) {
 		return nil, err
 	}
 
-	if opts.Client == opts.Server {
-		log.Fatal("Exactly one mode (client or server) should be selected.")
+	if !(opts.NetworkMember || opts.NetworkManager) {
+		if opts.Client == opts.Server {
+			log.Fatal("Exactly one mode (client or server) should be selected if not join a network.")
+		}
 	}
 
 	persistConf, err := config.LoadOrNewConfig(opts.ConfigFile)
@@ -221,6 +228,10 @@ func NewNconnect(opts *config.Opts) (*nconnect, error) {
 		TunaMeasureStoragePath:       opts.TunaMeasureStoragePath,
 		TunaMeasurementBytesDownLink: opts.TunaMeasureBandwidthBytes,
 		TunaMinBalance:               opts.TunaMinBalance,
+		Verbose:                      opts.Verbose,
+	}
+	if opts.Verbose {
+		tsConfig.NumTunaListeners = 1
 	}
 
 	if opts.SessionWindowSize > 0 {
@@ -239,7 +250,7 @@ func NewNconnect(opts *config.Opts) (*nconnect, error) {
 		UDPIdleTime:       opts.UDPIdleTime,
 	}
 
-	ssConfig := &ss.Config{
+	ssClientConfig := ss.Config{
 		TCP:      true,
 		Cipher:   opts.Cipher,
 		Password: opts.Password,
@@ -252,20 +263,24 @@ func NewNconnect(opts *config.Opts) (*nconnect, error) {
 	}
 
 	if opts.UDP && opts.Client {
-		ssConfig.UDPSocks = true
+		ssClientConfig.UDPSocks = true
 	}
+	ssServerConfig := ssClientConfig
 
 	nc := &nconnect{
-		opts:         opts,
-		account:      account,
-		clientConfig: clientConfig,
-		tunnelConfig: tunnelConfig,
-		ssConfig:     ssConfig,
-		walletConfig: walletConfig,
-		persistConf:  persistConf,
+		opts:           opts,
+		account:        account,
+		clientConfig:   clientConfig,
+		tunnelConfig:   tunnelConfig,
+		ssClientConfig: &ssClientConfig,
+		ssServerConfig: &ssServerConfig,
+		walletConfig:   walletConfig,
+		persistConf:    persistConf,
 
 		remoteInfoCache:    make(map[string]*admin.GetInfoJSON),
 		remoteInfoByTunnel: make(map[string]*admin.GetInfoJSON),
+		networkTunnels:     make(map[string]*tunnel.Tunnel),
+		serverReady:        make(chan struct{}, 1),
 	}
 
 	return nc, nil
@@ -276,7 +291,16 @@ func (nc *nconnect) getAdminClient() (*admin.Client, error) {
 	if nc.adminClientCache != nil {
 		return nc.adminClientCache, nil
 	}
-	c, err := admin.NewClient(nc.account, nc.clientConfig)
+
+	identifier := ""
+	if nc.opts.NetworkMember {
+		if nc.opts.Identifier == "" {
+			identifier = "member"
+		} else {
+			identifier = "member." + nc.opts.Identifier
+		}
+	}
+	c, err := admin.NewClient(nc.account, nc.clientConfig, identifier)
 	if err != nil {
 		return nil, err
 	}
@@ -300,7 +324,7 @@ func (nc *nconnect) getRemoteInfo(remoteAdminAddr string) (*admin.GetInfoJSON, e
 
 	remoteInfoCache, err := c.GetInfo(remoteAdminAddr)
 	if err != nil {
-		return nil, fmt.Errorf("get remote server info error: %v. make sure server is online and accepting connections from this client address", err)
+		return nil, fmt.Errorf("get remote server info error: %v. make sure server is online and accepting this client address", err)
 	}
 
 	nc.remoteInfoCache[remoteAdminAddr] = remoteInfoCache
@@ -310,9 +334,11 @@ func (nc *nconnect) getRemoteInfo(remoteAdminAddr string) (*admin.GetInfoJSON, e
 }
 
 func (nc *nconnect) StartClient() error {
-	err := nc.opts.VerifyClient()
-	if err != nil {
-		return err
+	if !nc.opts.NetworkMember {
+		err := nc.opts.VerifyClient()
+		if err != nil {
+			return err
+		}
 	}
 
 	remoteTunnelAddr := nc.opts.RemoteTunnelAddr
@@ -326,128 +352,72 @@ func (nc *nconnect) StartClient() error {
 			remoteTunnelAddr = append(remoteTunnelAddr, remoteInfo.Addr)
 		}
 	}
-	if len(remoteTunnelAddr) == 0 {
+	if !nc.opts.NetworkMember && len(remoteTunnelAddr) == 0 {
 		return fmt.Errorf("no remote tunnel address, start client fail")
 	}
 
-	var vpnCIDR []*net.IPNet
-	if nc.opts.VPN {
-		vpnRoutes := nc.opts.VPNRoute
-		if len(vpnRoutes) == 0 {
-			for _, remoteAdminAddr := range nc.opts.RemoteAdminAddr {
-				remoteInfo, err := nc.getRemoteInfo(remoteAdminAddr)
-				if err != nil {
-					log.Printf("getRemoteInfo %v err: %v", remoteAdminAddr, err)
-					continue
-				}
-				if len(remoteInfo.LocalIP.Ipv4) > 0 {
-					vpnRoutes = make([]string, 0, len(remoteInfo.LocalIP.Ipv4))
-					for _, ip := range remoteInfo.LocalIP.Ipv4 {
-						if ip == nc.opts.TunAddr || ip == nc.opts.TunGateway {
-							log.Printf("Skipping server's local IP %s in routes", ip)
-							continue
-						}
-						vpnRoutes = append(vpnRoutes, fmt.Sprintf("%s/32", ip))
-					}
-				}
-			}
-		}
-		if len(vpnRoutes) > 0 {
-			vpnCIDR = make([]*net.IPNet, len(vpnRoutes))
-			for i, cidr := range vpnRoutes {
-				_, cidr, err := net.ParseCIDR(cidr)
-				if err != nil {
-					return fmt.Errorf("parse CIDR %s error: %v", cidr, err)
-				}
-				vpnCIDR[i] = cidr
-			}
-		}
-	}
-
-	proxyAddr, err := net.ResolveTCPAddr("tcp", nc.opts.LocalSocksAddr)
-	if err != nil {
-		return fmt.Errorf("invalid proxy server address: %v", err)
-	}
-	proxyHost := proxyAddr.IP.String()
-	proxyPort := uint16(proxyAddr.Port)
-
-	var from, to []string
-	for _, remote := range remoteTunnelAddr {
-		port, err := util.GetFreePort()
-		if err != nil {
-			return err
-		}
-
-		ssAddr := "127.0.0.1:" + strconv.Itoa(port)
-		from = append(from, ssAddr)
-		to = append(to, remote)
-
-		if remoteInfo, ok := nc.remoteInfoByTunnel[remote]; ok {
-			for _, addr := range remoteInfo.LocalIP.Ipv4 {
-				nc.ssConfig.TargetToClient[addr] = ssAddr
-			}
-		}
-	}
-	tunnels, err := tunnel.NewTunnels(nc.account, nc.opts.Identifier, from, to, nc.opts.Tuna, nc.tunnelConfig, nil)
+	vpnRoutes, err := nc.getRemoteRoutes()
 	if err != nil {
 		return err
 	}
-	nc.tunnels = tunnels
 
-	nc.ssConfig.Socks = nc.opts.LocalSocksAddr
-	nc.ssConfig.Client = from[0]
-	nc.ssConfig.DefaultClient = from[0] // the first config is the default client
+	if len(remoteTunnelAddr) > 0 {
+		var from, to []string
+		for _, remote := range remoteTunnelAddr {
+			port, err := ts.GetFreePort(0)
+			if err != nil {
+				return err
+			}
 
-	log.Println("Client socks proxy listen address:", nc.opts.LocalSocksAddr)
+			ssAddr := "127.0.0.1:" + strconv.Itoa(port)
+			from = append(from, ssAddr)
+			to = append(to, remote)
 
-	if nc.opts.Tun || nc.opts.VPN {
-		tunDevice, err := arch.OpenTunDevice(nc.opts.TunName, nc.opts.TunAddr, nc.opts.TunGateway, nc.opts.TunMask, nc.opts.TunDNS, true)
-		if err != nil {
-			return fmt.Errorf("failed to open TUN device: %v", err)
+			if remoteInfo, ok := nc.remoteInfoByTunnel[remote]; ok {
+				for _, addr := range remoteInfo.LocalIP.Ipv4 {
+					nc.ssClientConfig.TargetToClient[addr] = ssAddr
+				}
+			}
 		}
 
-		core.RegisterOutputFn(tunDevice.Write)
+		identifier := config.RandomIdentifier()
+		tunnels, err := tunnel.NewTunnels(nc.account, identifier, from, to, nc.opts.Tuna, nc.tunnelConfig, nil)
+		if err != nil {
+			return err
+		}
+		nc.clientTunnels = tunnels
 
-		core.RegisterTCPConnHandler(socks.NewTCPHandler(proxyHost, proxyPort))
-		core.RegisterUDPConnHandler(socks.NewUDPHandler(proxyHost, proxyPort, 30*time.Second))
+		nc.ssClientConfig.Client = from[0]
+		nc.ssClientConfig.DefaultClient = from[0] // the first config is the default client
+	} else {
+		nc.ssClientConfig.Client = "127.0.0.1"
+		nc.ssClientConfig.DefaultClient = ""
+	}
+	nc.ssClientConfig.Socks = nc.opts.LocalSocksAddr
 
-		lwipWriter := core.NewLWIPStack()
+	log.Println("nConnect socks proxy listen address:", nc.opts.LocalSocksAddr)
 
-		go func() {
-			_, err := io.CopyBuffer(lwipWriter, tunDevice, make([]byte, mtu))
+	if nc.opts.Tun || nc.opts.VPN {
+		if !nc.opts.NetworkMember {
+			err := arch.OpenTun(nc.opts.TunName, nc.opts.TunAddr, nc.opts.TunGateway, nc.opts.TunMask, nc.opts.TunDNS[0], nc.opts.LocalSocksAddr)
 			if err != nil {
-				log.Fatalf("Failed to write data to network stack: %v", err)
+				log.Printf("OpenTun error: %v", err)
+			} else {
+				log.Println("Started tun2socks, interface:", nc.opts.TunName, "address:", nc.opts.TunAddr)
 			}
-		}()
-
-		log.Println("Started tun2socks")
+		}
 
 		if nc.opts.VPN {
-			for _, dest := range vpnCIDR {
-				log.Printf("Adding route %s", dest)
-				out, err := arch.AddRouteCmd(dest, nc.opts.TunGateway, nc.opts.TunName)
-				if len(out) > 0 {
-					os.Stdout.Write(out)
-				}
-				if err != nil {
-					os.Stdout.Write([]byte(util.ParseExecError(err)))
-					os.Exit(1)
-				}
-				defer func(dest *net.IPNet) {
-					log.Printf("Deleting route %s", dest)
-					out, err := arch.DeleteRouteCmd(dest, nc.opts.TunGateway, nc.opts.TunName)
-					if len(out) > 0 {
-						os.Stdout.Write(out)
-					}
-					if err != nil {
-						os.Stdout.Write([]byte(util.ParseExecError(err)))
-					}
-				}(dest)
+			vpnCIDR, err := arch.SetVPNRoutes(nc.opts.TunName, nc.opts.TunGateway, vpnRoutes)
+			if err != nil {
+				return err
 			}
+			nc.routeCIDRs = vpnCIDR
+			defer arch.RemoveVPNRoutes(nc.opts.TunName, nc.opts.TunGateway, nc.routeCIDRs)
 		}
 	}
 
-	nc.startSSAndTunnel()
+	nc.startSSAndTunnel(true)
 	nc.waitForSignal()
 
 	return nil
@@ -459,12 +429,13 @@ func (nc *nconnect) StartServer() error {
 		return err
 	}
 
-	port, err := util.GetFreePort()
+	port, err := ts.GetFreePort(0)
 	if err != nil {
 		return err
 	}
 	ssAddr := "127.0.0.1:" + strconv.Itoa(port)
-	nc.ssConfig.Server = ssAddr
+	nc.ssServerConfig.Server = ssAddr
+	nc.ssServerConfig.Client = ""
 
 	if nc.opts.Tuna {
 		minBalance, err := common.StringToFixed64(nc.opts.TunaMinBalance)
@@ -496,8 +467,11 @@ func (nc *nconnect) StartServer() error {
 	if err != nil {
 		return err
 	}
-	nc.tunnels = append(nc.tunnels, t)
-	log.Println("Tunnel listen address:", t.FromAddr())
+	nc.serverTunnel = t
+	log.Println("nConnect server tunnel listen address:", t.FromAddr())
+	if nc.networkMember != nil {
+		nc.networkMember.SetServerTunnel(t)
+	}
 
 	if len(nc.opts.AdminIdentifier) > 0 {
 		go func() {
@@ -511,7 +485,7 @@ func (nc *nconnect) StartServer() error {
 			}
 			os.Exit(0)
 		}()
-		log.Println("Admin listening address:", nc.opts.AdminIdentifier+"."+t.FromAddr())
+		log.Println("nConnect admin listening address:", nc.opts.AdminIdentifier+"."+t.FromAddr())
 	}
 
 	if len(nc.opts.AdminHTTPAddr) > 0 {
@@ -522,45 +496,281 @@ func (nc *nconnect) StartServer() error {
 			}
 			os.Exit(0)
 		}()
-		log.Println("Admin web dashboard listening address:", nc.opts.AdminHTTPAddr)
+		log.Println("nConnect admin web dashboard serve at:", nc.opts.AdminHTTPAddr)
 	}
 
-	nc.startSSAndTunnel()
+	nc.serverReady <- struct{}{}
+
+	nc.startSSAndTunnel(false)
 	nc.waitForSignal()
 
 	return nil
 }
 
-func (nc *nconnect) startSSAndTunnel() {
+func (nc *nconnect) startSSAndTunnel(client bool) {
+	var ssConfig *ss.Config
+	if client {
+		ssConfig = nc.ssClientConfig
+	} else {
+		ssConfig = nc.ssServerConfig
+	}
 	go func() {
-		err := ss.Start(nc.ssConfig)
+		err := ss.Start(ssConfig)
 		if err != nil {
 			log.Fatal(err)
 		}
 		os.Exit(0)
 	}()
 
-	for _, t := range nc.tunnels {
-		go func(t *tunnel.Tunnel) {
-			err := t.Start()
+	if client {
+		for _, t := range nc.clientTunnels {
+			go func(t *tunnel.Tunnel) {
+				err := t.Start()
+				if err != nil {
+					log.Fatal(err)
+				}
+				os.Exit(0)
+			}(t)
+		}
+	} else {
+		go func() {
+			err := nc.serverTunnel.Start()
 			if err != nil {
 				log.Fatal(err)
 			}
 			os.Exit(0)
-		}(t)
+		}()
 	}
 }
 
 func (nc *nconnect) waitForSignal() {
 	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	<-sigs
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+	s := <-sigs
+	log.Printf("Received signal '%v', exiting now...", s)
 }
 
 func (nc *nconnect) SetTunaNode(node *types.Node) {
 	nc.tunaNode = node
 }
 
-func (nc *nconnect) GetTunnels() []*tunnel.Tunnel {
-	return nc.tunnels
+func (nc *nconnect) GetClientTunnels() []*tunnel.Tunnel {
+	nc.RLock()
+	defer nc.RUnlock()
+	iLen := len(nc.clientTunnels) + len(nc.networkTunnels)
+	if iLen == 0 {
+		return nil
+	}
+	tunnels := make([]*tunnel.Tunnel, 0, iLen)
+	if len(nc.clientTunnels) > 0 {
+		tunnels = append(tunnels, nc.clientTunnels...)
+	}
+
+	for _, t := range nc.networkTunnels {
+		tunnels = append(tunnels, t)
+	}
+	return tunnels
+}
+
+func (nc *nconnect) StartNetworkManager() error {
+	m, err := network.NewManager(nc.account, nc.clientConfig, nc.opts)
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		if err = m.StartManager(); err != nil {
+			log.Fatal(err)
+			return
+		}
+	}()
+
+	go func() {
+		if err = m.StartWebServer(); err != nil {
+			log.Fatal(err)
+			return
+		}
+	}()
+
+	nc.waitForSignal()
+
+	return nil
+}
+
+func (nc *nconnect) StartNetworkMember() error {
+	if nc.opts.ManagerAddress == "" {
+		return errors.New("network manager address is not specified")
+	}
+
+	mc, err := nc.getAdminClient()
+	if err != nil {
+		return err
+	}
+	nc.networkMember = network.NewMember(nc.opts, mc)
+
+	if nc.opts.Server {
+		go func() {
+			err = nc.StartServer()
+			if err != nil {
+				log.Fatal(err)
+			}
+		}()
+	}
+
+	serverAddr := ""
+	if nc.opts.Server {
+		<-nc.serverReady // wait server tunnel is ready
+		if nc.serverTunnel != nil {
+			serverAddr = nc.serverTunnel.FromAddr()
+		}
+	}
+
+	nc.networkMember.CbNodeICanAccessUpdated = nc.setupNetworkTunnel
+	go func() {
+		err = nc.networkMember.StartMember(serverAddr)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	if nc.opts.Client {
+		go func() {
+			err = nc.StartClient()
+			if err != nil {
+				log.Fatal(err)
+			}
+		}()
+	}
+
+	// Start Cli Service
+	go nc.networkMember.StartCliService()
+
+	nc.waitForSignal()
+	return nil
+}
+
+func (nc *nconnect) setupNetworkTunnel(nodes []*network.NodeInfo) error {
+	if len(nodes) == 0 || !nc.opts.Client {
+		return nil
+	}
+
+	oldTunnels := make(map[string]struct{})
+	for addr := range nc.networkTunnels {
+		oldTunnels[addr] = struct{}{}
+	}
+
+	var cidrs []*net.IPNet
+	var from, to []string
+	for _, node := range nodes {
+		if node.ServerAddress == "" {
+			continue
+		}
+		if _, ok := oldTunnels[node.ServerAddress]; ok {
+			delete(oldTunnels, node.ServerAddress)
+			continue
+		}
+
+		port, err := ts.GetFreePort(0)
+		if err != nil {
+			return err
+		}
+		ssAddr := "127.0.0.1:" + strconv.Itoa(port)
+
+		toAddr := node.ServerAddress
+		nc.ssClientConfig.TargetToClient[node.IP] = ssAddr
+
+		from = append(from, ssAddr)
+		to = append(to, toAddr)
+		delete(oldTunnels, toAddr)
+
+		_, cidr, err := net.ParseCIDR(fmt.Sprintf("%s/32", node.IP))
+		if err != nil {
+			continue
+		}
+		cidrs = append(cidrs, cidr)
+	}
+
+	var mc *nkn.MultiClient
+	if len(nc.clientTunnels) > 0 {
+		mc = nc.clientTunnels[0].MultiClient()
+	}
+
+	if len(from) > 0 {
+		identifier := config.RandomIdentifier()
+
+		tunnels, err := tunnel.NewTunnels(nc.account, identifier, from, to, nc.opts.Tuna, nc.tunnelConfig, mc)
+		if err != nil {
+			return err
+		}
+
+		if nc.ssClientConfig.DefaultClient == "" {
+			nc.ssClientConfig.DefaultClient = from[0]
+		}
+
+		arch.SetVPNRoutes(nc.opts.TunName, nc.networkMember.GetNetworkInfo().Gateway, cidrs)
+		ss.UpdateTargetToClient(nc.ssClientConfig.TargetToClient)
+
+		for _, tunel := range tunnels {
+			go func(t *tunnel.Tunnel) {
+				log.Println("Connecting to tunnel:", t.ToAddr())
+				err := t.Start()
+				if err != nil {
+					log.Printf("nconnect tunnel to %v start error: %v\n", t.ToAddr(), err)
+				} else {
+					if nc.opts.Verbose {
+						log.Printf("nconnect tunnel to %v started\n", t.ToAddr())
+					}
+				}
+			}(tunel)
+
+			nc.Lock()
+			nc.networkTunnels[tunel.ToAddr()] = tunel
+			nc.Unlock()
+		}
+	}
+
+	for addr := range oldTunnels {
+		t := nc.networkTunnels[addr]
+		t.Close()
+		delete(nc.networkTunnels, addr)
+	}
+
+	return nil
+}
+
+func (nc *nconnect) getRemoteRoutes() ([]*net.IPNet, error) {
+	vpnRoutes := nc.opts.VPNRoute
+	if nc.opts.VPN && len(vpnRoutes) == 0 {
+		for _, remoteAdminAddr := range nc.opts.RemoteAdminAddr {
+			remoteInfo, err := nc.getRemoteInfo(remoteAdminAddr)
+			if err != nil {
+				log.Printf("getRemoteInfo %v err: %v", remoteAdminAddr, err)
+				continue
+			}
+			if len(remoteInfo.LocalIP.Ipv4) > 0 {
+				vpnRoutes = make([]string, 0, len(remoteInfo.LocalIP.Ipv4))
+				for _, ip := range remoteInfo.LocalIP.Ipv4 {
+					if ip == nc.opts.TunAddr || ip == nc.opts.TunGateway {
+						log.Printf("Skipping server's local IP %s in routes", ip)
+						continue
+					}
+					vpnRoutes = append(vpnRoutes, fmt.Sprintf("%s/32", ip))
+				}
+			}
+		}
+	}
+
+	var routeCIDRs []*net.IPNet
+	if len(vpnRoutes) > 0 {
+		routeCIDRs = make([]*net.IPNet, len(vpnRoutes))
+		for i, r := range vpnRoutes {
+			_, cidr, err := net.ParseCIDR(r)
+			if err != nil {
+				return nil, fmt.Errorf("parse CIDR %s error: %v", r, err)
+			}
+			routeCIDRs[i] = cidr
+		}
+	}
+
+	return routeCIDRs, nil
 }
