@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/eycorsican/go-tun2socks v1.16.11
+	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-contrib/gzip v0.0.3
 	github.com/gin-gonic/gin v1.9.0
 	github.com/imdario/mergo v0.3.15
@@ -16,10 +17,12 @@ require (
 	github.com/nknorg/nkngomobile v0.0.0-20220615081414-671ad1afdfa9
 	github.com/nknorg/tuna v0.0.0-20230818024750-e800a743f680
 	github.com/shadowsocks/go-shadowsocks2 v0.1.5
+	github.com/songgao/water v0.0.0-20190725173103-fd331bda3f4b
 	github.com/stretchr/testify v1.8.1
 	github.com/txthinking/brook v0.0.0-20230418095906-76ced63f1803
 	github.com/txthinking/socks5 v0.0.0-20230307062227-0e1677eca4ba
 	golang.org/x/net v0.8.0
+	google.golang.org/protobuf v1.29.1
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
 
@@ -73,7 +76,6 @@ require (
 	github.com/refraction-networking/utls v1.3.2 // indirect
 	github.com/riobard/go-bloom v0.0.0-20200614022211-cdc8013cb5b3 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
-	github.com/songgao/water v0.0.0-20190725173103-fd331bda3f4b // indirect
 	github.com/tdewolff/minify v2.3.6+incompatible // indirect
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
@@ -91,6 +93,5 @@ require (
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/tools v0.6.0 // indirect
-	google.golang.org/protobuf v1.29.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

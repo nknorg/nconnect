@@ -2,33 +2,17 @@ package util
 
 import (
 	"encoding/json"
-	"github.com/nknorg/tuna"
 	"io/ioutil"
 	"log"
-	"net"
 	"net/http"
 	"net/url"
 	"os/exec"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/nknorg/tuna"
 )
-
-func GetFreePort() (int, error) {
-	addr, err := net.ResolveTCPAddr("tcp", "127.0.0.1:0")
-	if err != nil {
-		return 0, err
-	}
-
-	l, err := net.ListenTCP("tcp", addr)
-	if err != nil {
-		return 0, err
-	}
-
-	defer l.Close()
-
-	return l.Addr().(*net.TCPAddr).Port, nil
-}
 
 func MergeStrings(src, target []string) []string {
 	resSet := make(map[string]struct{}, len(src)+len(target))

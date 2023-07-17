@@ -16,10 +16,14 @@ func getClient(target string) string {
 
 	routes.RLock()
 	defer routes.RUnlock()
-	server, ok := routes.TargetToClient[tgtIp[0]]
-
-	if ok {
+	if server, ok := routes.TargetToClient[tgtIp[0]]; ok {
 		return server
 	}
 	return routes.DefaultClient
+}
+
+func UpdateTargetToClient(targetToClient map[string]string) {
+	routes.Lock()
+	defer routes.Unlock()
+	routes.TargetToClient = targetToClient
 }

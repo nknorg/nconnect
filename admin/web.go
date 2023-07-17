@@ -23,13 +23,13 @@ func StartWebServer(listenAddr string, tun *tunnel.Tunnel, persistConf, mergedCo
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	r.POST("/rpc/admin", func(c *gin.Context) {
-		req := &rpcReq{}
+		req := &RpcReq{}
 		if err := c.ShouldBindJSON(req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 		if mergedConf.DisableAdminHTTPAPI {
-			c.JSON(http.StatusOK, &rpcResp{Error: errAdminHTTPAPIDisabled.Error()})
+			c.JSON(http.StatusOK, &RpcResp{Error: errAdminHTTPAPIDisabled.Error()})
 			return
 		}
 		resp := handleRequest(req, persistConf, mergedConf, tun, rpcPermissionWeb)

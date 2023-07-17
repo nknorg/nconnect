@@ -3,6 +3,7 @@ package admin
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/nknorg/nconnect/config"
@@ -14,7 +15,7 @@ const (
 )
 
 var (
-	errReplyTimeout = errors.New("wait for reply timeout")
+	ErrReplyTimeout = errors.New("wait for reply timeout")
 )
 
 var (
@@ -23,18 +24,21 @@ var (
 
 type Client struct {
 	*nkn.MultiClient
-	replyTimeout time.Duration
+	ReplyTimeout time.Duration
 }
 
-func NewClient(account *nkn.Account, clientConfig *nkn.ClientConfig) (*Client, error) {
-	m, err := nkn.NewMultiClient(account, config.RandomIdentifier(), 4, false, clientConfig)
+func NewClient(account *nkn.Account, clientConfig *nkn.ClientConfig, identifier string) (*Client, error) {
+	if identifier == "" {
+		identifier = config.RandomIdentifier()
+	}
+	m, err := nkn.NewMultiClient(account, identifier, 4, false, clientConfig)
 	if err != nil {
 		return nil, err
 	}
 
 	c := &Client{
 		MultiClient:  m,
-		replyTimeout: replyTimeout,
+		ReplyTimeout: replyTimeout,
 	}
 
 	<-m.OnConnect.C
@@ -43,36 +47,18 @@ func NewClient(account *nkn.Account, clientConfig *nkn.ClientConfig) (*Client, e
 }
 
 func (c *Client) RPCCall(addr, method string, params interface{}, result interface{}) error {
-	req, err := json.Marshal(map[string]interface{}{
+	req := map[string]interface{}{
 		"id":     "nConnect",
 		"method": method,
 		"params": params,
-	})
+	}
+
+	reply, err := c.SendMsg(addr, req, true)
 	if err != nil {
 		return err
 	}
 
-	var onReply *nkn.OnMessage
-	var reply *nkn.Message
-Loop:
-	for i := 0; i < 3; i++ { // retry 3 times if timeout
-		onReply, err = c.Send(nkn.NewStringArray(addr), req, nil)
-		if err != nil {
-			return err
-		}
-
-		select {
-		case reply = <-onReply.C:
-			break Loop
-		case <-time.After(c.replyTimeout):
-			err = errReplyTimeout
-		}
-	}
-	if err != nil {
-		return err
-	}
-
-	resp := &rpcResp{
+	resp := &RpcResp{
 		Result: result,
 	}
 	err = json.Unmarshal(reply.Data, resp)
@@ -94,4 +80,41 @@ func (c *Client) GetInfo(addr string) (*GetInfoJSON, error) {
 		return nil, err
 	}
 	return res, nil
+}
+
+func (c *Client) SendMsg(address string, msg interface{}, waitResponse bool) (reply *nkn.Message, err error) {
+	if c.ReplyTimeout == 0 {
+		c.ReplyTimeout = replyTimeout
+	}
+
+	reqBytes, err := json.Marshal(msg)
+	if err != nil {
+		return nil, err
+	}
+
+	var onReply *nkn.OnMessage
+	for i := 0; i < 3; i++ {
+		onReply, err = c.Send(nkn.NewStringArray(address), reqBytes, nkn.GetDefaultMessageConfig())
+		if err != nil {
+			return nil, err
+		}
+
+		if !waitResponse {
+			return nil, nil
+		}
+
+		select {
+		case reply = <-onReply.C:
+			return reply, nil
+
+		case <-time.After(c.ReplyTimeout):
+			err = ErrReplyTimeout
+		}
+	}
+
+	if err == ErrReplyTimeout {
+		log.Printf("Wait for repsone timeout, please make sure the peer is running and reachable")
+	}
+
+	return nil, err
 }

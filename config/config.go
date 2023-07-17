@@ -34,15 +34,18 @@ func init() {
 }
 
 type Opts struct {
-	Client bool `short:"c" long:"client" description:"Client mode"`
-	Server bool `short:"s" long:"server" description:"Server mode"`
+	Client         bool `short:"c" long:"client" description:"Client mode"`
+	Server         bool `short:"s" long:"server" description:"Server mode"`
+	NetworkManager bool `short:"m" long:"network-manager" description:"Network manager mode"`
+	NetworkMember  bool `short:"n" long:"network-member" description:"Join nConnect network as a member node"`
 
 	Config
 	ConfigFile string `short:"f" long:"config-file" default:"config.json" description:"Config file path"`
 
-	Address       bool `long:"address" description:"Print client address (client mode) or admin address (server mode)"`
-	WalletAddress bool `long:"wallet-address" description:"Print wallet address (server only)"`
-	Version       bool `long:"version" description:"Print version"`
+	Address       bool   `long:"address" description:"Print client address (client mode) or admin address (server mode)"`
+	WalletAddress bool   `long:"wallet-address" description:"Print wallet address (server only)"`
+	Version       bool   `long:"version" description:"Print version"`
+	Info          string `short:"i" long:"info" description:"nConnect information"`
 }
 
 type Config struct {
@@ -123,6 +126,10 @@ type Config struct {
 	lock        sync.RWMutex
 	AcceptAddrs []string `json:"acceptAddrs"`
 	AdminAddrs  []string `json:"adminAddrs"`
+
+	// nconnect network
+	NodeName       string `json:"nodeName,omitempty" long:"node-name" description:"(network member only) Node name that will be used as to join a network"`
+	ManagerAddress string `json:"managerAddress,omitempty" long:"manager-address" description:"(network member only) Manager address to connect to when joining a network"`
 }
 
 func NewConfig() *Config {

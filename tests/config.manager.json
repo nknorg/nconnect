@@ -1,0 +1,20 @@
+{
+    "Client": false,
+    "Server": false,
+    "NetworkManager": true,
+    "NetworkMember": false,
+    "seed": "cb53701c451d0344943e0d15e1c84025742c993fd3e2c4768c0e3a211d381087",
+    "identifier": "manager",
+    "remoteAdminAddr": [],
+    "localSocksAddr": "",
+    "tuna": true,
+    "udp": true,
+    "adminIdentifier": "nConnect",
+    "webRootPath": "../web/dist",
+    "acceptAddrs": [],
+    "adminAddrs": [],
+    
+    "AdminHTTPAddr": "127.0.0.1:8001",
+    "nodeName": "bill",
+    "managerAddress": "manager.0ec192083aaf67d1bf44ea862858a457c9b864b4d4416b647552e2ebcad2facb"
+}

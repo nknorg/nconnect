@@ -1,0 +1,28 @@
+{
+    "identifier": "",
+    "seed": "",
+
+    "managerAddress": "",
+    "nodeName": "",
+
+    "cipher": "dummy",
+    "adminIdentifier": "nConnect",
+    "adminHTTPAddr": "127.0.0.1:8000",
+
+    "remoteAdminAddr": [],
+    "localSocksAddr": "127.0.0.1:1080",
+    "tuna": true,
+    "udp": true,
+    "acceptAddrs": [],
+    "adminAddrs": [],
+
+    "tunAddr": "10.0.86.2",
+    "tunGateway": "10.0.86.1",
+    "tunMask": "255.255.255.0",
+    "tunDNS": ["1.1.1.1", "8.8.8.8"],
+
+    "tunaDisableMeasureBandwidth": true,
+    "tunaMeasureStoragePath": ".",
+    "verbose": false
+}
+  

@@ -11,6 +11,10 @@ import (
 	"github.com/nknorg/tuna/types"
 )
 
+const (
+	tunaIp = "127.0.0.1" // "147.182.210.189" // DO No.9 test server
+)
+
 var remoteTuna = flag.Bool("remoteTuna", false, "use remote tuna nodes")
 var tun = flag.Bool("tun", false, "use tun device")
 
@@ -23,7 +27,7 @@ func TestMain(m *testing.M) {
 	}
 
 	go func() {
-		err := StartTcpServer()
+		err := StartTCPServer(tcpPort)
 		if err != nil {
 			log.Fatalf("StartTcpServer err %v", err)
 			return
@@ -37,7 +41,7 @@ func TestMain(m *testing.M) {
 		}
 	}()
 	go func() {
-		err := StartUdpServer()
+		err := StartUDPServer(udpPort)
 		if err != nil {
 			log.Fatalf("StartUdpServer err %v", err)
 			return
@@ -47,7 +51,7 @@ func TestMain(m *testing.M) {
 	var tunaNode *types.Node
 	var err error
 	if !(*remoteTuna) {
-		tunaNode, err = getTunaNode()
+		tunaNode, err = getTunaNode(tunaIp)
 		if err != nil {
 			log.Fatalf("getTunaNode err %v", err)
 			return
