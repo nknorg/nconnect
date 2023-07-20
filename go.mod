@@ -10,11 +10,11 @@ require (
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/nknorg/ncp-go v1.0.6-0.20230228002512-f4cd1740bebd
 	github.com/nknorg/nkn-sdk-go v1.4.6-0.20230404044330-ad192f36d07e
-	github.com/nknorg/nkn-tuna-session v0.2.6-0.20230720064657-5b11ced4bea8
-	github.com/nknorg/nkn-tunnel v0.3.5-0.20230720064935-91d74fd843b8
+	github.com/nknorg/nkn-tuna-session v0.2.6-0.20230720223014-911b930bb501
+	github.com/nknorg/nkn-tunnel v0.3.5-0.20230720223134-353fece879da
 	github.com/nknorg/nkn/v2 v2.2.0
 	github.com/nknorg/nkngomobile v0.0.0-20220615081414-671ad1afdfa9
-	github.com/nknorg/tuna v0.0.0-20230719055020-c154e729d1af
+	github.com/nknorg/tuna v0.0.0-20230720072916-745c518d52a8
 	github.com/shadowsocks/go-shadowsocks2 v0.1.2
 	github.com/stretchr/testify v1.8.1
 	github.com/txthinking/brook v0.0.0-20230418095906-76ced63f1803
