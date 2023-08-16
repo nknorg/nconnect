@@ -15,7 +15,7 @@ require (
 	github.com/nknorg/nkn/v2 v2.2.0
 	github.com/nknorg/nkngomobile v0.0.0-20220615081414-671ad1afdfa9
 	github.com/nknorg/tuna v0.0.0-20230720072916-745c518d52a8
-	github.com/shadowsocks/go-shadowsocks2 v0.1.2
+	github.com/shadowsocks/go-shadowsocks2 v0.1.5
 	github.com/stretchr/testify v1.8.1
 	github.com/txthinking/brook v0.0.0-20230418095906-76ced63f1803
 	github.com/txthinking/socks5 v0.0.0-20230307062227-0e1677eca4ba
@@ -71,7 +71,7 @@ require (
 	github.com/quic-go/quic-go v0.32.0 // indirect
 	github.com/rdegges/go-ipify v0.0.0-20150526035502-2d94a6a86c40 // indirect
 	github.com/refraction-networking/utls v1.3.2 // indirect
-	github.com/riobard/go-bloom v0.0.0-20200213042214-218e1707c495 // indirect
+	github.com/riobard/go-bloom v0.0.0-20200614022211-cdc8013cb5b3 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/songgao/water v0.0.0-20190725173103-fd331bda3f4b // indirect
 	github.com/tdewolff/minify v2.3.6+incompatible // indirect
