@@ -388,7 +388,7 @@ func (nc *nconnect) StartClient() error {
 			}
 		}
 	}
-	tunnels, err := tunnel.NewTunnels(nc.account, nc.opts.Identifier, from, to, nc.opts.Tuna, nc.tunnelConfig)
+	tunnels, err := tunnel.NewTunnels(nc.account, nc.opts.Identifier, from, to, nc.opts.Tuna, nc.tunnelConfig, nil)
 	if err != nil {
 		return err
 	}
@@ -492,7 +492,7 @@ func (nc *nconnect) StartServer() error {
 	if nc.tunaNode != nil {
 		nc.tunnelConfig.TunaNode = nc.tunaNode
 	}
-	t, err := tunnel.NewTunnel(nc.account, nc.opts.Identifier, "", ssAddr, nc.opts.Tuna, nc.tunnelConfig)
+	t, err := tunnel.NewTunnel(nc.account, nc.opts.Identifier, "", ssAddr, nc.opts.Tuna, nc.tunnelConfig, nil)
 	if err != nil {
 		return err
 	}
