@@ -222,9 +222,9 @@ nConnect server side. You can get your client address using:
 The address typically contains one or more dot, with the part after last dot
 being your client public key.
 
-### UDP support
+### UDP mode
 
-You can enable UDP support when starting nConnect server with tuna mode, 
+You can enable UDP when starting nConnect server with tuna mode
 
 ```shell
 ./nConnect -s --tuna --udp
@@ -236,9 +236,9 @@ You can also use nConnect as library. Please check [proxy_test.go](tests/proxy_t
 
 ### Use pre-built Docker image
 
-*Pre-requirement*: Have working docker software installed. For help with that
-*visit [official docker
-*docs](https://docs.docker.com/install/#supported-platforms)
+Pre-requirement: Have working docker software installed. For help with that
+visit [official docker
+docs](https://docs.docker.com/install/#supported-platforms)
 
 We host the latest Docker image on our official Docker Hub account. You can get
 it by
@@ -254,6 +254,10 @@ docker run --rm -it --net=host -v ${PWD}:/nConnect/data nknorg/nconnect
 ```
 
 followed by the command line argument you want to add.
+
+Note: If you are running nConnect in TUN or VPN mode inside Docker, you need to
+be able to access TUN device inside Docker (e.g. `--cap-add=NET_ADMIN --device
+/dev/net/tun:/dev/net/tun`).
 
 ## nConnect Client Connects to Multi Servers
 
