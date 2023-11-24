@@ -155,12 +155,12 @@
             <div class="text-h3" v-if="tuna"><strong>{{ remainingData }}</strong></div>
             <div class="text-h3" v-else><strong>{{ $t('notEnabled') }}</strong></div>
           </div>
-          <v-flex class="mt-4 d-flex justify-end">
+          <!-- <v-flex class="mt-4 d-flex justify-end">
             <v-btn class="bg-linear-2 pa-8" text color="black" width="300" target="_blank"
                    :href="$t('paymentLink',{addr: addr, lng: lang, additionalParams: paymentAdditionalParams})">
               <strong>{{ $t('data plan tab') }}</strong>
             </v-btn>
-          </v-flex>
+          </v-flex> -->
 
           <v-row class="mt-4 justify-end mt-16" v-if="activeTab === 3">
             <v-col class="text-right">
